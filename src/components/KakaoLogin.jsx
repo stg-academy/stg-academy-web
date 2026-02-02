@@ -1,6 +1,5 @@
 import { useAuth } from '../contexts/AuthContext'
 import { startKakaoLogin } from '../config/kakao'
-import './KakaoLogin.css'
 
 const KakaoLogin = () => {
   const { user, isAuthenticated, isLoading, error, logout, clearError } = useAuth()
@@ -28,8 +27,8 @@ const KakaoLogin = () => {
   // 로딩 중 표시
   if (isLoading) {
     return (
-      <div className="kakao-login-container">
-        <div className="loading-spinner">로그인 상태 확인 중...</div>
+      <div className="flex justify-center my-5">
+        <div className="flex items-center justify-center p-5 text-gray-600">로그인 상태 확인 중...</div>
       </div>
     )
   }
@@ -37,10 +36,13 @@ const KakaoLogin = () => {
   // 에러 표시
   if (error) {
     return (
-      <div className="kakao-login-container">
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={clearError} className="error-clear-btn">
+      <div className="flex justify-center my-5">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <p className="mb-3 text-red-600 text-sm">{error}</p>
+          <button
+            onClick={clearError}
+            className="bg-red-600 text-white px-4 py-2 rounded text-xs hover:bg-red-700 transition-colors"
+          >
             확인
           </button>
         </div>
@@ -51,29 +53,29 @@ const KakaoLogin = () => {
   // 로그인된 상태 - 사용자 정보 표시
   if (isAuthenticated && user) {
     return (
-      <div className="kakao-user-info">
-        <div className="user-profile">
+      <div className="bg-gray-50 rounded-xl p-5 my-5 text-center shadow-md">
+        <div className="flex items-center justify-center gap-4 mb-5">
           {user.profile_image && (
             <img
               src={user.profile_image}
               alt="프로필"
-              className="profile-image"
+              className="w-15 h-15 rounded-full object-cover border-2 border-yellow-400"
             />
           )}
-          <div className="user-details">
-            <h3>안녕하세요!</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">안녕하세요!</h3>
             {user.nickname && (
-              <p className="nickname">{user.nickname}님</p>
+              <p className="text-base font-semibold text-gray-600 mb-1">{user.nickname}님</p>
             )}
             {user.email && (
-              <p className="email">{user.email}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
             )}
           </div>
         </div>
         <button
           onClick={handleLogout}
           disabled={isLoading}
-          className="kakao-logout-btn"
+          className="bg-gray-600 text-white px-5 py-2.5 rounded-md text-sm hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? '로그아웃 중...' : '로그아웃'}
         </button>
@@ -83,11 +85,11 @@ const KakaoLogin = () => {
 
   // 로그인하지 않은 상태 - 로그인 버튼 표시
   return (
-    <div className="kakao-login-container">
+    <div className="flex justify-center my-5">
       <button
         onClick={handleLogin}
         disabled={isLoading}
-        className="kakao-login-btn"
+        className="bg-yellow-400 text-amber-900 px-6 py-3 rounded-lg text-base font-semibold hover:bg-yellow-500 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5 shadow-md hover:shadow-lg"
       >
         {isLoading ? '로그인 중...' : '카카오로 로그인'}
       </button>

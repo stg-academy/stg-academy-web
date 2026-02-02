@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Header from './components/Header'
-import Dashboard from './pages/Dashboard'
+import SampleDashboard from './pages/SampleDashboard'
+import SamplePage from './pages/SamplePage'
 import KakaoCallback from './components/KakaoCallback'
 
 function AppContent() {
@@ -18,7 +19,8 @@ function AppContent() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<SampleDashboard />} />
+        <Route path="/sample" element={<SamplePage />} />
       </Routes>
     </div>
   )

@@ -4,25 +4,19 @@ import StatCard from '../components/widgets/StatCard'
 import ChartCard from '../components/widgets/ChartCard'
 import ActivityCard from '../components/widgets/ActivityCard'
 import TaskCard from '../components/widgets/TaskCard'
-import DataTable from '../components/widgets/DataTable'
-import LoginRequired from '../components/LoginRequired'
 
-const Dashboard = () => {
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
+const SampleDashboard = () => {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // 시뮬레이션된 로딩 (인증 완료 후에만)
+  // 시뮬레이션된 로딩
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      const timer = setTimeout(() => {
-        setLoading(false)
-      }, 1500)
-      return () => clearTimeout(timer)
-    } else if (!authLoading && !isAuthenticated) {
+    const timer = setTimeout(() => {
       setLoading(false)
-    }
-  }, [authLoading, isAuthenticated])
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   // 에러 상태 시뮬레이션 (테스트용)
   const simulateError = () => {
@@ -78,144 +72,6 @@ const Dashboard = () => {
     }
   ]
 
-  // 샘플 테이블 데이터
-  const usersData = [
-    {
-      id: 1,
-      name: '김철수',
-      email: 'kim@example.com',
-      role: '관리자',
-      status: '활성',
-      lastLogin: '2024-01-15',
-      department: '개발팀'
-    },
-    {
-      id: 2,
-      name: '이영희',
-      email: 'lee@example.com',
-      role: '사용자',
-      status: '활성',
-      lastLogin: '2024-01-14',
-      department: '마케팅팀'
-    },
-    {
-      id: 3,
-      name: '박민수',
-      email: 'park@example.com',
-      role: '에디터',
-      status: '비활성',
-      lastLogin: '2024-01-10',
-      department: '디자인팀'
-    },
-    {
-      id: 4,
-      name: '최지은',
-      email: 'choi@example.com',
-      role: '사용자',
-      status: '활성',
-      lastLogin: '2024-01-13',
-      department: '개발팀'
-    },
-    {
-      id: 5,
-      name: '정동훈',
-      email: 'jung@example.com',
-      role: '관리자',
-      status: '활성',
-      lastLogin: '2024-01-15',
-      department: '운영팀'
-    },
-    {
-      id: 6,
-      name: '강수연',
-      email: 'kang@example.com',
-      role: '사용자',
-      status: '대기',
-      lastLogin: '2024-01-12',
-      department: '마케팅팀'
-    },
-    {
-      id: 7,
-      name: '윤상호',
-      email: 'yoon@example.com',
-      role: '에디터',
-      status: '활성',
-      lastLogin: '2024-01-14',
-      department: '콘텐츠팀'
-    },
-    {
-      id: 8,
-      name: '임미래',
-      email: 'lim@example.com',
-      role: '사용자',
-      status: '활성',
-      lastLogin: '2024-01-15',
-      department: '디자인팀'
-    }
-  ]
-
-  // 테이블 컬럼 정의
-  const userColumns = [
-    { key: 'name', label: '이름', sortable: true },
-    { key: 'email', label: '이메일', sortable: true },
-    { key: 'department', label: '부서', sortable: true },
-    {
-      key: 'role',
-      label: '역할',
-      sortable: true,
-      render: (value) => (
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-          value === '관리자'
-            ? 'bg-purple-100 text-purple-800'
-            : value === '에디터'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {value}
-        </span>
-      )
-    },
-    {
-      key: 'status',
-      label: '상태',
-      sortable: true,
-      render: (value) => (
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-          value === '활성'
-            ? 'bg-green-100 text-green-800'
-            : value === '비활성'
-            ? 'bg-red-100 text-red-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {value}
-        </span>
-      )
-    },
-    { key: 'lastLogin', label: '최근 로그인', sortable: true }
-  ]
-
-  // 검색 가능한 컬럼 (이름, 이메일, 부서로 검색)
-  const searchableColumns = ['name', 'email', 'department']
-
-  // 인증 로딩 중
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <main className="max-w-7xl mx-auto px-8 md:px-6 py-6 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">인증 상태를 확인하고 있습니다...</p>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  // 로그인하지 않은 상태
-  if (!isAuthenticated) {
-    return <LoginRequired />
-  }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -250,7 +106,7 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">
                 안녕하세요, {user?.username || '사용자'}님! 👋
               </h2>
-              <p className="text-gray-600 mt-1">오늘도 좋은 하루 보내세요. 실시간 현황을 확인해보세요.</p>
+              <p className="text-gray-600 mt-1">샘플 대시보드 페이지입니다. 실시간 현황을 확인해보세요.</p>
             </div>
             <button
               onClick={simulateError}
@@ -276,7 +132,7 @@ const Dashboard = () => {
         </div>
 
         {/* 메인 콘텐츠 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <ChartCard
               title="방문자 통계"
@@ -312,25 +168,9 @@ const Dashboard = () => {
             />
           </div>
         </div>
-
-        {/* 데이터 테이블 섹션 */}
-        <div className="grid grid-cols-1 gap-6">
-          <DataTable
-            title="사용자 관리"
-            data={usersData}
-            columns={userColumns}
-            searchableColumns={searchableColumns}
-            loading={loading}
-            itemsPerPage={5}
-            showPagination={true}
-            showSearch={true}
-            emptyMessage="등록된 사용자가 없습니다."
-            className="min-h-[400px]"
-          />
-        </div>
       </main>
     </div>
   )
 }
 
-export default Dashboard
+export default SampleDashboard

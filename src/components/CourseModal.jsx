@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 
 const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
-    search_keywords: '',
+    keyword: '',
   })
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -21,15 +21,15 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
   useEffect(() => {
     if (editingCourse) {
       setFormData({
-        name: editingCourse.name || '',
+        title: editingCourse.title || '',
         description: editingCourse.description || '',
-        search_keywords: editingCourse.search_keywords || '',
+        keyword: editingCourse.keyword || '',
       })
     } else {
       setFormData({
-        name: '',
+        title: '',
         description: '',
-        search_keywords: '',
+        keyword: '',
       })
     }
     setErrors({})
@@ -55,8 +55,8 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
   const validate = () => {
     const newErrors = {}
 
-    if (!formData.name.trim()) {
-      newErrors.name = '코스명을 입력해주세요'
+    if (!formData.title.trim()) {
+      newErrors.title = '코스명을 입력해주세요'
     }
 
     if (!formData.description.trim()) {
@@ -81,9 +81,9 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
       await onSubmit(formData)
       // 성공 시 폼 초기화 및 모달 닫기
       setFormData({
-        name: '',
+        title: '',
         description: '',
-        search_keywords: '',
+        keyword: '',
       })
       setErrors({})
       onClose()
@@ -104,9 +104,9 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
     // 애니메이션이 끝난 후 모달 완전히 닫기
     setTimeout(() => {
       setFormData({
-        name: '',
+        title: '',
         description: '',
-        search_keywords: '',
+        keyword: '',
       })
       setErrors({})
       onClose()
@@ -153,23 +153,23 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 코스명 */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                     코스명
                     <span className="text-red-500 ml-1">*</span>
                   </label>
                   <input
                       type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="title"
+                      name="title"
+                      value={formData.title}
                       onChange={handleChange}
                       placeholder="강좌명을 입력해주세요"
                       className={`w-full px-4 py-3 border ${
-                          errors.name ? 'border-red-500' : 'border-gray-300'
+                          errors.title ? 'border-red-500' : 'border-gray-300'
                       } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                       disabled={isSubmitting}
                   />
-                  {errors.name && (
+                  {errors.title && (
                       <p className="mt-1 text-sm text-red-500">{errors.name}</p>
                   )}
                 </div>
@@ -199,14 +199,14 @@ const CourseModal = ({ isOpen, onClose, onSubmit, editingCourse = null }) => {
 
                 {/* 검색 키워드 */}
                 <div>
-                  <label htmlFor="search_keywords" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="keyword" className="block text-sm font-medium text-gray-700 mb-2">
                     검색 키워드
                   </label>
                   <input
                       type="text"
-                      id="search_keywords"
-                      name="search_keywords"
-                      value={formData.search_keywords}
+                      id="keyword"
+                      name="keyword"
+                      value={formData.keyword}
                       onChange={handleChange}
                       placeholder="검색에 사용할 키워드를 입력해주세요"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"

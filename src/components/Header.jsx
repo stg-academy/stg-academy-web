@@ -12,6 +12,7 @@ const Header = () => {
   // 네비게이션 메뉴
   const navigationItems = [
     { name: '샘플 대시보드', href: '/', icon: 'dashboard' },
+    { name: '코스 관리', href: '/courses', icon: 'dashboard' },
     { name: '샘플 페이지', href: '/sample', icon: 'page' }
   ]
 

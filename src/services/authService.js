@@ -21,7 +21,6 @@ class ApiClient {
     }
 
     const config = {
-      headers: defaultHeaders,
       ...options,
       headers: {
         ...defaultHeaders,

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
-import { authAPI } from '../utils/api'
+import { authAPI } from '../services/authService.js'
 
 // 인증 상태
 const AuthContext = createContext()

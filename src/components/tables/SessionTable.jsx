@@ -1,7 +1,7 @@
 import DataTable from '../widgets/DataTable'
 
-const LectureTable = ({
-    lectures,
+const SessionTable = ({
+    sessions,
     loading,
     onSessionCountClick
 }) => {
@@ -53,7 +53,7 @@ const LectureTable = ({
 
     return (
         <DataTable
-            data={lectures}
+            data={sessions}
             columns={lectureColumns}
             searchableColumns={['title', 'course', 'author']}
             loading={loading}
@@ -66,4 +66,4 @@ const LectureTable = ({
     )
 }
 
-export default LectureTable
+export default SessionTable

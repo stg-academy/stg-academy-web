@@ -4,7 +4,7 @@ const CourseManagementPage = () => {
     const location = useLocation()
 
     // 현재 경로에 따른 활성 탭 결정
-    const activeTab = location.pathname === '/courses/lectures' ? 'lectures' : 'courses'
+    const activeTab = location.pathname === '/courses/sessions' ? 'sessions' : 'courses'
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -29,9 +29,9 @@ const CourseManagementPage = () => {
                                 코스 목록
                             </Link>
                             <Link
-                                to="/courses/lectures"
+                                to="/courses/sessions"
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                                    activeTab === 'lectures'
+                                    activeTab === 'sessions'
                                         ? 'border-blue-500 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}

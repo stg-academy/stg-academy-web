@@ -1,13 +1,13 @@
 import {useState} from 'react'
 import {useAuth} from '../contexts/AuthContext'
-import LectureTable from '../components/tables/LectureTable'
+import SessionTable from '../components/tables/SessionTable.jsx'
 
-const LectureListPage = () => {
+const SessionListPage = () => {
     const {user} = useAuth()
     const [loading] = useState(false) // 향후 API 연동 시 사용
 
     // 강좌 목록 (임시 데이터)
-    const lectures = [
+    const sessions = [
         {
             id: 1,
             title: '교리반 1주차',
@@ -50,8 +50,8 @@ const LectureListPage = () => {
                 <h3 className="text-lg font-semibold text-gray-900">강좌 목록</h3>
             </div>
 
-            <LectureTable
-                lectures={lectures}
+            <SessionTable
+                sessions={sessions}
                 loading={loading}
                 onSessionCountClick={handleSessionCountClick}
             />
@@ -59,4 +59,4 @@ const LectureListPage = () => {
     )
 }
 
-export default LectureListPage
+export default SessionListPage

@@ -67,11 +67,6 @@ const CourseListPage = () => {
         }
     }
 
-    // 강좌수 클릭 핸들러
-    const handleLectureCountClick = (course) => {
-        // todo: 강좌수 클릭 동작 추가
-        console.log('강좌수 클릭:', course)
-    }
 
     return (
         <div>
@@ -100,7 +95,6 @@ const CourseListPage = () => {
                 courses={courses}
                 loading={loading}
                 onEditCourse={handleOpenEditModal}
-                onLectureCountClick={handleLectureCountClick}
             />
 
             {/* 코스 생성/수정 모달 */}

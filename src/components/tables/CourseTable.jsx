@@ -1,11 +1,18 @@
 import DataTable from '../widgets/DataTable'
+import {useNavigate} from 'react-router-dom'
 
 const CourseTable = ({
-    courses,
-    loading,
-    onEditCourse,
-    onLectureCountClick
-}) => {
+                         courses,
+                         loading,
+                         onEditCourse
+                     }) => {
+    const navigate = useNavigate()
+
+    // 강좌수 클릭 핸들러
+    const handleLectureCountClick = (course) => {
+        navigate(`/courses/sessions?course_id=${course.id}`)
+    }
+
     const courseColumns = [
         {
             key: 'title', label: '코스명', sortable: true,
@@ -18,11 +25,11 @@ const CourseTable = ({
         },
         {key: 'description', label: '설명', sortable: true, default: '-'},
         {
-            key: 'author', // todo: 작성자 api 필드 추가
+            key: 'author',
             label: '작성자', sortable: true, default: '-'
         },
         {
-            key: 'lecture_count', // todo: 강좌수 api 필드 추가
+            key: 'lecture_count',
             label: '강좌 수',
             sortable: true,
             render: (value, row) => (
@@ -30,7 +37,8 @@ const CourseTable = ({
                     <span className="text-sm font-medium text-gray-900">{value || 0}</span>
                     <button
                         className="text-blue-600 hover:text-blue-700"
-                        onClick={() => onLectureCountClick && onLectureCountClick(row)}
+                        onClick={() => handleLectureCountClick(row)}
+                        title="세션 목록 보기"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

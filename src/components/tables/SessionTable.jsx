@@ -1,10 +1,10 @@
 import DataTable from '../widgets/DataTable'
 
 const SessionTable = ({
-    sessions,
-    loading,
-    onEditSession
-}) => {
+                          sessions,
+                          loading,
+                          onEditSession
+                      }) => {
     const sessionColumns = [
         {
             key: 'title',
@@ -12,7 +12,7 @@ const SessionTable = ({
             sortable: true,
             render: (value, row) => (
                 <div
-                    className="font-medium text-gray-900 cursor-pointer hover:text-blue-600"
+                    className="font-medium text-gray-900 underline cursor-pointer hover:text-blue-600"
                     onClick={() => onEditSession && onEditSession(row)}
                 >
                     {value || `강좌 ${row.id?.slice(0, 8)}`}
@@ -23,9 +23,7 @@ const SessionTable = ({
             key: 'course_name',
             label: '코스',
             sortable: true,
-            render: (value) => (
-                <div className="text-sm text-gray-600">{value || '-'}</div>
-            )
+            default: '-',
         },
         {
             key: 'description',
@@ -37,17 +35,14 @@ const SessionTable = ({
             key: 'lecturer_info',
             label: '주강사',
             sortable: true,
-            render: (value) => (
-                <span className="text-sm text-gray-700">{value || '-'}</span>
-            )
+            default: '-'
+
         },
         {
             key: 'date_info',
             label: '강의 일시',
             sortable: true,
-            render: (value) => (
-                <span className="text-sm text-gray-700">{value || '-'}</span>
-            )
+            default: '-'
         },
         {
             key: 'begin_date',
@@ -78,15 +73,7 @@ const SessionTable = ({
             default: 0
         },
         {
-            key: 'attendance_rate',
-            label: '출석률',
-            sortable: true,
-            render: (value) => (
-                <span className="text-sm font-medium text-gray-900">{value || 0}%</span>
-            )
-        },
-        {
-            key: 'status',
+            key: 'course_status',
             label: 'Status',
             sortable: true,
             render: (value) => {
@@ -94,11 +81,11 @@ const SessionTable = ({
                 let textColor = 'text-gray-800'
                 let label = value || '대기'
 
-                if (value === '진행중' || value === 'active') {
+                if (value === '진행중' || value === 'IN_PROGRESS') {
                     bgColor = 'bg-blue-100'
                     textColor = 'text-blue-800'
                     label = '진행중'
-                } else if (value === '완료' || value === 'completed') {
+                } else if (value === '완료' || value === 'FINISHED') {
                     bgColor = 'bg-green-100'
                     textColor = 'text-green-800'
                     label = '완료'

@@ -6,7 +6,7 @@ import SelectInput from './forms/SelectInput'
 import DateInput from './forms/DateInput'
 import NumberInput from './forms/NumberInput'
 
-const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, courses = [] }) => {
+const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, courses = [], preselectedCourseId = null }) => {
   const [formData, setFormData] = useState({
     course_id: '',
     title: '',
@@ -32,7 +32,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
       })
     } else {
       setFormData({
-        course_id: '',
+        course_id: preselectedCourseId || '',
         title: '',
         description: '',
         lecturer_info: '',
@@ -42,7 +42,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
       })
     }
     setErrors({})
-  }, [editingSession, isOpen])
+  }, [editingSession, isOpen, preselectedCourseId])
 
   // 폼 입력 처리
   const handleChange = (e) => {

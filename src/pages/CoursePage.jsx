@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import {useAuth} from '../contexts/AuthContext'
-import DataTable from '../components/widgets/DataTable'
+import CourseTable from '../components/tables/CourseTable'
+import LectureTable from '../components/tables/LectureTable'
 import CourseModal from '../components/CourseModal'
 import {getCourses, createCourse, updateCourse} from '../services/courseService'
 
@@ -68,43 +69,11 @@ const CoursePage = () => {
         }
     }
 
-    // 코스 테이블 컬럼
-    const courseColumns = [
-        {
-            key: 'title', label: '코스명', sortable: true,
-            render: (value, row) => (
-                <div
-                    className="font-medium text-gray-900 underline"
-                    onClick={() => handleOpenEditModal(row)}
-                >{value}</div>
-            )
-        },
-        {key: 'description', label: '설명', sortable: true, default: '-'},
-        {
-            key: 'author', // todo: 작성자 api 필드 추가
-            label: '작성자', sortable: true, default: '-'
-        },
-        {
-            key: 'lecture_count', // todo: 강좌수 api 필드 추가
-            label: '강좌 수',
-            sortable: true,
-            render: (value) => (
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-900">{value || 0}</span>
-                    <button
-                        className="text-blue-600 hover:text-blue-700"
-                        onClick={() => {/* todo: 강좌수 클릭 동작 추가 */
-                        }}
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </button>
-                </div>
-            )
-        }
-    ]
+    // 강좌수 클릭 핸들러
+    const handleLectureCountClick = (course) => {
+        // todo: 강좌수 클릭 동작 추가
+        console.log('강좌수 클릭:', course)
+    }
 
     // 강좌 목록 (임시 데이터)
     const lectures = [
@@ -138,49 +107,11 @@ const CoursePage = () => {
         }
     ]
 
-    // 강좌 테이블 컬럼
-    const lectureColumns = [
-        {
-            key: 'title',
-            label: '강좌명',
-            sortable: true,
-            render: (value) => (
-                <div className="font-medium text-gray-900">{value}</div>
-            )
-        },
-        {
-            key: 'course',
-            label: '코스',
-            sortable: true,
-            render: (value) => (
-                <div className="text-sm text-gray-600">{value}</div>
-            )
-        },
-        {
-            key: 'author',
-            label: '작성자',
-            sortable: true,
-            render: (value) => (
-                <span className="text-sm text-gray-700">{value}</span>
-            )
-        },
-        {
-            key: 'sessionCount',
-            label: '세션 수',
-            sortable: true,
-            render: (value) => (
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-900">{value}</span>
-                    <button className="text-blue-600 hover:text-blue-700">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </button>
-                </div>
-            )
-        }
-    ]
+    // 세션수 클릭 핸들러
+    const handleSessionCountClick = (lecture) => {
+        // todo: 세션수 클릭 동작 추가
+        console.log('세션수 클릭:', lecture)
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -242,16 +173,11 @@ const CoursePage = () => {
                             </button>
                         </div>
 
-                        <DataTable
-                            data={courses}
-                            columns={courseColumns}
-                            searchableColumns={['name', 'description', 'author']}
+                        <CourseTable
+                            courses={courses}
                             loading={loading}
-                            itemsPerPage={10}
-                            showPagination={true}
-                            showSearch={true}
-                            emptyMessage="등록된 코스가 없습니다."
-                            className="min-h-[500px]"
+                            onEditCourse={handleOpenEditModal}
+                            onLectureCountClick={handleLectureCountClick}
                         />
                     </div>
                 )}
@@ -263,16 +189,10 @@ const CoursePage = () => {
                             <h3 className="text-lg font-semibold text-gray-900">강좌 목록</h3>
                         </div>
 
-                        <DataTable
-                            data={lectures}
-                            columns={lectureColumns}
-                            searchableColumns={['title', 'course', 'author']}
+                        <LectureTable
+                            lectures={lectures}
                             loading={loading}
-                            itemsPerPage={10}
-                            showPagination={true}
-                            showSearch={true}
-                            emptyMessage="등록된 강좌가 없습니다."
-                            className="min-h-[500px]"
+                            onSessionCountClick={handleSessionCountClick}
                         />
                     </div>
                 )}

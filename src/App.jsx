@@ -4,7 +4,9 @@ import Header from './components/Header'
 import SampleDashboard from './pages/SampleDashboard'
 import SamplePage from './pages/SamplePage'
 import KakaoCallback from './components/KakaoCallback'
-import CoursePage from "./pages/CoursePage.jsx";
+import CourseManagementPage from "./pages/CourseManagementPage.jsx"
+import CourseListPage from './pages/CourseListPage'
+import LectureListPage from './pages/LectureListPage'
 
 function AppContent() {
   // 현재 URL이 카카오 콜백인지 확인
@@ -21,7 +23,10 @@ function AppContent() {
       <Header />
       <Routes>
         <Route path="/" element={<SampleDashboard />} />
-        <Route path="/courses" element={<CoursePage />} />
+        <Route path="/courses" element={<CourseManagementPage />}>
+          <Route index element={<CourseListPage />} />
+          <Route path="lectures" element={<LectureListPage />} />
+        </Route>
         <Route path="/sample" element={<SamplePage />} />
       </Routes>
     </div>

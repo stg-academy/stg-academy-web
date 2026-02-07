@@ -3,64 +3,126 @@ import DataTable from '../widgets/DataTable'
 const SessionTable = ({
     sessions,
     loading,
-    onSessionCountClick
+    onEditSession
 }) => {
-    const lectureColumns = [
+    const sessionColumns = [
         {
             key: 'title',
-            label: '강좌명',
+            label: '강의명',
             sortable: true,
-            render: (value) => (
-                <div className="font-medium text-gray-900">{value}</div>
+            render: (value, row) => (
+                <div
+                    className="font-medium text-gray-900 cursor-pointer hover:text-blue-600"
+                    onClick={() => onEditSession && onEditSession(row)}
+                >
+                    {value || `강좌 ${row.id?.slice(0, 8)}`}
+                </div>
             )
         },
         {
-            key: 'course',
+            key: 'course_name',
             label: '코스',
             sortable: true,
             render: (value) => (
-                <div className="text-sm text-gray-600">{value}</div>
+                <div className="text-sm text-gray-600">{value || '-'}</div>
             )
         },
         {
-            key: 'author',
-            label: '작성자',
+            key: 'description',
+            label: '설명',
+            sortable: false,
+            default: '-'
+        },
+        {
+            key: 'lecturer_info',
+            label: '주강사',
             sortable: true,
             render: (value) => (
-                <span className="text-sm text-gray-700">{value}</span>
+                <span className="text-sm text-gray-700">{value || '-'}</span>
             )
         },
         {
-            key: 'sessionCount',
-            label: '세션 수',
+            key: 'date_info',
+            label: '강의 일시',
             sortable: true,
-            render: (value, row) => (
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-900">{value}</span>
-                    <button
-                        className="text-blue-600 hover:text-blue-700"
-                        onClick={() => onSessionCountClick && onSessionCountClick(row)}
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </button>
-                </div>
+            render: (value) => (
+                <span className="text-sm text-gray-700">{value || '-'}</span>
             )
-        }
+        },
+        {
+            key: 'begin_date',
+            label: '수강 기간',
+            sortable: true,
+            render: (value, row) => {
+                const start = value ? new Date(value).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }) : '-'
+                const end = row.end_date ? new Date(row.end_date).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }) : '-'
+                return (
+                    <span className="text-sm text-gray-700">
+                        {start} ~ {end}
+                    </span>
+                )
+            }
+        },
+        {
+            key: 'total_lectures',
+            label: '총 회차',
+            sortable: true,
+            default: 0
+        },
+        {
+            key: 'attendance_rate',
+            label: '출석률',
+            sortable: true,
+            render: (value) => (
+                <span className="text-sm font-medium text-gray-900">{value || 0}%</span>
+            )
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            sortable: true,
+            render: (value) => {
+                let bgColor = 'bg-gray-100'
+                let textColor = 'text-gray-800'
+                let label = value || '대기'
+
+                if (value === '진행중' || value === 'active') {
+                    bgColor = 'bg-blue-100'
+                    textColor = 'text-blue-800'
+                    label = '진행중'
+                } else if (value === '완료' || value === 'completed') {
+                    bgColor = 'bg-green-100'
+                    textColor = 'text-green-800'
+                    label = '완료'
+                }
+
+                return (
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${bgColor} ${textColor}`}>
+                        {label}
+                    </span>
+                )
+            }
+        },
     ]
 
     return (
         <DataTable
             data={sessions}
-            columns={lectureColumns}
-            searchableColumns={['title', 'course', 'author']}
+            columns={sessionColumns}
+            searchableColumns={['title', 'course_name', 'lecturer_info']}
             loading={loading}
             itemsPerPage={10}
             showPagination={true}
             showSearch={true}
-            emptyMessage="등록된 강좌가 없습니다."
+            emptyMessage="등록된 세션이 없습니다."
             className="min-h-[500px]"
         />
     )

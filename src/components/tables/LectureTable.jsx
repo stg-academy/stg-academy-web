@@ -2,6 +2,11 @@ import DataTable from '../ui/DataTable.jsx'
 import SessionStatusBadge from "../SessionStatusBadge.jsx";
 import {useNavigate} from "react-router-dom";
 
+import Edit from '../../assets/icons/edit.svg?react';
+import Delete from '../../assets/icons/delete.svg?react';
+import Check from '../../assets/icons/check.svg?react';
+import Rollback from '../../assets/icons/rollback.svg?react';
+
 const LectureTable = ({
                           lectures,
                           loading,
@@ -76,8 +81,8 @@ const LectureTable = ({
             editable: true,
             editType: 'select',
             options: [
-                { value: '전자출결', label: '전자출결' },
-                { value: '수기출결', label: '수기출결' } //todo: enum 으로 관리
+                {value: '전자출결', label: '전자출결'},
+                {value: '수기출결', label: '수기출결'} //todo: enum 으로 관리
             ],
             default: '전자출결'
         },
@@ -115,18 +120,14 @@ const LectureTable = ({
                                 className="text-gray-600 hover:text-gray-700 text-sm font-medium"
                                 title="취소"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <Rollback/>
                             </button>
                             <button
                                 onClick={() => onSaveEdit && onSaveEdit(row.id)}
                                 className="text-green-600 hover:text-green-700 text-sm font-medium"
                                 title="저장"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                                <Check/>
                             </button>
                         </div>
                     )
@@ -137,19 +138,20 @@ const LectureTable = ({
                             onClick={() => onStartEdit && onStartEdit(row)}
                             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                         >
-                            수정
+                            <Edit/>
                         </button>
                         <button
                             onClick={() => onDeleteLecture && onDeleteLecture(row.id)}
                             className="text-red-600 hover:text-red-700 text-sm font-medium"
                         >
-                            삭제
+                            <Delete/>
                         </button>
                     </div>
                 )
             }
         }
     ]
+
 
     return (
         <DataTable

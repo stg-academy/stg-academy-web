@@ -7,7 +7,8 @@ import AttendanceTable from '../components/tables/AttendanceTable'
 const AttendanceTab = ({
                            session,
                            lectures,
-                           onError
+                           onError,
+                           loading
                        }) => {
     const {user} = useAuth()
 
@@ -85,7 +86,7 @@ const AttendanceTab = ({
                 attendances={attendances}
                 lectures={lectures}
                 onCellClick={handleCellClick}
-                loading={attendancesLoading}
+                loading={loading && attendancesLoading}
                 cellUpdateLoading={cellUpdateLoading}
                 className="min-h-[500px]"
             />

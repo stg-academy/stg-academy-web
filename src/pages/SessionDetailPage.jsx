@@ -15,12 +15,34 @@ const SessionDetailPage = () => {
     const [loading, setLoading] = useState(true)
     const [session, setSession] = useState(null)
     const [activeTab, setActiveTab] = useState('lectures')
+    const [lectures, setLectures] = useState([])
+    const [lecturesLoading, setLecturesLoading] = useState(false)
     const [error, setError] = useState(null)
 
     // 세션 데이터 로드
     useEffect(() => {
         loadSession()
     }, [sessionId])
+
+    // 강의 목록 로드
+    useEffect(() => {
+        if (sessionId) {
+            loadLectures()
+        }
+    }, [sessionId])
+
+    const loadLectures = async () => {
+        try {
+            setLecturesLoading(true)
+            const data = await getLecturesBySession(sessionId)
+            setLectures(data)
+        } catch (err) {
+            console.error('강의 목록 조회 실패:', err)
+            setError('강의 목록을 불러오는데 실패했습니다')
+        } finally {
+            setLecturesLoading(false)
+        }
+    }
 
     const loadSession = async () => {
         try {
@@ -174,8 +196,11 @@ const SessionDetailPage = () => {
                 {/* 강의 목록 탭 */}
                 {activeTab === 'lectures' && (
                     <LectureTab
+                        lectures={lectures}
                         sessionId={sessionId}
                         onError={setError}
+                        onRefresh={loadLectures}
+                        loading={loading}
                     />
                 )}
 
@@ -188,7 +213,11 @@ const SessionDetailPage = () => {
 
                 {/* 출석부 탭 */}
                 {activeTab === 'attendances' && (
-                    <AttendanceTab session={session} lectures={lectures}/>
+                    <AttendanceTab
+                        session={session}
+                        lectures={lectures}
+                        loading={loading}
+                    />
                 )}
 
                 {/* 강사/관리자 탭 */}

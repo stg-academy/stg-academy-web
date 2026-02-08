@@ -1,38 +1,19 @@
 import LectureTable from "../components/tables/LectureTable.jsx";
-import {createLecture, deleteLecture, getLecturesBySession, updateLecture} from "../services/lectureService.js";
-import {useEffect, useState} from "react";
+import {createLecture, deleteLecture, updateLecture} from "../services/lectureService.js";
+import {useState} from "react";
 
 const LectureTab = ({
                         onError,
-                        sessionId
+                        lectures,
+                        sessionId,
+                        loading,
+                        onRefresh
                     }) => {
-    const [lectures, setLectures] = useState([])
-    const [lecturesLoading, setLecturesLoading] = useState(false)
-
     // 인라인 편집 상태
     const [editingLectureId, setEditingLectureId] = useState(null)
     const [editingData, setEditingData] = useState({})
     const [validationErrors, setValidationErrors] = useState({})
 
-    // 강의 목록 로드
-    useEffect(() => {
-        if (sessionId) {
-            loadLectures()
-        }
-    }, [sessionId])
-
-    const loadLectures = async () => {
-        try {
-            setLecturesLoading(true)
-            const data = await getLecturesBySession(sessionId)
-            setLectures(data)
-        } catch (err) {
-            console.error('강의 목록 조회 실패:', err)
-            onError('강의 목록을 불러오는데 실패했습니다')
-        } finally {
-            setLecturesLoading(false)
-        }
-    }
 
     // 인라인 편집 시작
     const handleStartEdit = (lecture) => {
@@ -112,7 +93,7 @@ const LectureTab = ({
 
         try {
             await updateLecture(lectureId, editingData)
-            await loadLectures() // 목록 새로고침
+            await onRefresh() // 목록 새로고침
             setEditingLectureId(null)
             setEditingData({})
             setValidationErrors({})
@@ -131,7 +112,7 @@ const LectureTab = ({
                 sequence: lectures.length + 1
             }
             await createLecture(newLectureData)
-            await loadLectures() // 목록 새로고침
+            await onRefresh() // 목록 새로고침
         } catch (err) {
             console.error('강의 생성 실패:', err)
             onError('강의 생성에 실패했습니다')
@@ -143,7 +124,7 @@ const LectureTab = ({
         if (confirm('정말 이 강의를 삭제하시겠습니까?')) {
             try {
                 await deleteLecture(lectureId)
-                await loadLectures() // 목록 새로고침
+                await onRefresh() // 목록 새로고침
             } catch (err) {
                 console.error('강의 삭제 실패:', err)
                 onError('강의 삭제에 실패했습니다')
@@ -155,7 +136,7 @@ const LectureTab = ({
     return <div className="bg-white rounded-lg shadow">
         <LectureTable
             lectures={lectures}
-            loading={lecturesLoading}
+            loading={loading}
             onDeleteLecture={handleDeleteLecture}
             // 인라인 편집 관련 props
             editingLectureId={editingLectureId}

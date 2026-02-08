@@ -1,10 +1,13 @@
 import DataTable from '../widgets/DataTable'
+import {useNavigate} from 'react-router-dom'
+import SessionStatusBadge from "../SessionStatusBadge.jsx";
 
 const SessionTable = ({
                           sessions,
                           loading,
                           onEditSession
                       }) => {
+    const navigate = useNavigate()
     const sessionColumns = [
         {
             key: 'title',
@@ -13,7 +16,8 @@ const SessionTable = ({
             render: (value, row) => (
                 <div
                     className="font-medium text-gray-900 underline cursor-pointer hover:text-blue-600"
-                    onClick={() => onEditSession && onEditSession(row)}
+                    onClick={() => navigate(`/sessions/${row.id}`)}
+                    // todo: onClick={() => onEditSession && onEditSession(row)}
                 >
                     {value || `강좌 ${row.id?.slice(0, 8)}`}
                 </div>
@@ -67,7 +71,7 @@ const SessionTable = ({
             }
         },
         {
-            key: 'total_lectures',
+            key: 'lecture_count',
             label: '총 회차',
             sortable: true,
             default: 0
@@ -76,27 +80,9 @@ const SessionTable = ({
             key: 'course_status',
             label: 'Status',
             sortable: true,
-            render: (value) => {
-                let bgColor = 'bg-gray-100'
-                let textColor = 'text-gray-800'
-                let label = value || '대기'
-
-                if (value === '진행중' || value === 'IN_PROGRESS') {
-                    bgColor = 'bg-blue-100'
-                    textColor = 'text-blue-800'
-                    label = '진행중'
-                } else if (value === '완료' || value === 'FINISHED') {
-                    bgColor = 'bg-green-100'
-                    textColor = 'text-green-800'
-                    label = '완료'
-                }
-
-                return (
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${bgColor} ${textColor}`}>
-                        {label}
-                    </span>
-                )
-            }
+            render: (value) => (
+                <SessionStatusBadge status={value}/>
+            )
         },
     ]
 

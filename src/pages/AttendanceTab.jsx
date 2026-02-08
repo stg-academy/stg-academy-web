@@ -1,20 +1,18 @@
 import {useEffect, useState} from 'react'
-import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
 import {createAttendance, getAttendancesBySession, updateAttendance} from '../services/attendanceService'
 import {getAttendanceOptions} from '../utils/attendanceStatus'
 import AttendanceTable from '../components/tables/AttendanceTable'
 
-const AttendancePage = ({
-                            session,
-                            lectures
-                        }) => {
-    const navigate = useNavigate()
+const AttendanceTab = ({
+                           session,
+                           lectures,
+                           onError
+                       }) => {
     const {user} = useAuth()
 
     const [attendances, setAttendances] = useState([])
     const [attendancesLoading, setAttendancesLoading] = useState(false)
-    const [error, setError] = useState(null)
     const [cellUpdateLoading, setCellUpdateLoading] = useState(false)
     const [editModal, setEditModal] = useState({isOpen: false, cellInfo: null})
 
@@ -33,7 +31,7 @@ const AttendancePage = ({
             console.log(data)
         } catch (err) {
             console.error('출석 목록 조회 실패:', err)
-            setError('출석 목록을 불러오는데 실패했습니다')
+            onError('출석 목록을 불러오는데 실패했습니다')
         } finally {
             setAttendancesLoading(false)
         }
@@ -73,7 +71,7 @@ const AttendancePage = ({
             await loadAttendances()
         } catch (err) {
             console.error('출석 정보 업데이트 실패:', err)
-            setError('출석 정보 업데이트에 실패했습니다')
+            onError('출석 정보 업데이트에 실패했습니다')
         } finally {
             setCellUpdateLoading(false)
             handleCloseModal()
@@ -81,13 +79,6 @@ const AttendancePage = ({
     }
 
     return (<div className="bg-white rounded-lg shadow ">
-
-            {/* 에러 메시지 */}
-            {error && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-sm text-red-600">{error}</p>
-                </div>
-            )}
 
             {/* 출석부 테이블 */}
             <AttendanceTable
@@ -203,4 +194,4 @@ const AttendanceEditModal = ({isOpen, onClose, cellInfo, onSave}) => {
     )
 }
 
-export default AttendancePage
+export default AttendanceTab

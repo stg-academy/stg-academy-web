@@ -69,10 +69,10 @@ const SessionDetailPage = () => {
     // 인라인 편집 시작
     const handleStartEdit = (lecture) => {
         setEditingLectureId(lecture.id)
-        setEditingData( {
-            ...(lecture.title && { title: lecture.title }),
-            ...(lecture.lecture_date && { lecture_date: lecture.lecture_date.split('T')[0] }),
-            ...(lecture.attendance_type && { attendance_type: lecture.attendance_type })
+        setEditingData({
+            ...(lecture.title && {title: lecture.title}),
+            ...(lecture.lecture_date && {lecture_date: lecture.lecture_date.split('T')[0]}),
+            ...(lecture.attendance_type && {attendance_type: lecture.attendance_type})
         })
     }
 
@@ -93,7 +93,7 @@ const SessionDetailPage = () => {
         // 필드 변경 시 해당 필드의 오류 제거
         if (validationErrors[field]) {
             setValidationErrors(prev => {
-                const newErrors = { ...prev }
+                const newErrors = {...prev}
                 delete newErrors[field]
                 return newErrors
             })
@@ -115,6 +115,16 @@ const SessionDetailPage = () => {
         return errors
     }
 
+    // 변경 사항이 있는지 확인
+    const hasChanges = (original, edited) => {
+        for (const key in edited) {
+            if (edited[key] !== original[key] && !(edited[key] == null && original[key] === '')) {
+                return true
+            }
+        }
+        return false
+    }
+
     // 인라인 편집 저장
     const handleSaveEdit = async (lectureId) => {
         // 유효성 검사 수행
@@ -123,6 +133,13 @@ const SessionDetailPage = () => {
         if (Object.keys(errors).length > 0) {
             setValidationErrors(errors)
             return // 오류가 있으면 저장하지 않음
+        }
+
+        if (!hasChanges(lectures.find(lecture => lecture.id === lectureId), editingData)){
+            setEditingLectureId(null)
+            setEditingData({})
+            setValidationErrors({})
+            return // 변경 사항이 없으면 저장하지 않음
         }
 
         try {
@@ -187,7 +204,6 @@ const SessionDetailPage = () => {
         )
     }
 
-    console.log(session)
     return (
         <div className="min-h-screen bg-gray-50">
             <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">

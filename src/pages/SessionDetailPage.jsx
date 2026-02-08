@@ -217,6 +217,7 @@ const SessionDetailPage = () => {
                         session={session}
                         lectures={lectures}
                         loading={loading}
+                        onError={setError}
                     />
                 )}
 

@@ -17,6 +17,10 @@ const SessionDetailPage = () => {
     const [lectures, setLectures] = useState([])
     const [lecturesLoading, setLecturesLoading] = useState(false)
     const [error, setError] = useState(null)
+    // 인라인 편집 상태
+    const [editingLectureId, setEditingLectureId] = useState(null)
+    const [editingData, setEditingData] = useState({})
+    const [validationErrors, setValidationErrors] = useState({})
 
     // 세션 데이터 로드
     useEffect(() => {
@@ -62,12 +66,71 @@ const SessionDetailPage = () => {
         navigate(-1)
     }
 
-    // 강의 수정
-    const handleEditLecture = async (lecture) => {
+    // 인라인 편집 시작
+    const handleStartEdit = (lecture) => {
+        setEditingLectureId(lecture.id)
+        setEditingData( {
+            ...(lecture.title && { title: lecture.title }),
+            ...(lecture.lecture_date && { lecture_date: lecture.lecture_date.split('T')[0] }),
+            ...(lecture.attendance_type && { attendance_type: lecture.attendance_type })
+        })
+    }
+
+    // 인라인 편집 취소
+    const handleCancelEdit = () => {
+        setEditingLectureId(null)
+        setEditingData({})
+        setValidationErrors({})
+    }
+
+    // 인라인 편집 데이터 변경
+    const handleEditChange = (field, value) => {
+        setEditingData(prev => ({
+            ...prev,
+            [field]: value
+        }))
+
+        // 필드 변경 시 해당 필드의 오류 제거
+        if (validationErrors[field]) {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors[field]
+                return newErrors
+            })
+        }
+    }
+
+    // 유효성 검사 함수
+    const validateLectureData = (data) => {
+        const errors = {}
+
+        if (!data.title || data.title.trim() === '') {
+            errors.title = '강의명은 필수 입력 항목입니다.'
+        }
+
+        if (!data.lecture_date || data.lecture_date.trim() === '') {
+            errors.lecture_date = '강의 일시는 필수 입력 항목입니다.'
+        }
+
+        return errors
+    }
+
+    // 인라인 편집 저장
+    const handleSaveEdit = async (lectureId) => {
+        // 유효성 검사 수행
+        const errors = validateLectureData(editingData)
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors)
+            return // 오류가 있으면 저장하지 않음
+        }
+
         try {
-            // API 호출하여 수정
-            await updateLecture(lecture.id, lecture)
+            await updateLecture(lectureId, editingData)
             await loadLectures() // 목록 새로고침
+            setEditingLectureId(null)
+            setEditingData({})
+            setValidationErrors({})
         } catch (err) {
             console.error('강의 수정 실패:', err)
             setError('강의 수정에 실패했습니다')
@@ -230,8 +293,16 @@ const SessionDetailPage = () => {
                         <LectureTable
                             lectures={lectures}
                             loading={lecturesLoading}
-                            onEditLecture={handleEditLecture}
                             onDeleteLecture={handleDeleteLecture}
+                            // 인라인 편집 관련 props
+                            editingLectureId={editingLectureId}
+                            editingData={editingData}
+                            onStartEdit={handleStartEdit}
+                            onCancelEdit={handleCancelEdit}
+                            onSaveEdit={handleSaveEdit}
+                            onEditChange={handleEditChange}
+                            // 유효성 검사 관련 props
+                            validationErrors={validationErrors}
                         />
 
                         {/* 새 강의 추가하기 */}

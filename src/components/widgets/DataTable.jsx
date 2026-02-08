@@ -10,7 +10,16 @@ const DataTable = ({
                        showPagination = true,
                        showSearch = true,
                        emptyMessage = "데이터가 없습니다.",
-                       className = ""
+                       className = "",
+                       // 인라인 편집 관련 props
+                       editingRowId = null,
+                       editingData = {},
+                       onStartEdit = null,
+                       onCancelEdit = null,
+                       onSaveEdit = null,
+                       onEditChange = null,
+                       // 유효성 검사 관련 props
+                       validationErrors = {}
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
@@ -80,10 +89,93 @@ const DataTable = ({
         setCurrentPage(1)
     }
 
+    // 편집 가능한 셀 렌더링
+    const renderEditableCell = (row, column) => {
+        const value = editingData[column.key] !== undefined ? editingData[column.key] : row[column.key] || ''
+        const hasError = validationErrors[column.key]
+        const inputClassName = `w-full -my-2 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-sm ${
+            hasError
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'
+        }`
+
+        const renderInput = () => {
+            switch (column.editType) {
+                case 'text':
+                    return (
+                        <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
+                            className={inputClassName}
+                            autoFocus={column.autoFocus}
+                        />
+                    )
+                case 'select':
+                    return (
+                        <select
+                            value={value}
+                            onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
+                            className={inputClassName}
+                        >
+                            {column.options && column.options.map(option => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    )
+                case 'date':
+                    return (
+                        <input
+                            type="date"
+                            value={value}
+                            onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
+                            className={inputClassName}
+                        />
+                    )
+                case 'number':
+                    return (
+                        <input
+                            type="number"
+                            value={value}
+                            onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
+                            className={inputClassName}
+                        />
+                    )
+                default:
+                    return (
+                        <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
+                            className={inputClassName}
+                        />
+                    )
+            }
+        }
+
+        return (
+            <div>
+                {renderInput()}
+                {hasError && (
+                    <div className="-mb-2 mt-2 text-xs text-red-600">
+                        {validationErrors[column.key]}
+                    </div>
+                )}
+            </div>
+        )
+    }
+
     // 렌더링할 셀 값 결정
     const renderCellValue = (row, column) => {
+        // 인라인 편집 모드인 경우
+        if (editingRowId === row.id && column.editable) {
+            return renderEditableCell(row, column)
+        }
+
         if (column.render && typeof column.render === 'function') {
-            return column.render(row[column.key], row)
+            return column.render(row[column.key], row, editingRowId === row.id)
         }
         return row[column.key] || column.default
     }
@@ -193,15 +285,32 @@ const DataTable = ({
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                     {paginatedData.length > 0 ? (
-                        paginatedData.map((row, index) => (
-                            <tr key={row.id || index} className="hover:bg-gray-50 transition-colors">
-                                {columns.map((column) => (
-                                    <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {renderCellValue(row, column)}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))
+                        paginatedData.map((row, index) => {
+                            const isEditing = editingRowId === row.id
+                            return (
+                                <tr
+                                    key={row.id || index}
+                                    className={`transition-colors ${
+                                        isEditing
+                                            ? 'bg-blue-50 border border-blue-200'
+                                            : 'hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {columns.map((column) => (
+                                        <td
+                                            key={column.key}
+                                            className={`px-6 py-4 text-sm text-gray-900 ${
+                                                column.editable && isEditing
+                                                    ? ''
+                                                    : 'whitespace-nowrap'
+                                            }`}
+                                        >
+                                            {renderCellValue(row, column)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            )
+                        })
                     ) : (
                         <tr>
                             <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">

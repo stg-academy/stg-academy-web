@@ -1,10 +1,10 @@
 import DataTable from '../widgets/DataTable'
 import SessionStatusBadge from "../SessionStatusBadge.jsx";
+import {useNavigate} from "react-router-dom";
 
 const LectureTable = ({
                           lectures,
                           loading,
-                          onEditLecture,
                           onDeleteLecture,
                           // 인라인 편집 관련 props
                           editingLectureId,
@@ -16,6 +16,7 @@ const LectureTable = ({
                           // 유효성 검사 관련 props
                           validationErrors
                       }) => {
+    const navigate = useNavigate()
     const lectureColumns = [
         {
             key: 'sequence',
@@ -38,15 +39,9 @@ const LectureTable = ({
             render: (value, row, isEditing) => {
                 if (isEditing) return null // 편집 모드에서는 input으로 대체
                 return (
-
-
-                    // <div
-                    //     className="font-medium text-gray-900 underline cursor-pointer hover:text-blue-600"
-                    //     onClick={() => onEditLecture && onEditLecture(row)}
-                    //     //  todo: 라우팅으로 수정
-                    // >
-
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-gray-900 underline cursor-pointer hover:text-blue-600"
+                         onClick={() => navigate(`/lectures/${row.id}/attendances`)}
+                    >
                         {value || `${row.sequence || row.id}강`}
                     </div>
                 )

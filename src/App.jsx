@@ -8,6 +8,7 @@ import CourseManagementPage from "./pages/CourseManagementPage.jsx"
 import CourseListPage from './pages/CourseListPage'
 import SessionListPage from './pages/SessionListPage.jsx'
 import SessionDetailPage from "./pages/SessionDetailPage.jsx";
+import AttendancePage from "./pages/AttendancePage.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -29,6 +30,7 @@ function AppContent() {
                     <Route path="sessions" element={<SessionListPage/>}/>
                 </Route>
                 <Route path="/sessions/:sessionId" element={<SessionDetailPage/>}/>
+                <Route path="/lectures/:lectureId/attendances" element={<AttendancePage/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
             </Routes>
         </div>

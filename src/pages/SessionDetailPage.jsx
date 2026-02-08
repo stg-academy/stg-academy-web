@@ -5,6 +5,7 @@ import {getSession} from '../services/sessionService'
 import {createLecture, deleteLecture, getLecturesBySession, updateLecture} from '../services/lectureService'
 import LectureTable from '../components/tables/LectureTable'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
+import AttendancePage from "./AttendancePage.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -135,7 +136,7 @@ const SessionDetailPage = () => {
             return // 오류가 있으면 저장하지 않음
         }
 
-        if (!hasChanges(lectures.find(lecture => lecture.id === lectureId), editingData)){
+        if (!hasChanges(lectures.find(lecture => lecture.id === lectureId), editingData)) {
             setEditingLectureId(null)
             setEditingData({})
             setValidationErrors({})
@@ -273,6 +274,16 @@ const SessionDetailPage = () => {
                                 수강생
                             </button>
                             <button
+                                onClick={() => setActiveTab('attendances')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    activeTab === 'attendances'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                출석부
+                            </button>
+                            <button
                                 onClick={() => setActiveTab('instructors')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                                     activeTab === 'instructors'
@@ -348,6 +359,11 @@ const SessionDetailPage = () => {
                     <div className="bg-white rounded-lg shadow p-8 text-center">
                         <p className="text-gray-500">수강생 목록이 여기에 표시됩니다.</p>
                     </div>
+                )}
+
+                {/* 출석부 탭 */}
+                {activeTab === 'attendances' && (
+                    <AttendancePage session={session} lectures={lectures} />
                 )}
 
                 {/* 강사/관리자 탭 */}

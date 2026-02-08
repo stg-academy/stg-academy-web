@@ -1,4 +1,4 @@
-import DataTable from '../widgets/DataTable'
+import DataTable from '../ui/DataTable.jsx'
 import {useNavigate} from 'react-router-dom'
 
 const CourseTable = ({

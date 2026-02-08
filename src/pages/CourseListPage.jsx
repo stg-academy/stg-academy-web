@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react'
 import {useAuth} from '../contexts/AuthContext'
 import CourseTable from '../components/tables/CourseTable'
-import CourseModal from '../components/CourseModal'
+import CourseModal from '../components/modals/CourseModal.jsx'
 import {getCourses, createCourse, updateCourse} from '../services/courseService'
 
 const CourseListPage = () => {

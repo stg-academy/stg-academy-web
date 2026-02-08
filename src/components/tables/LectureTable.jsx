@@ -1,4 +1,4 @@
-import DataTable from '../widgets/DataTable'
+import DataTable from '../ui/DataTable.jsx'
 import SessionStatusBadge from "../SessionStatusBadge.jsx";
 import {useNavigate} from "react-router-dom";
 

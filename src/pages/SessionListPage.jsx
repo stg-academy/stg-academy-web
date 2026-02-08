@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react'
 import {useAuth} from '../contexts/AuthContext'
 import {useSearchParams} from 'react-router-dom'
 import SessionTable from '../components/tables/SessionTable.jsx'
-import SessionModal from '../components/SessionModal'
+import SessionModal from '../components/modals/SessionModal.jsx'
 import {getSessions, createSession, updateSession} from '../services/sessionService'
 import {getCourses, getCourse} from '../services/courseService'
 

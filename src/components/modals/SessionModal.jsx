@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import Modal from './ui/Modal'
-import TextInput from './forms/TextInput'
-import TextareaInput from './forms/TextareaInput'
-import SelectInput from './forms/SelectInput'
-import DateInput from './forms/DateInput'
-import NumberInput from './forms/NumberInput'
+import Modal from '../ui/Modal.jsx'
+import TextInput from '../forms/TextInput.jsx'
+import TextareaInput from '../forms/TextareaInput.jsx'
+import SelectInput from '../forms/SelectInput.jsx'
+import DateInput from '../forms/DateInput.jsx'
+import NumberInput from '../forms/NumberInput.jsx'
 
 const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, courses = [], preselectedCourseId = null }) => {
   const [formData, setFormData] = useState({

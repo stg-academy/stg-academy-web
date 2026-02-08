@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import DataTable from '../components/widgets/DataTable'
+import DataTable from '../components/ui/DataTable.jsx'
 import StatCard from '../components/widgets/StatCard'
 import IconCollection from '../components/widgets/IconCollection'
 

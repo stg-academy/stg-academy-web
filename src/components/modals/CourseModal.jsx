@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react'
-import Modal from './ui/Modal'
-import TextInput from './forms/TextInput'
-import TextareaInput from './forms/TextareaInput'
+import Modal from '../ui/Modal.jsx'
+import TextInput from '../forms/TextInput.jsx'
+import TextareaInput from '../forms/TextareaInput.jsx'
 
 const CourseModal = ({isOpen, onClose, onSubmit, editingCourse = null}) => {
     const [formData, setFormData] = useState({

@@ -6,6 +6,7 @@ import {getLecturesBySession} from '../services/lectureService'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
 import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
+import EnrollTab from "./EnrollTab.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -206,9 +207,11 @@ const SessionDetailPage = () => {
 
                 {/* 수강생 탭 */}
                 {activeTab === 'students' && (
-                    <div className="bg-white rounded-lg shadow p-8 text-center">
-                        <p className="text-gray-500">수강생 목록이 여기에 표시됩니다.</p>
-                    </div>
+                    <EnrollTab
+                        session={session}
+                        onError={setError}
+                        loading={loading}
+                    />
                 )}
 
                 {/* 출석부 탭 */}

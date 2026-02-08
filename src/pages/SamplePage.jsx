@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import DataTable from '../components/widgets/DataTable'
 import StatCard from '../components/widgets/StatCard'
+import IconCollection from '../components/widgets/IconCollection'
 
 const SamplePage = () => {
   const { user } = useAuth()
@@ -302,6 +303,14 @@ const SamplePage = () => {
               icon={stat.icon}
             />
           ))}
+        </div>
+
+        {/* 아이콘 모음집 섹션 */}
+        <div className="mb-8">
+          <IconCollection
+            title="아이콘 모음집"
+            className="min-h-[600px]"
+          />
         </div>
 
         {/* 테이블 섹션 */}

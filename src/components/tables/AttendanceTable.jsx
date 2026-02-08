@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 import {ATTENDANCE_CONFIG, getAttendanceStyle, getAttendanceTooltip} from '../../utils/attendanceStatus'
 
 /**
@@ -20,13 +20,18 @@ const AttendanceTable = ({
                              attendances = [],
                              lectures = [],
                              onCellClick,
+                             onBulkEdit,
                              loading = false,
                              cellUpdateLoading = false,
-                             className = ''
+                             className = '',
+                             isMultiSelectMode = false,
+                             onMultiSelectModeChange
                          }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'})
     const [hoveredCell, setHoveredCell] = useState(null)
+    // const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
+    const [selectedCells, setSelectedCells] = useState(new Set())
 
     // attendances를 사용자별로 그룹화하고 강의별로 매트릭스 구성
     const processedData = useMemo(() => {
@@ -112,7 +117,23 @@ const AttendanceTable = ({
 
     // 셀 클릭 핸들러
     const handleCellClick = useCallback((userGroup, lecture, attendance) => {
-        if (!onCellClick || cellUpdateLoading) return
+        if (cellUpdateLoading) return
+
+        if (isMultiSelectMode) {
+            const cellKey = `${userGroup.user?.id}-${lecture.id}`
+            setSelectedCells(prev => {
+                const newSelected = new Set(prev)
+                if (newSelected.has(cellKey)) {
+                    newSelected.delete(cellKey)
+                } else {
+                    newSelected.add(cellKey)
+                }
+                return newSelected
+            })
+            return
+        }
+
+        if (!onCellClick) return
 
         const cellInfo = {
             userName: userGroup.user?.name,
@@ -124,7 +145,7 @@ const AttendanceTable = ({
         }
 
         onCellClick(cellInfo)
-    }, [onCellClick, cellUpdateLoading])
+    }, [onCellClick, cellUpdateLoading, isMultiSelectMode])
 
     // 셀 호버 핸들러
     const handleCellMouseEnter = useCallback((userIndex, lectureIndex) => {
@@ -140,6 +161,55 @@ const AttendanceTable = ({
     const isCellHovered = useCallback((userIndex, lectureIndex) => {
         return hoveredCell?.userIndex === userIndex && hoveredCell?.lectureIndex === lectureIndex
     }, [hoveredCell])
+
+    // 모드 변경 시 선택 상태 초기화
+    useEffect(() => {
+        setSelectedCells(new Set())
+    }, [isMultiSelectMode])
+
+    // 다중 선택 모드 토글
+    const toggleMultiSelectMode = useCallback(() => {
+        onMultiSelectModeChange(prev => !prev)
+        setSelectedCells(new Set()) // 모드 변경 시 선택 초기화
+    }, [])
+
+    // 선택된 셀들로 일괄 편집 데이터 생성
+    const getSelectedCellsData = useCallback(() => {
+        const selectedData = []
+
+        filteredAndSortedData.forEach(userGroup => {
+            lectures.forEach(lecture => {
+                const cellKey = `${userGroup.user?.id}-${lecture.id}`
+                if (selectedCells.has(cellKey)) {
+                    const attendance = userGroup.attendanceMap[lecture.id]
+                    selectedData.push({
+                        userName: userGroup.user?.name,
+                        userClass: userGroup.user?.class,
+                        userId: userGroup.user?.id,
+                        lectureId: lecture.id,
+                        lectureTitle: lecture.title,
+                        attendance: attendance
+                    })
+                }
+            })
+        })
+
+        return selectedData
+    }, [selectedCells, filteredAndSortedData, lectures])
+
+    // 일괄 편집 핸들러
+    const handleBulkEdit = useCallback(() => {
+        if (!onBulkEdit || selectedCells.size === 0) return
+
+        const selectedData = getSelectedCellsData()
+        onBulkEdit(selectedData)
+    }, [onBulkEdit, selectedCells.size, getSelectedCellsData])
+
+    // 셀이 선택되었는지 확인
+    const isCellSelected = useCallback((userGroup, lecture) => {
+        const cellKey = `${userGroup.user?.id}-${lecture.id}`
+        return selectedCells.has(cellKey)
+    }, [selectedCells])
 
     // 로딩 상태
     if (loading) {
@@ -169,6 +239,35 @@ const AttendanceTable = ({
                     </h3>
 
                     <div className="flex items-center space-x-4">
+                        {/* 다중 선택 및 일괄 편집 버튼들 */}
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={toggleMultiSelectMode}
+                                disabled={cellUpdateLoading}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                                    isMultiSelectMode
+                                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                                {isMultiSelectMode ? '선택 완료' : '다중 선택'}
+                            </button>
+
+                            {isMultiSelectMode && (
+                                <button
+                                    onClick={handleBulkEdit}
+                                    disabled={cellUpdateLoading || selectedCells.size === 0}
+                                    className={`px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                                        selectedCells.size > 0
+                                            ? 'bg-green-600 text-white border-green-600 hover:bg-green-700'
+                                            : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                                    } disabled:opacity-50`}
+                                >
+                                    일괄 수정 ({selectedCells.size})
+                                </button>
+                            )}
+                        </div>
+
                         <div className="relative">
                             <input
                                 type="text"
@@ -192,6 +291,11 @@ const AttendanceTable = ({
                                 ? `${filteredAndSortedData.length}개 검색 결과`
                                 : `총 ${processedData.length}명`
                             }
+                            {isMultiSelectMode && selectedCells.size > 0 && (
+                                <span className="ml-2 text-blue-600 font-medium">
+                                    • {selectedCells.size}개 선택됨
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -267,6 +371,7 @@ const AttendanceTable = ({
                                     const displayContent = config?.displayShortName || config?.shortName || '-'
                                     const isHovered = isCellHovered(userIndex, lectureIndex)
                                     const isClickable = !cellUpdateLoading
+                                    const isSelected = isMultiSelectMode && isCellSelected(userGroup, lecture)
 
                                     return (
                                         <td
@@ -279,18 +384,28 @@ const AttendanceTable = ({
                                                     max-w-[80px] truncate mx-auto py-1 px-2 rounded
                                                     ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                                                     ${isHovered && isClickable ? `${style.bgClassName} border ${style.borderClassName}` : ''}
+                                                    ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
                                                     ${cellUpdateLoading ? 'opacity-50' : ''}
                                                     transition-all duration-150
+                                                    relative
                                                 `}
                                                 title={
                                                     isClickable
-                                                        ? getAttendanceTooltip(attendance)
+                                                        ? isMultiSelectMode
+                                                            ? '클릭하여 선택/해제'
+                                                            : getAttendanceTooltip(attendance)
                                                         : '저장 중...'
                                                 }
                                                 onClick={() => isClickable && handleCellClick(userGroup, lecture, attendance)}
                                                 onMouseEnter={() => isClickable && handleCellMouseEnter(userIndex, lectureIndex)}
                                                 onMouseLeave={() => isClickable && handleCellMouseLeave()}
                                             >
+                                                {isMultiSelectMode && isSelected && (
+                                                    <div
+                                                        className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+                                                        ✓
+                                                    </div>
+                                                )}
                                                 {displayContent}
                                             </div>
                                         </td>

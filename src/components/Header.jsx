@@ -11,8 +11,9 @@ const Header = () => {
 
   // 네비게이션 메뉴
   const navigationItems = [
-    { name: '샘플 대시보드', href: '/', icon: 'dashboard' },
     { name: '코스 관리', href: '/courses', icon: 'dashboard' },
+    { name: '사용자 관리', href: '/users', icon: 'users' },
+    { name: '샘플 대시보드', href: '/', icon: 'dashboard' },
     { name: '샘플 페이지', href: '/sample', icon: 'page' }
   ]
 
@@ -31,6 +32,12 @@ const Header = () => {
         return (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H9a2 2 0 00-2 2v10z" />
+          </svg>
+        )
+      case 'users':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
           </svg>
         )
       case 'page':

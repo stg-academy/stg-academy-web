@@ -95,7 +95,7 @@ const SessionTable = ({
             itemsPerPage={10}
             showPagination={true}
             showSearch={true}
-            emptyMessage="등록된 세션이 없습니다."
+            emptyMessage="등록된 강좌이 없습니다."
         />
     )
 }

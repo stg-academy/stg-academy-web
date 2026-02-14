@@ -69,7 +69,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
     }
 
     if (!formData.title.trim()) {
-      newErrors.title = '세션명을 입력해주세요'
+      newErrors.title = '강좌명을 입력해주세요'
     }
 
     if (!formData.lecturer_info.trim()) {
@@ -107,9 +107,9 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
       })
       setErrors({})
     } catch (error) {
-      console.error('세션 저장 실패:', error)
+      console.error('강좌 저장 실패:', error)
       setErrors({
-        submit: error.message || '세션 저장에 실패했습니다'
+        submit: error.message || '강좌 저장에 실패했습니다'
       })
       throw error // Modal로 에러 전파
     }
@@ -140,7 +140,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={editingSession ? '세션 수정하기' : '세션 생성하기'}
+      title={editingSession ? '강좌 수정하기' : '강좌 생성하기'}
       onSubmit={handleSubmit}
       submitText="저장하기"
       loadingText="저장 중..."
@@ -157,16 +157,16 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
           placeholder="코스를 선택해주세요"
           required={true}
           error={errors.course_id}
-          description="* 등록한 세션은 코스 내 세션 목록에서 조회됩니다"
+          description="* 등록한 강좌은 코스 내 강좌 목록에서 조회됩니다"
         />
 
         <TextInput
           id="title"
           name="title"
-          label="세션명"
+          label="강좌명"
           value={formData.title}
           onChange={handleChange}
-          placeholder="세션명을 입력해주세요"
+          placeholder="강좌명을 입력해주세요"
           required={true}
           error={errors.title}
         />
@@ -217,13 +217,13 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         <TextareaInput
           id="description"
           name="description"
-          label="세션 소개"
+          label="강좌 소개"
           value={formData.description}
           onChange={handleChange}
-          placeholder="세션에 대한 소개를 입력해주세요"
+          placeholder="강좌에 대한 소개를 입력해주세요"
           required={false}
           rows={6}
-          description="* 세션에 대한 상세한 설명을 입력하세요"
+          description="* 강좌에 대한 상세한 설명을 입력하세요"
         />
 
         {/* 에러 메시지 */}

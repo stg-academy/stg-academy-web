@@ -38,7 +38,7 @@ const CourseTable = ({
                     <button
                         className="text-blue-600 hover:text-blue-700"
                         onClick={() => handleLectureCountClick(row)}
-                        title="세션 목록 보기"
+                        title="강좌 목록 보기"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -53,7 +53,7 @@ const CourseTable = ({
     const courseFooter = (
         <>
             <p>* 코스 생성 및 관리는 이곳에서 진행하세요. 코스명을 클릭하여 편집할 수 있습니다.</p>
-            <p>* 강좌 수를 클릭하면 해당 코스의 세션 목록을 확인할 수 있습니다.</p>
+            <p>* 강좌 수를 클릭하면 해당 코스의 강좌 목록을 확인할 수 있습니다.</p>
         </>
     )
 

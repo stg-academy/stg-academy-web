@@ -23,7 +23,7 @@ const SessionDetailPage = () => {
     const [enrollsLoading, setEnrollsLoading] = useState(false)
     const [error, setError] = useState(null)
 
-    // 세션 데이터 로드
+    // 강좌 데이터 로드
     useEffect(() => {
         loadSession()
     }, [sessionId])
@@ -69,8 +69,8 @@ const SessionDetailPage = () => {
             const data = await getSession(sessionId)
             setSession(data)
         } catch (err) {
-            console.error('세션 조회 실패:', err)
-            setError('세션 정보를 불러오는데 실패했습니다')
+            console.error('강좌 조회 실패:', err)
+            setError('강좌 정보를 불러오는데 실패했습니다')
         } finally {
             setLoading(false)
         }
@@ -97,7 +97,7 @@ const SessionDetailPage = () => {
     if (!session) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-gray-500">세션을 찾을 수 없습니다.</div>
+                <div className="text-gray-500">강좌을 찾을 수 없습니다.</div>
             </div>
         )
     }
@@ -141,7 +141,7 @@ const SessionDetailPage = () => {
                         </button>
                         <button
                             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-                            세션 설정
+                            강좌 설정
                         </button>
                     </div>
                 </div>

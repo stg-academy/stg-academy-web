@@ -34,7 +34,7 @@ const SessionListPage = () => {
             setError(null)
             const data = await getSessions()
 
-            // course_id 파라미터가 있으면 해당 코스의 세션만 필터링
+            // course_id 파라미터가 있으면 해당 코스의 강좌만 필터링
             if (courseId) {
                 const filteredSessions = data.filter(session => session.course_id === courseId)
                 setSessions(filteredSessions)
@@ -42,8 +42,8 @@ const SessionListPage = () => {
                 setSessions(data)
             }
         } catch (err) {
-            console.error('세션 목록 로드 실패:', err)
-            setError('세션 목록을 불러오는데 실패했습니다')
+            console.error('강좌 목록 로드 실패:', err)
+            setError('강좌 목록을 불러오는데 실패했습니다')
         } finally {
             setLoading(false)
         }
@@ -67,7 +67,7 @@ const SessionListPage = () => {
         }
     }
 
-    // 세션 생성 모달 열기
+    // 강좌 생성 모달 열기
     const handleOpenCreateModal = () => {
         setEditingSession(null)
         setIsModalOpen(true)
@@ -76,12 +76,12 @@ const SessionListPage = () => {
     // 페이지 제목 생성
     const getPageTitle = () => {
         if (courseId && selectedCourse) {
-            return `${selectedCourse.name || selectedCourse.title} 세션 목록`
+            return `${selectedCourse.name || selectedCourse.title} 강좌 목록`
         }
-        return '전체 세션 목록'
+        return '전체 강좌 목록'
     }
 
-    // 세션 수정 모달 열기
+    // 강좌 수정 모달 열기
     const handleEditSession = (session) => {
         setEditingSession(session)
         setIsModalOpen(true)
@@ -93,7 +93,7 @@ const SessionListPage = () => {
         setEditingSession(null)
     }
 
-    // 세션 저장 (생성 또는 수정)
+    // 강좌 저장 (생성 또는 수정)
     const handleSaveSession = async (sessionData) => {
         try {
             if (editingSession) {
@@ -130,7 +130,7 @@ const SessionListPage = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M12 4v16m8-8H4"/>
                     </svg>
-                    <span>세션 생성하기</span>
+                    <span>강좌 생성하기</span>
                 </button>
             </div>
 
@@ -140,7 +140,7 @@ const SessionListPage = () => {
                 onEditSession={handleEditSession}
             />
 
-            {/* 세션 생성/수정 모달 */}
+            {/* 강좌 생성/수정 모달 */}
             <SessionModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

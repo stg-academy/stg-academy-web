@@ -13,7 +13,6 @@ const EnrollTable = ({
         const statusConfig = {
             'ACTIVE': { label: '활성', className: 'bg-green-100 text-green-800' },
             'INACTIVE': { label: '비활성', className: 'bg-gray-100 text-gray-800' },
-            'COMPLETED': { label: '완료', className: 'bg-blue-100 text-blue-800' },
             'DROPPED': { label: '중도포기', className: 'bg-red-100 text-red-800' }
         }
         const config = statusConfig[value] || { label: value || '-', className: 'bg-gray-100 text-gray-800' }

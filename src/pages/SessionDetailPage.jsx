@@ -239,6 +239,8 @@ const SessionDetailPage = () => {
                     <AttendanceTab
                         session={session}
                         lectures={lectures}
+                        enrolls={enrolls}
+                        enrollsLoading={enrollsLoading}
                         loading={loading}
                         onError={setError}
                     />

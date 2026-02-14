@@ -19,6 +19,7 @@ const formatDate = (date) => {
 const AttendanceTable = ({
                              attendances = [],
                              lectures = [],
+                             enrolls = [],
                              onCellClick,
                              onBulkEdit,
                              loading = false,
@@ -33,36 +34,43 @@ const AttendanceTable = ({
     // const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
     const [selectedCells, setSelectedCells] = useState(new Set())
 
-    // attendances를 사용자별로 그룹화하고 강의별로 매트릭스 구성
+    // enrolls를 기반으로 사용자 매트릭스 구성, attendances로 출석 데이터 매핑
     const processedData = useMemo(() => {
-        if (!attendances || attendances.length === 0) return []
+        if (!enrolls || enrolls.length === 0) return []
 
-        // 1. 사용자별로 그룹화
-        const userGroups = {}
+        // 1. 출석 데이터를 사용자ID-강의ID로 매핑
+        const attendanceMap = {}
         attendances.forEach(attendance => {
             const userId = attendance.user_id || attendance.student_id
-            const userName = attendance.student_name || attendance.user?.name || `사용자_${userId.substring(0, 4)}`
-            const userClass = attendance.user?.class || attendance.class || ''
-
-            if (!userGroups[userId]) {
-                userGroups[userId] = {
-                    user: {
-                        id: userId,
-                        name: userName,
-                        class: userClass
-                    },
-                    attendanceMap: {}
-                }
-            }
-
-            // 강의별 출석 정보 매핑
             const lectureId = attendance.lecture_id
-            userGroups[userId].attendanceMap[lectureId] = attendance
+            const key = `${userId}-${lectureId}`
+            attendanceMap[key] = attendance
         })
 
-        // 2. 배열로 변환
-        return Object.values(userGroups)
-    }, [attendances])
+        // 2. 수강생 목록을 기반으로 매트릭스 구성
+        const userGroups = enrolls.map(enroll => {
+            const userId = enroll.user_id || enroll.id
+            const userName = enroll.user_name || `사용자_${userId?.substring(0, 4) || 'unknown'}`
+
+            // 강의별 출석 정보 매핑
+            const attendanceByLecture = {}
+            lectures.forEach(lecture => {
+                const key = `${userId}-${lecture.id}`
+                attendanceByLecture[lecture.id] = attendanceMap[key] || null
+            })
+
+            return {
+                user: {
+                    id: userId,
+                    name: userName,
+                    class: enroll.user_class || ''
+                },
+                attendanceMap: attendanceByLecture
+            }
+        })
+
+        return userGroups
+    }, [enrolls, attendances, lectures])
 
     // 검색 및 정렬된 데이터
     const filteredAndSortedData = useMemo(() => {

@@ -8,6 +8,8 @@ import BulkAttendanceEditModal from '../components/modals/BulkAttendanceEditModa
 const AttendanceTab = ({
                            session,
                            lectures,
+                           enrolls,
+                           enrollsLoading,
                            onError,
                            loading
                        }) => {
@@ -15,6 +17,7 @@ const AttendanceTab = ({
 
     const [attendances, setAttendances] = useState([])
     const [attendancesLoading, setAttendancesLoading] = useState(false)
+    const [activeEnrolls, setActiveEnrolls] = useState([])
     const [cellUpdateLoading, setCellUpdateLoading] = useState(false)
     const [editModal, setEditModal] = useState({isOpen: false, cellInfo: null})
     const [selectedStatus, setSelectedStatus] = useState('PRESENT')
@@ -24,9 +27,19 @@ const AttendanceTab = ({
     const [bulkNote, setBulkNote] = useState('')
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
 
+    // 수강생 목록에서 활성 상태인 수강생들만 필터링
+    useEffect(() => {
+        if (enrolls && enrolls.length > 0) {
+            const activeStudents = enrolls.filter(enroll => enroll.enroll_status === 'ACTIVE')
+            setActiveEnrolls(activeStudents)
+        }
+    }, [enrolls])
+
     // 출석 목록 로드
     useEffect(() => {
-        loadAttendances()
+        if (session?.id) {
+            loadAttendances()
+        }
     }, [session])
 
     const loadAttendances = async () => {
@@ -174,11 +187,12 @@ const AttendanceTab = ({
             <AttendanceTable
                 attendances={attendances}
                 lectures={lectures}
+                enrolls={activeEnrolls}
                 onCellClick={handleCellClick}
                 onBulkEdit={handleBulkEdit}
                 isMultiSelectMode={isMultiSelectMode}
                 onMultiSelectModeChange={setIsMultiSelectMode}
-                loading={loading && attendancesLoading}
+                loading={(loading && attendancesLoading) || enrollsLoading}
                 cellUpdateLoading={cellUpdateLoading}
                 className="min-h-[500px]"
             />

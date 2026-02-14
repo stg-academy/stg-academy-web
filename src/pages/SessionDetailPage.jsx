@@ -3,6 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
 import {getSession} from '../services/sessionService'
 import {getLecturesBySession} from '../services/lectureService'
+import {getEnrollsBySession} from '../services/enrollService'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
 import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
@@ -18,6 +19,8 @@ const SessionDetailPage = () => {
     const [activeTab, setActiveTab] = useState('lectures')
     const [lectures, setLectures] = useState([])
     const [lecturesLoading, setLecturesLoading] = useState(false)
+    const [enrolls, setEnrolls] = useState([])
+    const [enrollsLoading, setEnrollsLoading] = useState(false)
     const [error, setError] = useState(null)
 
     // 세션 데이터 로드
@@ -29,6 +32,7 @@ const SessionDetailPage = () => {
     useEffect(() => {
         if (sessionId) {
             loadLectures()
+            loadEnrolls()
         }
     }, [sessionId])
 
@@ -42,6 +46,19 @@ const SessionDetailPage = () => {
             setError('강의 목록을 불러오는데 실패했습니다')
         } finally {
             setLecturesLoading(false)
+        }
+    }
+
+    const loadEnrolls = async () => {
+        try {
+            setEnrollsLoading(true)
+            const data = await getEnrollsBySession(sessionId)
+            setEnrolls(data)
+        } catch (err) {
+            console.error('수강생 목록 조회 실패:', err)
+            setError('수강생 목록을 불러오는데 실패했습니다')
+        } finally {
+            setEnrollsLoading(false)
         }
     }
 
@@ -111,7 +128,7 @@ const SessionDetailPage = () => {
                             <span>•</span>
                             <span>총 {session.lecture_count} 회차</span>
                             <span>•</span>
-                            <span>수강생 {session.totalStudents}명</span>{/* todo: totalStudents 추가 */}
+                            <span>수강생 {enrolls ? enrolls.filter(e => e.enroll_status === "ACTIVE").length : 0} 명</span>{/* todo: totalStudents 추가 */}
                         </div>
                     </div>
 
@@ -209,7 +226,10 @@ const SessionDetailPage = () => {
                 {activeTab === 'students' && (
                     <EnrollTab
                         session={session}
+                        enrolls={enrolls}
+                        enrollsLoading={enrollsLoading}
                         onError={setError}
+                        onRefreshEnrolls={loadEnrolls}
                         loading={loading}
                     />
                 )}

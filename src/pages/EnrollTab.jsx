@@ -1,5 +1,5 @@
-import {useEffect, useState} from 'react'
-import {getEnrollsBySession, createEnroll, updateEnroll} from '../services/enrollService'
+import {useState} from 'react'
+import {createEnroll, updateEnroll} from '../services/enrollService'
 import {getUsersInfo} from '../services/userService'
 import EnrollTable from '../components/tables/EnrollTable'
 import Modal from '../components/ui/Modal'
@@ -7,11 +7,12 @@ import SelectInput from '../components/forms/SelectInput'
 
 const EnrollTab = ({
     session,
+    enrolls,
+    enrollsLoading,
     onError,
+    onRefreshEnrolls,
     loading
 }) => {
-    const [enrolls, setEnrolls] = useState([])
-    const [enrollsLoading, setEnrollsLoading] = useState(false)
     const [addStudentModal, setAddStudentModal] = useState({isOpen: false})
     const [selectedUser, setSelectedUser] = useState(null)
     const [newStudentStatus, setNewStudentStatus] = useState('ACTIVE')
@@ -24,25 +25,6 @@ const EnrollTab = ({
     const [editEnrollModal, setEditEnrollModal] = useState({isOpen: false, enrollment: null})
     const [editStatus, setEditStatus] = useState('ACTIVE')
 
-    // 수강생 목록 로드
-    useEffect(() => {
-        if (session?.id) {
-            loadEnrolls()
-        }
-    }, [session])
-
-    const loadEnrolls = async () => {
-        try {
-            setEnrollsLoading(true)
-            const data = await getEnrollsBySession(session.id)
-            setEnrolls(data)
-        } catch (err) {
-            console.error('수강생 목록 조회 실패:', err)
-            onError('수강생 목록을 불러오는데 실패했습니다')
-        } finally {
-            setEnrollsLoading(false)
-        }
-    }
 
     // 모다 열 때 사용자 목록 로드
     const loadAllUsers = async () => {
@@ -133,7 +115,9 @@ const EnrollTab = ({
                 session_id: session.id,
                 enroll_status: newStudentStatus
             })
-            await loadEnrolls()
+            if (onRefreshEnrolls) {
+                await onRefreshEnrolls()
+            }
             handleCloseAddModal()
         } catch (err) {
             console.error('수강생 추가 실패:', err)
@@ -145,7 +129,6 @@ const EnrollTab = ({
     const enrollStatusOptions = [
         {value: 'ACTIVE', label: '활성'},
         {value: 'INACTIVE', label: '비활성'},
-        {value: 'COMPLETED', label: '완료'},
         {value: 'DROPPED', label: '중도포기'}
     ]
 
@@ -173,7 +156,9 @@ const EnrollTab = ({
             })
 
             // 수정 성공 후 목록 새로고침
-            await loadEnrolls()
+            if (onRefreshEnrolls) {
+                await onRefreshEnrolls()
+            }
             handleCloseEditModal()
         } catch (err) {
             console.error('수강 정보 수정 실패:', err)

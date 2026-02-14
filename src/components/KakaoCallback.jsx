@@ -25,25 +25,24 @@ const KakaoCallback = () => {
 
         setStatus('success')
 
-        // 회원가입 필요 여부에 따라 분기
-        setTimeout(() => {
-          clearUrlParams()
-          if (response.requires_registration) {
-            window.location.href = '/auth/complete-registration'
-          } else {
-            window.location.href = '/'
-          }
-        }, 2000)
+        clearUrlParams()
+        if (response.requires_registration) {
+          window.location.href = '/auth/complete-registration'
+        } else {
+          window.location.href = '/'
+        }
 
       } catch (error) {
         console.error('카카오 로그인 콜백 처리 실패:', error)
         setError(error.message || '로그인 처리 중 오류가 발생했습니다.')
         setStatus('error')
+
+        setTimeout(console.log('카카오 로그인 콜백 처리 실패:', error), 50000) // 5초 후에 에러 로그 출력
       }
     }
 
     handleCallback()
-  }, []) // 의존성 배열을 빈 배열로 변경!
+  }, []) // 의존성 배열을 빈 배열로 변경
 
   const handleRetry = () => {
     clearUrlParams()
@@ -54,36 +53,30 @@ const KakaoCallback = () => {
     switch (status) {
       case 'processing':
         return (
-          <div className="bg-white rounded-2xl p-10 shadow-2xl text-center min-w-80 max-w-lg w-full">
-            <div className="flex flex-col items-center gap-5">
-              <div className="w-12 h-12 border-4 border-gray-200 border-t-yellow-400 rounded-full animate-spin"></div>
-              <h2 className="text-2xl font-semibold text-gray-800">로그인 처리 중...</h2>
-              <p className="text-gray-600">카카오 로그인을 처리하고 있습니다.</p>
-            </div>
-          </div>
-        )
-
-      case 'success':
-        return (
-          <div className="bg-white rounded-2xl p-10 shadow-2xl text-center min-w-80 max-w-lg w-full">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-18 h-18 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">✓</div>
-              <h2 className="text-3xl font-semibold text-green-500">로그인 성공!</h2>
-              <p className="text-gray-600">곧 메인 페이지로 이동합니다.</p>
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 max-w-md w-full">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+              <h2 className="text-xl font-semibold text-gray-900">로그인 처리 중</h2>
+              <p className="text-sm text-gray-600 text-center">카카오 로그인을 처리하고 있습니다.</p>
             </div>
           </div>
         )
 
       case 'error':
+        console.log(error)
         return (
-          <div className="bg-white rounded-2xl p-10 shadow-2xl text-center min-w-80 max-w-lg w-full">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-18 h-18 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">✗</div>
-              <h2 className="text-3xl font-semibold text-red-500">로그인 실패</h2>
-              <p className="text-gray-600 max-w-md leading-relaxed">{error}</p>
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 max-w-md w-full">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">로그인 실패</h2>
+              <p className="text-sm text-gray-600 text-center">{error}</p>
               <button
                 onClick={handleRetry}
-                className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-amber-900 px-7 py-3.5 rounded-xl font-semibold transition-all duration-300 hover:from-yellow-500 hover:to-yellow-600 hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 메인으로 돌아가기
               </button>
@@ -97,8 +90,13 @@ const KakaoCallback = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-400 to-yellow-500 flex justify-center items-center p-5">
-      {renderContent()}
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900">STG Academy</h2>
+        </div>
+        {renderContent()}
+      </div>
     </div>
   )
 }

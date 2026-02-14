@@ -3,11 +3,13 @@ import DataTable from '../ui/DataTable.jsx'
 const EnrollTable = ({
     enrolls,
     loading,
-    onEditStudent,
+    onEditEnrollment,
     onDeleteStudent
 }) => {
     // 수강 상태 렌더링 함수
     const renderStatus = (value) => {
+
+        // todo: enrollStatusConfig enum으로 관리하는 게 좋을 듯
         const statusConfig = {
             'ACTIVE': { label: '활성', className: 'bg-green-100 text-green-800' },
             'INACTIVE': { label: '비활성', className: 'bg-gray-100 text-gray-800' },
@@ -22,25 +24,25 @@ const EnrollTable = ({
         )
     }
 
-    // 날짜 렌더링 함수
-    const renderDate = (value) => {
-        if (!value) return '-'
-        return new Date(value).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        })
+    // 인증 유형 렌더링 함수
+    const renderAuthType = (value, row) => {
+        // todo: authTypeConfig enum으로 관리하는 게 좋을 듯
+        const authTypeConfig = {
+            'kakao': { label: '카카오', className: 'bg-yellow-100 text-yellow-800' },
+            'normal': { label: '일반', className: 'bg-gray-100 text-gray-800' },
+            'manual': { label: '관리자 수기 등록', className: 'bg-blue-100 text-blue-800' },
+        }
+        const config = authTypeConfig[value] || { label: value, className: 'bg-gray-100 text-gray-800' }
+        return (
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
+                {config.label}
+            </span>
+        )
     }
 
     // 액션 버튼 렌더링 함수
     const renderActions = (value, row) => (
         <div className="flex items-center space-x-2">
-            <button
-                onClick={() => onEditStudent && onEditStudent(row)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-                편집
-            </button>
             <button
                 onClick={() => onDeleteStudent && onDeleteStudent(row.id)}
                 className="text-red-600 hover:text-red-700 text-sm font-medium"
@@ -53,54 +55,42 @@ const EnrollTable = ({
     // 수강생 테이블 컬럼 정의
     const enrollColumns = [
         {
-            key: 'user.name',
+            key: 'user_name',
             label: '학생명',
             sortable: true,
-            render: (value, row) => row.user?.name || row.user_name || '-'
+            default: '-',
+            render: (value, row) => {
+                return (
+                    <button
+                        onClick={() => onEditEnrollment && onEditEnrollment(row)}
+                        className="font-medium text-gray-900 hover:text-blue-600 underline cursor-pointer"
+                    >
+                        {value}
+                    </button>
+                )
+            }
         },
         {
-            key: 'user.email',
-            label: '이메일',
+            key: 'auth_type',
+            label: '인증 유형',
             sortable: true,
-            render: (value, row) => row.user?.email || row.user_email || '-'
+            default: '-',
+            render: renderAuthType
         },
         {
-            key: 'user.phone',
-            label: '연락처',
-            sortable: true,
-            render: (value, row) => row.user?.phone || row.user_phone || '-'
-        },
-        {
-            key: 'user.class',
-            label: '반',
-            sortable: true,
-            render: (value, row) => row.user?.class || row.user_class || '-'
-        },
-        {
-            key: 'status',
+            key: 'enroll_status',
             label: '수강 상태',
             sortable: true,
             render: renderStatus
-        },
-        {
-            key: 'enrolled_at',
-            label: '등록일',
-            sortable: true,
-            render: renderDate
-        },
-        {
-            key: 'actions',
-            label: '작업',
-            sortable: false,
-            render: renderActions
         }
     ]
 
+    console.log(enrolls)
     return (
         <DataTable
             data={enrolls}
             columns={enrollColumns}
-            searchableColumns={['user.name', 'user.email', 'user.phone', 'user.class', 'status']}
+            searchableColumns={['user_name', 'auth_type', 'enroll_status']}
             loading={loading}
             itemsPerPage={10}
             showPagination={true}

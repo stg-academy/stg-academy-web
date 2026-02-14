@@ -50,17 +50,23 @@ const CourseTable = ({
         }
     ]
 
+    const courseFooter = (
+        <>
+            <p>* 코스 생성 및 관리는 이곳에서 진행하세요. 코스명을 클릭하여 편집할 수 있습니다.</p>
+            <p>* 강좌 수를 클릭하면 해당 코스의 세션 목록을 확인할 수 있습니다.</p>
+        </>
+    )
+
     return (
         <DataTable
             data={courses}
             columns={courseColumns}
             searchableColumns={['name', 'description', 'author']}
             loading={loading}
-            itemsPerPage={10}
-            showPagination={true}
+            showPagination={false}
             showSearch={true}
             emptyMessage="등록된 코스가 없습니다."
-            className="min-h-[500px]"
+            footer={courseFooter}
         />
     )
 }

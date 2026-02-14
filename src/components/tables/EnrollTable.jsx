@@ -1,21 +1,21 @@
 import DataTable from '../ui/DataTable.jsx'
 
 const EnrollTable = ({
-    enrolls,
-    loading,
-    onEditEnrollment,
-    onDeleteStudent
-}) => {
+                         enrolls,
+                         loading,
+                         onEditEnrollment,
+                         onDeleteStudent
+                     }) => {
     // 수강 상태 렌더링 함수
     const renderStatus = (value) => {
 
         // todo: enrollStatusConfig enum으로 관리하는 게 좋을 듯
         const statusConfig = {
-            'ACTIVE': { label: '활성', className: 'bg-green-100 text-green-800' },
-            'INACTIVE': { label: '비활성', className: 'bg-gray-100 text-gray-800' },
-            'DROPPED': { label: '중도포기', className: 'bg-red-100 text-red-800' }
+            'ACTIVE': {label: '활성', className: 'bg-green-100 text-green-800'},
+            'INACTIVE': {label: '비활성', className: 'bg-gray-100 text-gray-800'},
+            'DROPPED': {label: '중도포기', className: 'bg-red-100 text-red-800'}
         }
-        const config = statusConfig[value] || { label: value || '-', className: 'bg-gray-100 text-gray-800' }
+        const config = statusConfig[value] || {label: value || '-', className: 'bg-gray-100 text-gray-800'}
         return (
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
                 {config.label}
@@ -27,11 +27,11 @@ const EnrollTable = ({
     const renderAuthType = (value, row) => {
         // todo: authTypeConfig enum으로 관리하는 게 좋을 듯
         const authTypeConfig = {
-            'kakao': { label: '카카오', className: 'bg-yellow-100 text-yellow-800' },
-            'normal': { label: '일반', className: 'bg-gray-100 text-gray-800' },
-            'manual': { label: '관리자 수기 등록', className: 'bg-blue-100 text-blue-800' },
+            'kakao': {label: '카카오', className: 'bg-yellow-100 text-yellow-800'},
+            'normal': {label: '일반', className: 'bg-gray-100 text-gray-800'},
+            'manual': {label: '관리자 수기 등록', className: 'bg-blue-100 text-blue-800'},
         }
-        const config = authTypeConfig[value] || { label: value, className: 'bg-gray-100 text-gray-800' }
+        const config = authTypeConfig[value] || {label: value, className: 'bg-gray-100 text-gray-800'}
         return (
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
                 {config.label}
@@ -84,6 +84,13 @@ const EnrollTable = ({
         }
     ]
 
+    const enrollFooter = (
+        <>
+            <p>* 수강생 정보 관리는 이곳에서 진행하세요. 학생명을 클릭하여 수강 정보를 수정할 수 있습니다.</p>
+            <p>* 수강 상태가 'ACTIVE'인 학생만 출석부에 표시됩니다.</p>
+        </>
+    )
+
     console.log(enrolls)
     return (
         <DataTable
@@ -91,11 +98,10 @@ const EnrollTable = ({
             columns={enrollColumns}
             searchableColumns={['user_name', 'auth_type', 'enroll_status']}
             loading={loading}
-            itemsPerPage={10}
-            showPagination={true}
+            showPagination={false}
             showSearch={true}
             emptyMessage="등록된 수강생이 없습니다."
-            className="min-h-[400px]"
+            footer={enrollFooter}
         />
     )
 }

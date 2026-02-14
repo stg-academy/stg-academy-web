@@ -96,7 +96,6 @@ const SessionTable = ({
             showPagination={true}
             showSearch={true}
             emptyMessage="등록된 세션이 없습니다."
-            className="min-h-[500px]"
         />
     )
 }

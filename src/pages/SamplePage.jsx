@@ -326,7 +326,6 @@ const SamplePage = () => {
             showPagination={true}
             showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
-            className="min-h-[400px]"
           />
 
           {/* 프로젝트 관리 테이블 */}
@@ -340,7 +339,6 @@ const SamplePage = () => {
             showPagination={true}
             showSearch={true}
             emptyMessage="진행중인 프로젝트가 없습니다."
-            className="min-h-[350px]"
           />
         </div>
       </main>

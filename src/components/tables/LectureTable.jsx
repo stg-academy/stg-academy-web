@@ -159,11 +159,9 @@ const LectureTable = ({
             columns={lectureColumns}
             searchableColumns={['title', 'sequence', 'status']}
             loading={loading}
-            itemsPerPage={10}
-            showPagination={true}
+            showPagination={false}
             showSearch={true}
             emptyMessage="등록된 강의가 없습니다."
-            className="min-h-[400px]"
             // 인라인 편집 관련 props
             editingRowId={editingLectureId}
             editingData={editingData}

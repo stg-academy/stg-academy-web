@@ -111,8 +111,21 @@ const LectureTab = ({
                 title: `${lectures.length + 1}강`,
                 sequence: lectures.length + 1
             }
-            await createLecture(newLectureData)
+            const createdLecture = await createLecture(newLectureData)
             await onRefresh() // 목록 새로고침
+
+            // 새로 생성된 강의를 즉시 편집 모드로 전환
+            if (createdLecture?.id) {
+                setTimeout(() => {
+                    setEditingLectureId(createdLecture.id)
+                    setEditingData({
+                        title: createdLecture.title || '',
+                        lecture_date: '',
+                        attendance_type: '전자출결'
+                    })
+                    setValidationErrors({})
+                }, 100) // 짧은 딜레이로 onRefresh 완료 후 실행
+            }
         } catch (err) {
             console.error('강의 생성 실패:', err)
             onError('강의 생성에 실패했습니다')

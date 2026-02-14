@@ -19,7 +19,9 @@ const DataTable = ({
                        onSaveEdit = null,
                        onEditChange = null,
                        // 유효성 검사 관련 props
-                       validationErrors = {}
+                       validationErrors = {},
+                       // 푸터 관련 props
+                       footer = null
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
@@ -379,6 +381,13 @@ const DataTable = ({
                     </div>
                 </div>
             )}
+
+            {/* 푸터 */}
+            {footer &&
+                <div className="px-6 py-4 bg-gray-50 text-xs text-gray-500 space-y-1">
+                    {footer}
+                </div>
+            }
         </div>
     )
 }

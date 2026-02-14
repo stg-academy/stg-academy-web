@@ -10,6 +10,10 @@ import SessionListPage from './pages/SessionListPage.jsx'
 import SessionDetailPage from "./pages/SessionDetailPage.jsx";
 import AttendanceTab from "./pages/AttendanceTab.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -25,15 +29,47 @@ function AppContent() {
         <div className="min-h-screen bg-gray-50">
             <Header/>
             <Routes>
+                // 인증 관련 라우트
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/register" element={<RegisterPage/>}/>
+                <Route path="/auth/complete-registration" element={<CompleteKakaoRegistration/>}/>
+
+                // 모든 사용자에게 공개된 라우트
                 <Route path="/" element={<SampleDashboard/>}/>
-                <Route path="/courses" element={<CourseManagementPage/>}>
-                    <Route index element={<CourseListPage/>}/>
-                    <Route path="sessions" element={<SessionListPage/>}/>
-                </Route>
-                <Route path="/sessions/:sessionId" element={<SessionDetailPage/>}/>
-                <Route path="/lectures/:lectureId/attendances" element={<AttendanceTab/>}/>
-                <Route path="/users" element={<UserManagementPage/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
+
+                // 관리자 전용 라우트
+                <Route path="/courses" element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                        <CourseManagementPage/>
+                    </ProtectedRoute>
+                }>
+                    <Route index element={
+                        <ProtectedRoute requiredRole="ADMIN">
+                            <CourseListPage/>
+                        </ProtectedRoute>
+                    }/>
+                    <Route path="sessions" element={
+                        <ProtectedRoute requiredRole="ADMIN">
+                            <SessionListPage/>
+                        </ProtectedRoute>
+                    }/>
+                </Route>
+                <Route path="/sessions/:sessionId" element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                        <SessionDetailPage/>
+                    </ProtectedRoute>
+                }/>
+                <Route path="/lectures/:lectureId/attendances" element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                        <AttendanceTab/>
+                    </ProtectedRoute>
+                }/>
+                <Route path="/users" element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                        <UserManagementPage/>
+                    </ProtectedRoute>
+                }/>
             </Routes>
         </div>
     )

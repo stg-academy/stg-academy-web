@@ -21,14 +21,18 @@ const KakaoCallback = () => {
         const authCode = getAuthCodeFromUrl()
 
         // 백엔드로 인증 코드 전송하여 로그인 처리
-        await loginWithKakao(authCode)
+        const response = await loginWithKakao(authCode)
 
         setStatus('success')
 
-        // 성공 후 홈으로 이동
+        // 회원가입 필요 여부에 따라 분기
         setTimeout(() => {
           clearUrlParams()
-          window.location.href = '/'
+          if (response.requires_registration) {
+            window.location.href = '/auth/complete-registration'
+          } else {
+            window.location.href = '/'
+          }
         }, 2000)
 
       } catch (error) {

@@ -2,20 +2,29 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { startKakaoLogin } from '../config/kakao'
+import { isAdmin } from '../utils/roleUtils'
+
+import User from '../assets/icons/user.svg?react';
+
 
 const Header = () => {
-  const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const { user, isAuthenticated, needsRegistration, isLoading, logout } = useAuth()
   const [notificationCount] = useState(3)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const location = useLocation()
 
-  // 네비게이션 메뉴
-  const navigationItems = [
-    { name: '코스 관리', href: '/courses', icon: 'dashboard' },
-    { name: '사용자 관리', href: '/users', icon: 'users' },
-    { name: '샘플 대시보드', href: '/', icon: 'dashboard' },
-    { name: '샘플 페이지', href: '/sample', icon: 'page' }
+  // 네비게이션 메뉴 (역할 기반 필터링)
+  const getAllNavigationItems = () => [
+    { name: '샘플 대시보드', href: '/', icon: 'dashboard', adminOnly: false },
+    { name: '샘플 페이지', href: '/sample', icon: 'page', adminOnly: false },
+    { name: '코스 관리', href: '/courses', icon: 'dashboard', adminOnly: true },
+    { name: '사용자 관리', href: '/users', icon: 'users', adminOnly: true }
   ]
+
+  const navigationItems = getAllNavigationItems().filter(item => {
+    if (!item.adminOnly) return true // 모든 사용자에게 허용
+    return isAdmin(user) // 관리자만 허용
+  })
 
   // 현재 페이지 확인
   const isCurrentPage = (href) => {
@@ -35,11 +44,7 @@ const Header = () => {
           </svg>
         )
       case 'users':
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-          </svg>
-        )
+        return <User/>
       case 'page':
         return (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,13 +56,9 @@ const Header = () => {
     }
   }
 
-  const handleLogin = () => {
-    try {
-      startKakaoLogin()
-    } catch (error) {
-      console.error('카카오 로그인 시작 실패:', error)
-      alert(error.message || '로그인을 시작할 수 없습니다.')
-    }
+  const handleLoginClick = () => {
+    // 로그인 페이지로 이동
+    window.location.href = '/login'
   }
 
   const handleLogout = async () => {
@@ -107,20 +108,51 @@ const Header = () => {
                 ))}
               </nav>
             )}
+
+            {/* 회원가입 필요 알림 */}
+            {needsRegistration && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                <p className="text-sm text-blue-700">
+                  회원가입을 완료해주세요
+                </p>
+              </div>
+            )}
           </div>
 
           {/* 우측 사용자 메뉴/알림 */}
           <div className="flex items-center space-x-4">
             {/* 로그인 상태에 따른 분기 */}
-            {!isAuthenticated ? (
+            {!isAuthenticated && !needsRegistration ? (
               /* 로그인하지 않은 상태 */
-              <button
-                onClick={handleLogin}
-                disabled={isLoading}
-                className="bg-yellow-400 text-amber-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              <Link
+                to="/login"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
               >
-                {isLoading ? '로그인 중...' : '카카오 로그인'}
-              </button>
+                회원가입/로그인
+              </Link>
+            ) : needsRegistration ? (
+              /* 회원가입 필요 상태 */
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-blue-600 font-medium">
+                  {user?.username || '사용자'}님
+                </span>
+                <div className="flex space-x-2">
+                  <Link
+                    to="/auth/complete-registration"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    회원가입 완료
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoading}
+                    className="text-gray-600 hover:text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+                    title="로그아웃"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
             ) : (
               /* 로그인한 상태 */
               <>

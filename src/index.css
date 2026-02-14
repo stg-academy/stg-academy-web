@@ -1,1 +1,61 @@
 @import "tailwindcss";
+
+@theme inline {
+    /* Tailwind 컬러예시 */
+    /* 기본 Tailwind 컬러는 그대로 유지되며, 여기에 커스텀 추가 */
+
+    /*--color-primary: var(--color-blue-500);*/
+    /*--color-primary-500: var(--color-blue-500);*/
+    /*--color-primary-600: var(--color-blue-600);*/
+    --color-aa : var(--color-blue-500);
+    --color-ba : var(--color-blue-600);
+    /* Brand Colors (주요 포인트 컬러) */
+    --color-primary-500: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */
+    --color-primary-600: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */
+    --color-secondary-500: #A0C9B3;      /* 연한 그린: 차트 보조색, 연한 강조 배경 */
+    --color-secondary-600: #A0C9B3;      /* 연한 그린: 차트 보조색, 연한 강조 배경 */
+    --color-accent: #2ECC71;         /* 활성 상태: 상승 지표(+17.8%), 활성화 아이콘 */
+
+    /* Neutrals (무채색 및 배경) */
+    --color-ui-background: #F4F5F7;        /* 전체 배경: 부드러운 그레이톤 화이트 */
+    --color-ui-surface: #FFFFFF;        /* 카드 배경: 순백색 */
+    --color-ui-border: #E8EBEF;         /* 구분선: 카드 테두리 및 리스트 구분선 */
+
+    /* Text (텍스트 및 아이콘) */
+    --color-text-primary: #1E2124;   /* 타이틀: "Welcome Back" 등 주요 제목 */
+    --color-text-secondary: #5F676D; /* 본문: 일반 텍스트 및 메뉴 이름 */
+    --color-text-muted: #9BA3A9;     /* 설명: 날짜, 단위, 비활성화된 텍스트 */
+    --color-text-success: var(--color-blue-700);
+    --color-text-info: var(--color-green-600);
+    --color-text-danger: var(--color-red-700);
+    --color-text-warn: #9BA3A9;
+
+
+    /* Functional (기능성 컬러) */
+    --color-status-disabled: #17C671;
+    --color-status-disabled: #17C671;
+    --color-status-progress: #17C671;
+    --color-status-progress: #17C671;
+    --color-status-finish-100: #17C671;  /* var(--color-green-100)*/
+    --color-status-finish-800: #1A7E4C;  /* var(--color-green-800)*/
+
+
+    /* 시광교회 브랜드 컬러 */
+    --color-church-primary: #2C5F8D;
+    --color-church-secondary: #8B4513;
+    --color-church-accent: #DAA520;
+
+    /* 출석 상태별 컬러 */
+    --color-attendance-present: #10B981;
+    --color-attendance-absent: #EF4444;
+    --color-attendance-late: #F59E0B;
+    --color-attendance-essay: #8B5CF6;
+    --color-attendance-early: #EC4899;
+
+    /*!* UI 컬러 *!*/
+    /*--color-ui-background: #F9FAFB;*/
+    /*--color-ui-surface: #FFFFFF;*/
+    /*--color-ui-border: #E5E7EB;*/
+    /*--color-ui-text-primary: #111827;*/
+    /*--color-ui-text-secondary: #6B7280;*/
+}

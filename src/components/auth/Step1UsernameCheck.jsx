@@ -117,24 +117,24 @@ const Step1UsernameCheck = ({
     // 사용자 목록 렌더링 컴포넌트
     const UserList = ({ users, onSelectUser }) => (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-3">
+            <h3 className="font-semibold text-gray-900 mb-3">
                 유사한 기존 등록 사용자 ({users.length}명)
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-600 mb-4">
                 기존 수강 이력이 있는 사용자 중에서 선택하시면 이력이 유지됩니다.
             </p>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="space-y-3 max-h-60 overflow-y-auto">
                 {users.map((user, index) => (
                     <div
                         key={user.id || index}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 cursor-pointer transition-all"
                         onClick={() => onSelectUser(user)}
                     >
                         <div className="flex-1">
-                            <p className="font-medium text-gray-900">{user.username}</p>
-                            <div className="text-sm text-gray-600">
+                            <p className="font-semibold text-gray-900">{user.username}</p>
+                            <div className="mt-1 text-sm text-gray-600 space-y-1">
                                 {user.information && <p>{user.information}</p>}
-                                <p>수강 이력: {user.enrolled_session_count || 0}개</p>
+                                <p>수강 이력: <span className="font-medium">{user.enrolled_session_count || 0}개</span></p>
                                 {user.recent_sessions && user.recent_sessions.length > 0 && (
                                     <p>최근 수강: {formatRecentSessions(user.recent_sessions)}</p>
                                 )}
@@ -150,20 +150,25 @@ const Step1UsernameCheck = ({
     )
 
     return (
-        <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">사용자명 확인</h2>
+        <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">사용자명 확인</h2>
 
             {/* 사용자명 입력 */}
             <div className="mb-6">
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                     사용자명
+                    <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                     type="text"
                     id="username"
                     value={username}
                     onChange={handleUsernameChange}
-                    className={inputClassName}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        error ? 'border-red-500' :
+                        checkState.isAvailable ? 'border-green-500' :
+                        'border-gray-300'
+                    }`}
                     placeholder="사용자명을 입력하세요"
                     disabled={isLoading}
                 />
@@ -179,7 +184,7 @@ const Step1UsernameCheck = ({
                 <div className="space-y-4">
                     {checkState.isAvailable && (
                         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-center">
+                            <div className="flex items-center mb-3">
                                 <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
@@ -188,7 +193,7 @@ const Step1UsernameCheck = ({
                             <button
                                 onClick={handleProceedAsNew}
                                 disabled={isLoading}
-                                className="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                             >
                                 {isLoading ? '진행 중...' : '다음 단계로'}
                             </button>
@@ -226,7 +231,7 @@ const Step1UsernameCheck = ({
                                     setUsername('')
                                     resetCheckState()
                                 }}
-                                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all font-medium"
                             >
                                 다른 사용자명 입력
                             </button>

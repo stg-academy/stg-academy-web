@@ -46,45 +46,47 @@ const AuthLayout = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            {/* 헤더 */}
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold text-gray-900">{title}</h2>
-                    {subtitle && (
-                        <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
-                    )}
-                    {extraContent}
-                    <StepIndicator />
-                </div>
-            </div>
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* 헤더 */}
+                <div className="max-w-lg mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+                        {subtitle && (
+                            <p className="mt-2 text-gray-600">{subtitle}</p>
+                        )}
+                        {extraContent}
+                        <StepIndicator />
+                    </div>
 
-            {/* 메인 콘텐츠 */}
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    {/* 전역 에러 메시지 */}
-                    {error && (
-                        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                            {error}
+                    {/* 메인 콘텐츠 카드 */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="p-8">
+                            {/* 전역 에러 메시지 */}
+                            {error && (
+                                <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                                    {error}
+                                </div>
+                            )}
+
+                            {children}
                         </div>
-                    )}
 
-                    {children}
-
-                    {/* 로그인 링크 */}
-                    {showLoginLink && (
-                        <div className="mt-6 text-center">
-                            <div className="text-sm">
-                                <span className="text-gray-600">이미 계정이 있으신가요? </span>
-                                <Link
-                                    to="/login"
-                                    className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
-                                >
-                                    로그인
-                                </Link>
+                        {/* 로그인 링크 */}
+                        {showLoginLink && (
+                            <div className="px-8 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                                <div className="text-center text-sm">
+                                    <span className="text-gray-600">이미 계정이 있으신가요? </span>
+                                    <Link
+                                        to="/login"
+                                        className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                                    >
+                                        로그인
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

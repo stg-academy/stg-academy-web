@@ -109,13 +109,13 @@ const Step2UserInfo = ({
     // 입력 필드 컴포넌트
     const InputField = ({ id, label, type = "text", required = false, placeholder, disabled = false, rows }) => {
         const Component = type === 'textarea' ? 'textarea' : 'input'
-        const inputClassName = `w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+        const inputClassName = `w-full px-3 py-2 sm:py-3 border rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
             errors[id] ? 'border-red-500' : 'border-gray-300'
         }`
 
         return (
             <div>
-                <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor={id} className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
@@ -130,7 +130,7 @@ const Step2UserInfo = ({
                     rows={rows}
                 />
                 {errors[id] && (
-                    <p className="mt-2 text-sm text-red-500">{errors[id]}</p>
+                    <p className="mt-2 text-xs sm:text-sm text-red-500">{errors[id]}</p>
                 )}
             </div>
         )
@@ -142,21 +142,21 @@ const Step2UserInfo = ({
             <div className="mb-6">
                 <button
                     onClick={onBack}
-                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4"
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4 text-sm sm:text-base"
                     disabled={isLoading}
                 >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                     이전 단계
                 </button>
-                <h2 className="text-xl font-semibold text-gray-900">사용자 정보 입력</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">사용자 정보 입력</h2>
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                    <p className="text-xs sm:text-sm text-blue-800">
                         사용자명: <span className="font-semibold">{displayUsername}</span>
                     </p>
                     {selectedUser && (
-                        <p className="text-sm text-green-700 mt-1">
+                        <p className="text-xs sm:text-sm text-green-700 mt-1">
                             기존 사용자 정보를 업데이트합니다. (수강 이력: {selectedUser.enrolled_session_count || 0}개)
                         </p>
                     )}
@@ -167,11 +167,11 @@ const Step2UserInfo = ({
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* 표시명 (읽기 전용) */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">표시명</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">표시명</label>
                     <input
                         type="text"
                         value={displayUsername}
-                        className="w-full px-4 py-3 border bg-gray-100 rounded-lg focus:outline-none border-gray-300 transition-all"
+                        className="w-full px-3 py-2 sm:py-3 border bg-gray-100 rounded-md sm:rounded-lg focus:outline-none border-gray-300 transition-all text-sm sm:text-base"
                         disabled
                     />
                 </div>
@@ -209,15 +209,15 @@ const Step2UserInfo = ({
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-6 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+                    className="w-full mt-6 px-4 py-2.5 sm:py-3 bg-blue-600 text-white rounded-md sm:rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm sm:text-base"
                 >
                     {isLoading ? '처리 중...' : submitButtonText}
                 </button>
             </form>
 
             {/* 안내 메시지 */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">안내사항</h4>
+            <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">안내사항</h4>
                 <ul className="text-xs text-gray-600 space-y-1">
                     <li>• 표시명은 시스템에서 사용자를 식별하는 데 사용됩니다.</li>
                     {selectedUser ? (

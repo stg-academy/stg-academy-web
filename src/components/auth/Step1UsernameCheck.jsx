@@ -121,36 +121,36 @@ const Step1UsernameCheck = ({
             <div className="h-px bg-gray-200 my-5"></div>
 
             <div className="flex items-baseline justify-between mb-1">
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                     기존 등록 사용자
                 </h3>
                 <span
-                    className="px-3 py-1 rounded-full text-xs  border border-gray-400 bg-gray-200 text-gray-900">{users.length}명</span>
+                    className="px-2 sm:px-3 py-1 rounded-full text-xs border border-gray-400 bg-gray-200 text-gray-900">{users.length}명</span>
             </div>
-            <p className="text-sm text-gray-400 mb-3">
+            <p className="text-xs sm:text-sm text-gray-400 mb-3">
                 기존 수강 이력이 있는 사용자 중에서 선택하시면 이력이 유지됩니다.
             </p>
             <div className="border-t-gray-200 border-b-gray-200 space-y-3 max-h-60 overflow-y-auto">
                 {users.map((user, index) => (
                     <div
                         key={user.id || index}
-                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 cursor-pointer transition-all"
+                        className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 cursor-pointer transition-all"
                         onClick={() => onSelectUser(user)}
                     >
-                        <div className="flex-1">
-                            <p className="font-semibold text-gray-900">{user.username}</p>
-                            <div className="mt-1 text-sm text-gray-600 space-y-1">
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.username}</p>
+                            <div className="mt-1 text-xs sm:text-sm text-gray-600 space-y-1">
                                 {user.information &&
                                     <span
-                                        className="inline-block  text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-1">{user.information}</span>}
+                                        className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-1">{user.information}</span>}
                                 <span
-                                    className="inline-block  text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">수강 {user.enrolled_session_count || 0}개</span>
+                                    className="inline-block text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">수강 {user.enrolled_session_count || 0}개</span>
                                 {user.recent_sessions && user.recent_sessions.length > 0 && (
-                                    <p>{formatRecentSessions(user.recent_sessions)}</p>
+                                    <p className="text-xs break-words">{formatRecentSessions(user.recent_sessions)}</p>
                                 )}
                             </div>
                         </div>
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor"
                              viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                   d="M9 5l7 7-7 7"/>
@@ -174,16 +174,18 @@ const Step1UsernameCheck = ({
                     id="username"
                     value={username}
                     onChange={handleUsernameChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        error ? 'border-red-500' :
-                            checkState.isAvailable ? 'border-green-500' :
-                                'border-gray-300'
+                    className={`w-full h-10 px-3 border rounded-md text-sm bg-[#fafafa] focus:bg-white focus:outline-none transition-all ${
+                        error || checkState.isDuplicate
+                            ? 'border-[#ef4444]'
+                            : checkState.isAvailable
+                            ? 'border-[#2563eb] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
+                            : 'border-[#e5e5e5] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
                     }`}
                     placeholder="사용자명을 입력하세요"
                     disabled={isLoading}
                 />
                 {statusMessage && (
-                    <p className={`mt-2 text-sm ${statusMessage.className}`}>
+                    <p className={`mt-2 text-xs sm:text-sm ${statusMessage.className}`}>
                         {statusMessage.text}
                     </p>
                 )}
@@ -195,17 +197,17 @@ const Step1UsernameCheck = ({
                     {checkState.isAvailable && (
                         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                             <div className="flex items-center mb-3">
-                                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor"
+                                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
                                      viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                           d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <p className="text-green-800 font-medium">사용 가능한 사용자명입니다</p>
+                                <p className="text-green-800 font-medium text-sm sm:text-base">사용 가능한 사용자명입니다</p>
                             </div>
                             <button
                                 onClick={handleProceedAsNew}
                                 disabled={isLoading}
-                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+                                className="w-full px-4 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm sm:text-base"
                             >
                                 {isLoading ? '진행 중...' : '다음 단계로'}
                             </button>

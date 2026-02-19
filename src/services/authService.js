@@ -92,4 +92,13 @@ export const authAPI = {
             throw error
         }
     },
+
+    // 관리자 직접 사용자 등록 (POST /auth/manual/register)
+    async manualRegister(userData) {
+        return await apiClient.post('/auth/manual/register', {
+            username: userData.username,
+            information: userData.information,
+            auth: userData.auth
+        })
+    },
 }

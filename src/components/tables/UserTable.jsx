@@ -1,4 +1,5 @@
 import DataTable from '../ui/DataTable.jsx'
+import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 
 const UserTable = ({
     users,
@@ -44,12 +45,12 @@ const UserTable = ({
 
     // 권한 렌더링 함수
     const renderRole = (value, row) => {
-        const role = row.authorizations?.role || 'user'
+        const role = row.authorizations?.role || ROLES.USER
         const roleConfig = {
-            'admin': { label: '관리자', className: 'bg-purple-100 text-purple-800' },
-            'user': { label: '사용자', className: 'bg-blue-100 text-blue-800' }
+            [ROLES.ADMIN]: { label: getRoleDisplayName(ROLES.ADMIN), className: 'bg-purple-100 text-purple-800' },
+            [ROLES.USER]: { label: getRoleDisplayName(ROLES.USER), className: 'bg-blue-100 text-blue-800' }
         }
-        const config = roleConfig[role] || { label: role, className: 'bg-gray-100 text-gray-800' }
+        const config = roleConfig[role] || { label: getRoleDisplayName(role), className: 'bg-gray-100 text-gray-800' }
         return (
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
                 {config.label}
@@ -120,6 +121,12 @@ const UserTable = ({
             key: 'role',
             label: '권한',
             sortable: true,
+            editable: true,
+            editType: 'select',
+            options: [
+                { value: ROLES.USER, label: getRoleDisplayName(ROLES.USER) },
+                { value: ROLES.ADMIN, label: getRoleDisplayName(ROLES.ADMIN) }
+            ],
             render: renderRole
         },
         {

@@ -1,6 +1,7 @@
 import UserTable from "../components/tables/UserTable.jsx";
 import { getUsers, updateUser } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
+import { ROLES } from "../utils/roleUtils.js";
 import { useState, useEffect } from "react";
 
 const UserManagementPage = () => {
@@ -45,7 +46,8 @@ const UserManagementPage = () => {
         setEditingData({
             username: user.username || '',
             information: user.information || '',
-            is_active: user.is_active ?? true
+            is_active: user.is_active ?? true,
+            role: user.authorizations?.role || ROLES.USER
         })
         setValidationErrors({})
     }
@@ -87,11 +89,19 @@ const UserManagementPage = () => {
 
     // 변경 사항이 있는지 확인
     const hasChanges = (original, edited) => {
-        for (const key in edited) {
+        // 기본 필드 비교
+        const basicFields = ['username', 'information', 'is_active']
+        for (const key of basicFields) {
             if (edited[key] !== original[key] && !(edited[key] == null && original[key] === '')) {
                 return true
             }
         }
+
+        // 권한 필드 비교
+        if (edited.role !== undefined && edited.role !== (original.authorizations?.role || ROLES.USER)) {
+            return true
+        }
+
         return false
     }
 
@@ -114,7 +124,19 @@ const UserManagementPage = () => {
         }
 
         try {
-            await updateUser(userId, editingData)
+            // 권한 데이터를 올바른 형식으로 변환
+            const updateData = {
+                username: editingData.username,
+                information: editingData.information,
+                is_active: editingData.is_active
+            }
+
+            // 권한이 변경된 경우 authorizations 필드 추가
+            if (editingData.role !== undefined) {
+                updateData.authorizations = { role: editingData.role }
+            }
+
+            await updateUser(userId, updateData)
             await loadUsers() // 목록 새로고침
             setEditingUserId(null)
             setEditingData({})
@@ -146,7 +168,8 @@ const UserManagementPage = () => {
                     setEditingData({
                         username: createdUser.username || `사용자_${users.length + 1}`,
                         information: createdUser.information || '',
-                        is_active: createdUser.is_active ?? true
+                        is_active: createdUser.is_active ?? true,
+                        role: createdUser.authorizations?.role || ROLES.USER
                     })
                     setValidationErrors({})
                 }

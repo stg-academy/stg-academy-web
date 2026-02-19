@@ -68,3 +68,17 @@ export const createUser = async (userData) => {
   // TODO: 사용자 생성 API가 개발되면 구현
   throw new Error('사용자 생성 기능은 아직 구현되지 않았습니다.')
 }
+
+/**
+ * 유사한 수동 등록 사용자 목록 조회
+ * @param {string} username - 검색할 사용자명
+ * @returns {Promise<Array>} 유사한 사용자 목록 (수강 이력 포함)
+ */
+export const getUsersByUsername = async (username) => {
+  try {
+    return await apiClient.get('/api/users/manual', { username })
+  } catch (error) {
+    console.error('유사 사용자 조회 실패:', error)
+    throw error
+  }
+}

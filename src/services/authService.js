@@ -33,12 +33,19 @@ export const authAPI = {
 
     // 일반 회원가입 (POST /auth/register)
     async register(userData) {
-        const response = await apiClient.post('/auth/register', {
+        const requestData = {
             username: userData.username,
             password: userData.password,
             display_name: userData.display_name,
             information: userData.information
-        })
+        }
+
+        // 기존 사용자 수정인 경우 existing_user_id 추가
+        if (userData.existing_user_id) {
+            requestData.existing_user_id = userData.existing_user_id
+        }
+
+        const response = await apiClient.post('/auth/register', requestData)
 
         // JWT 토큰 저장
         if (response.token) {
@@ -50,10 +57,17 @@ export const authAPI = {
 
     // 카카오 회원가입 완료 (POST /auth/kakao/register)
     async completeKakaoRegistration(userData) {
-        const response = await apiClient.post('/auth/kakao/register', {
+        const requestData = {
             username: userData.username,
             information: userData.information
-        })
+        }
+
+        // 기존 사용자 수정인 경우 existing_user_id 추가
+        if (userData.existing_user_id) {
+            requestData.existing_user_id = userData.existing_user_id
+        }
+
+        const response = await apiClient.post('/auth/kakao/register', requestData)
 
         // 정식 JWT 토큰으로 교체
         if (response.token) {

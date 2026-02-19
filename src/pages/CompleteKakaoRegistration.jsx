@@ -1,25 +1,24 @@
 import {useState, useEffect} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
+import Step1UsernameCheck from '../components/auth/Step1UsernameCheck.jsx'
+import Step2UserInfo from '../components/auth/Step2UserInfo.jsx'
 
 const CompleteKakaoRegistration = () => {
     const navigate = useNavigate()
     const {user, isAuthenticated, needsRegistration, completeKakaoRegistration, logout, isLoading, error, clearError} = useAuth()
-    const [formData, setFormData] = useState({
-        username: '',
-        information: ''
-    })
-    const [formErrors, setFormErrors] = useState({})
 
-    // user 정보가 로드되면 formData 업데이트
+    // 2단계 상태 관리
+    const [currentStep, setCurrentStep] = useState(1)
+    const [username, setUsername] = useState('')
+    const [selectedUser, setSelectedUser] = useState(null)
+
+    // user 정보가 로드되면 초기 username 설정
     useEffect(() => {
-        if (user?.username) {
-            setFormData(prev => ({
-                ...prev,
-                username: user.username
-            }))
+        if (user?.username && !username) {
+            setUsername(user.username)
         }
-    }, [user])
+    }, [user, username])
 
     // 정식 로그인 완료 시 홈으로 리다이렉트
     useEffect(() => {
@@ -28,55 +27,38 @@ const CompleteKakaoRegistration = () => {
         }
     }, [isAuthenticated, needsRegistration, navigate])
 
-    const handleInputChange = (e) => {
-        const {name, value} = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
-
-        // 입력 시 에러 클리어
-        if (formErrors[name]) {
-            setFormErrors(prev => {
-                const newErrors = {...prev}
-                delete newErrors[name]
-                return newErrors
-            })
-        }
-
-        // 전역 에러 클리어
+    // 에러 초기화
+    useEffect(() => {
         if (error) {
             clearError()
         }
+    }, [currentStep, error, clearError])
+
+    // 1단계: 사용자명 확인 완료
+    const handleUsernameConfirm = (confirmedUsername, user) => {
+        setUsername(confirmedUsername)
+        setSelectedUser(user)
+        setCurrentStep(2)
     }
 
-    const validateForm = () => {
-        const errors = {}
-
-        if (!formData.username.trim()) {
-            errors.username = '표시명을 입력해주세요.'
-        }
-
-        if (!formData.information.trim()) {
-            errors.information = '소속정보를 입력해주세요.'
-        }
-
-        setFormErrors(errors)
-        return Object.keys(errors).length === 0
+    // 1단계: 기존 사용자 선택
+    const handleExistingUserSelect = (user, inputUsername) => {
+        setUsername(user.username)
+        setSelectedUser(user)
+        setCurrentStep(2)
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    // 2단계: 이전 단계로 돌아가기
+    const handleBack = () => {
+        setCurrentStep(1)
+        setSelectedUser(null)
+    }
 
-        if (!validateForm()) return
-
+    // 2단계: 회원가입 완료
+    const handleKakaoRegisterSubmit = async (userData) => {
         try {
-            await completeKakaoRegistration({
-                username: formData.username,
-                information: formData.information
-            })
+            await completeKakaoRegistration(userData)
             // AuthContext에서 성공 시 자동으로 정식 로그인 처리됨
-            // useEffect에서 인증 상태 변경을 감지하여 자동 리다이렉트됨
         } catch (err) {
             // 에러는 AuthContext에서 처리됨
         }
@@ -104,18 +86,39 @@ const CompleteKakaoRegistration = () => {
                         STG Academy
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
-                        회원가입을 완료해주세요
+                        카카오 회원가입을 완료해주세요
                     </p>
                     <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <p className="text-sm text-blue-700">
-                            카카오 로그인이 완료되었습니다! <br/>
-                            추가 정보를 입력하여 회원가입을 완료해주세요.
+                            카카오 로그인이 완료되었습니다!
                         </p>
                         {user && (
                             <div className="mt-2 text-xs text-blue-600">
                                 환영합니다, {user.username}님!
                             </div>
                         )}
+                    </div>
+                    {/* 단계 표시 */}
+                    <div className="mt-4 flex justify-center">
+                        <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="w-12 h-1 bg-gray-300"></div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                currentStep === 1 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                            }`}>
+                                1
+                            </div>
+                            <div className="w-12 h-1 bg-gray-300"></div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                currentStep === 2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                            }`}>
+                                2
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -130,115 +133,38 @@ const CompleteKakaoRegistration = () => {
                         </div>
                     )}
 
-                    {/* 회원가입 완료 폼 */}
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-                        <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                                표시명 *
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    id="username"
-                                    name="username"
-                                    type="text"
-                                    value={formData.username}
-                                    onChange={handleInputChange}
-                                    className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                        formErrors.username ? 'border-red-300' : 'border-gray-300'
-                                    }`}
-                                    placeholder="화면에 표시될 이름"
-                                />
-                                {formErrors.username && (
-                                    <p className="mt-2 text-sm text-red-600">{formErrors.username}</p>
-                                )}
-                            </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                                카카오에서 가져온 닉네임을 수정하거나 그대로 사용할 수 있습니다.
-                            </p>
-                        </div>
+                    {/* 단계별 컴포넌트 렌더링 */}
+                    {currentStep === 1 && (
+                        <Step1UsernameCheck
+                            initialUsername={username || user?.username || ''}
+                            onUsernameConfirm={handleUsernameConfirm}
+                            onExistingUserSelect={handleExistingUserSelect}
+                            isLoading={isLoading}
+                        />
+                    )}
 
-                        <div>
-                            <label htmlFor="information" className="block text-sm font-medium text-gray-700">
-                                소속정보 *
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    id="information"
-                                    name="information"
-                                    type="text"
-                                    value={formData.information}
-                                    onChange={handleInputChange}
-                                    className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                        formErrors.information ? 'border-red-300' : 'border-gray-300'
-                                    }`}
-                                    placeholder="예: 신촌 청년1부, 문래 장년부"
-                                />
-                                {formErrors.information && (
-                                    <p className="mt-2 text-sm text-red-600">{formErrors.information}</p>
-                                )}
-                            </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                                소속된 부서나 그룹 정보를 입력해주세요.
-                            </p>
-                        </div>
+                    {currentStep === 2 && (
+                        <Step2UserInfo
+                            username={username}
+                            selectedUser={selectedUser}
+                            onSubmit={handleKakaoRegisterSubmit}
+                            onBack={handleBack}
+                            isLoading={isLoading}
+                            showPassword={false}
+                            submitButtonText="카카오 회원가입 완료"
+                        />
+                    )}
 
-                        <div className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="text-sm font-medium text-gray-900 mb-2">확인사항</h3>
-                            <ul className="text-xs text-gray-600 space-y-1">
-                                <li>• 카카오 계정으로 로그인됩니다</li>
-                                <li>• 입력한 정보는 서비스 이용을 위해 사용됩니다</li>
-                                <li>• 나중에 개인정보 설정에서 수정할 수 있습니다</li>
-                            </ul>
-                        </div>
-
-                        <div className="space-y-3">
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isLoading ? '회원가입 완료 중...' : '회원가입 완료'}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={handleCancel}
-                                disabled={isLoading}
-                                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                            >
-                                취소 (로그아웃)
-                            </button>
-                        </div>
-                    </form>
-
-                    {/* 진행 상태 표시 */}
+                    {/* 취소 버튼 */}
                     <div className="mt-6">
-                        <div className="bg-gray-50 rounded-lg p-3">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                                  d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-gray-900">카카오 인증 완료</p>
-                                </div>
-                            </div>
-                            <div className="mt-3 flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <span className="text-white text-xs font-bold">2</span>
-                                    </div>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-gray-900">추가 정보 입력 (현재 단계)</p>
-                                </div>
-                            </div>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            disabled={isLoading}
+                            className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                        >
+                            취소 (로그아웃)
+                        </button>
                     </div>
                 </div>
             </div>

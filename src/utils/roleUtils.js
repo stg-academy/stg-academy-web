@@ -21,7 +21,6 @@ export const ROLE_HIERARCHY = [
  * @returns {boolean}
  */
 export const hasRole = (user, requiredRole) => {
-  console.log(user, requiredRole)
   if (!user || !user.authorizations || !user.authorizations.role) return false
 
   const userRole = user.authorizations.role

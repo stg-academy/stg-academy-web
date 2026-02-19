@@ -13,6 +13,7 @@ import UserManagementPage from "./pages/UserManagementPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
+import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function AppContent() {
@@ -37,6 +38,7 @@ function AppContent() {
                 // 모든 사용자에게 공개된 라우트
                 <Route path="/" element={<SampleDashboard/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
+                <Route path="/design-guide" element={<DesignGuidePage/>}/>
 
                 // 관리자 전용 라우트
                 <Route path="/courses" element={

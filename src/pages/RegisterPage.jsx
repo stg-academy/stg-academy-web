@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
 import Step1UsernameCheck from '../components/auth/Step1UsernameCheck.jsx'
@@ -56,8 +56,8 @@ const RegisterPage = () => {
 
   return (
     <AuthLayout
-      title="STG Academy"
-      subtitle="새 계정을 만드세요"
+      title="새 계정을 만드세요"
+      subtitle="회원가입"
       currentStep={currentStep}
       totalSteps={2}
       error={error}

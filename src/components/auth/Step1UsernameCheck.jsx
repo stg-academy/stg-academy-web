@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { authAPI } from '../../services/authService.js'
-import { getUsersByUsername } from '../../services/userService.js'
+import {useCallback, useEffect, useMemo, useState} from 'react'
+import {authAPI} from '../../services/authService.js'
+import {getUsersByUsername} from '../../services/userService.js'
 
 const Step1UsernameCheck = ({
-    initialUsername = '',
-    onUsernameConfirm,
-    onExistingUserSelect,
-    isLoading = false
-}) => {
+                                initialUsername = '',
+                                onUsernameConfirm,
+                                onExistingUserSelect,
+                                isLoading = false
+                            }) => {
     const [username, setUsername] = useState(initialUsername)
     const [checkState, setCheckState] = useState({
         isChecking: false,
@@ -32,7 +32,7 @@ const Step1UsernameCheck = ({
 
     // 사용자명 검사 함수
     const checkUsername = useCallback(async (usernameToCheck) => {
-        setCheckState(prev => ({ ...prev, isChecking: true }))
+        setCheckState(prev => ({...prev, isChecking: true}))
         setError('')
         setSimilarUsers([])
 
@@ -56,7 +56,7 @@ const Step1UsernameCheck = ({
         } catch (err) {
             console.error('사용자명 검사 실패:', err)
             setError('사용자명 검사 중 오류가 발생했습니다.')
-            setCheckState(prev => ({ ...prev, isChecking: false }))
+            setCheckState(prev => ({...prev, isChecking: false}))
         }
     }, [])
 
@@ -105,25 +105,32 @@ const Step1UsernameCheck = ({
 
     // 상태 메시지
     const statusMessage = useMemo(() => {
-        if (checkState.isChecking) return { text: "중복 확인 중...", className: "text-gray-500" }
-        if (error) return { text: error, className: "text-red-600" }
+        if (checkState.isChecking) return {text: "중복 확인 중...", className: "text-gray-500"}
+        if (error) return {text: error, className: "text-red-600"}
         if (checkState.checkCompleted && !checkState.isChecking) {
-            if (checkState.isAvailable) return { text: "사용 가능한 사용자명입니다", className: "text-green-600" }
-            if (checkState.isDuplicate) return { text: "이미 사용 중인 사용자명입니다", className: "text-yellow-600" }
+            if (checkState.isAvailable) return {text: "사용 가능한 사용자명입니다", className: "text-green-600"}
+            if (checkState.isDuplicate) return {text: "이미 사용 중인 사용자명입니다", className: "text-red-600"}
         }
         return null
     }, [checkState, error])
 
     // 사용자 목록 렌더링 컴포넌트
-    const UserList = ({ users, onSelectUser }) => (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">
-                유사한 기존 등록 사용자 ({users.length}명)
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
+    const UserList = ({users, onSelectUser}) => (
+        <>
+
+            <div className="h-px bg-gray-200 my-5"></div>
+
+            <div className="flex items-baseline justify-between mb-1">
+                <h3 className="font-semibold text-gray-900">
+                    기존 등록 사용자
+                </h3>
+                <span
+                    className="px-3 py-1 rounded-full text-xs  border border-gray-400 bg-gray-200 text-gray-900">{users.length}명</span>
+            </div>
+            <p className="text-sm text-gray-400 mb-3">
                 기존 수강 이력이 있는 사용자 중에서 선택하시면 이력이 유지됩니다.
             </p>
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            <div className="border-t-gray-200 border-b-gray-200 space-y-3 max-h-60 overflow-y-auto">
                 {users.map((user, index) => (
                     <div
                         key={user.id || index}
@@ -133,29 +140,32 @@ const Step1UsernameCheck = ({
                         <div className="flex-1">
                             <p className="font-semibold text-gray-900">{user.username}</p>
                             <div className="mt-1 text-sm text-gray-600 space-y-1">
-                                {user.information && <p>{user.information}</p>}
-                                <p>수강 이력: <span className="font-medium">{user.enrolled_session_count || 0}개</span></p>
+                                {user.information &&
+                                    <span
+                                        className="inline-block  text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-1">{user.information}</span>}
+                                <span
+                                    className="inline-block  text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">수강 {user.enrolled_session_count || 0}개</span>
                                 {user.recent_sessions && user.recent_sessions.length > 0 && (
-                                    <p>최근 수강: {formatRecentSessions(user.recent_sessions)}</p>
+                                    <p>{formatRecentSessions(user.recent_sessions)}</p>
                                 )}
                             </div>
                         </div>
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M9 5l7 7-7 7"/>
                         </svg>
                     </div>
                 ))}
             </div>
-        </div>
+        </>
     )
 
     return (
         <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">사용자명 확인</h2>
-
             {/* 사용자명 입력 */}
             <div className="mb-6">
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="username" className="block text-xs font-medium text-gray-700 mb-2">
                     사용자명
                     <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -166,8 +176,8 @@ const Step1UsernameCheck = ({
                     onChange={handleUsernameChange}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         error ? 'border-red-500' :
-                        checkState.isAvailable ? 'border-green-500' :
-                        'border-gray-300'
+                            checkState.isAvailable ? 'border-green-500' :
+                                'border-gray-300'
                     }`}
                     placeholder="사용자명을 입력하세요"
                     disabled={isLoading}
@@ -185,8 +195,10 @@ const Step1UsernameCheck = ({
                     {checkState.isAvailable && (
                         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                             <div className="flex items-center mb-3">
-                                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M5 13l4 4L19 7"/>
                                 </svg>
                                 <p className="text-green-800 font-medium">사용 가능한 사용자명입니다</p>
                             </div>
@@ -200,17 +212,6 @@ const Step1UsernameCheck = ({
                         </div>
                     )}
 
-                    {checkState.isDuplicate && (
-                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <div className="flex items-center">
-                                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                <p className="text-yellow-800 font-medium">이미 사용 중인 사용자명입니다</p>
-                            </div>
-                        </div>
-                    )}
-
                     {/* 유사한 사용자 목록 */}
                     {similarUsers.length > 0 && (
                         <UserList
@@ -219,24 +220,6 @@ const Step1UsernameCheck = ({
                         />
                     )}
 
-                    {/* 새 사용자명 입력 옵션 (중복인 경우에만) */}
-                    {checkState.isDuplicate && (
-                        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                            <h3 className="font-medium text-gray-900 mb-2">새로운 사용자로 등록</h3>
-                            <p className="text-sm text-gray-600 mb-3">
-                                다른 사용자명을 입력하여 새로운 계정을 생성하세요.
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setUsername('')
-                                    resetCheckState()
-                                }}
-                                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all font-medium"
-                            >
-                                다른 사용자명 입력
-                            </button>
-                        </div>
-                    )}
                 </div>
             )}
         </div>

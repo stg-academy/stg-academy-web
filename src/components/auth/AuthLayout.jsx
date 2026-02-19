@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 const AuthLayout = ({
-    title = "STG Academy",
+    title = "",
     subtitle,
     currentStep,
     totalSteps,
@@ -18,29 +18,43 @@ const AuthLayout = ({
         const hasKakaoStep = totalSteps === 3 // 카카오 등록의 경우
 
         return (
-            <div className="mt-4 flex justify-center">
-                <div className="flex items-center space-x-2">
-                    {hasKakaoStep && (
-                        <>
-                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="mt-5 flex items-start">
+                {hasKakaoStep && (
+                    <>
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="w-7 h-7 bg-gray-900 border-gray-900 text-white rounded-full flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <div className="w-12 h-1 bg-gray-300"></div>
-                        </>
-                    )}
-                    {steps.slice(hasKakaoStep ? 1 : 0).map((step, index) => (
-                        <div key={step} className="flex items-center">
-                            {index > 0 && <div className="w-12 h-1 bg-gray-300 mr-2"></div>}
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                currentStep === step ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                            <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                                카카오 로그인
+                            </span>
+                        </div>
+                        <div className="h-[1px] bg-gray-400 w-9 mt-4 mx-2"></div>
+                    </>
+                )}
+                {steps.slice(hasKakaoStep ? 1 : 0).map((step, index) => (
+                    <div key={step} className="flex items-center">
+                        {index > 0 && <div className="h-[1px] bg-gray-400 w-9 -mt-6 mx-2"></div>}
+                        <div className="flex flex-col items-center gap-2">
+                            <div className={`w-7 h-7 rounded-full border-1 flex items-center justify-center text-xs font-medium ${
+                                currentStep === step
+                                    ? 'bg-gray-900 border-gray-900 text-white'
+                                    : 'bg-white border-gray-500 text-gray-500'
                             }`}>
                                 {step}
                             </div>
+                            <span className={`text-xs whitespace-nowrap ${
+                                currentStep === step ? 'text-gray-900 font-medium' : 'text-[#888888]'
+                            }`}>
+                                {step === 1 ? '사용자명 확인' : step === 2 ? '계정 설정' : `단계 ${step}`}
+                            </span>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
         )
     }
@@ -50,12 +64,16 @@ const AuthLayout = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* 헤더 */}
                 <div className="max-w-lg mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+                    <div className="text-center mb-8  text-left">
                         {subtitle && (
-                            <p className="mt-2 text-gray-600">{subtitle}</p>
+                            <p className="text-gray-400">{subtitle}</p>
                         )}
+                        <h1 className="mt-2 text-3xl font-semibold text-gray-900">{title}</h1>
+
+                        {/*todo: extraContent 삭제(카카오회원가입시 발생*/}
                         {extraContent}
+
+                        {/* todo: 카카오회원가입 시 StepIndicator 이상함*/}
                         <StepIndicator />
                     </div>
 

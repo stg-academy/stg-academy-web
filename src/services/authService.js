@@ -36,7 +36,6 @@ export const authAPI = {
         const requestData = {
             username: userData.username,
             password: userData.password,
-            display_name: userData.display_name,
             information: userData.information
         }
 

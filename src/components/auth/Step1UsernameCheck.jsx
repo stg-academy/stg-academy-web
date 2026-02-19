@@ -85,8 +85,6 @@ const Step1UsernameCheck = ({
     }
 
     function getRecentSessions(recent_sessions) {
-        console.log(recent_sessions)
-
         return recent_sessions.map((session) => {
                 return session.title + ' (' + session.date_info + ')'
             }

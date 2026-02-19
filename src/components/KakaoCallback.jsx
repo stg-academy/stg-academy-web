@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getAuthCodeFromUrl, clearUrlParams } from '../config/kakao'
 
@@ -6,13 +6,24 @@ const KakaoCallback = () => {
   const { loginWithKakao } = useAuth()
   const [status, setStatus] = useState('processing') // processing, success, error
   const [error, setError] = useState(null)
+  const isProcessing = useRef(false) // 처리 중 여부 체크
 
   useEffect(() => {
-    let isHandled = false // 중복 실행 방지
-
     const handleCallback = async () => {
-      if (isHandled) return
-      isHandled = true
+      // 이미 처리 중이거나 완료된 경우 중복 실행 방지
+      if (isProcessing.current) {
+        return
+      }
+
+      // URL에 code 파라미터가 없으면 처리하지 않음
+      const urlParams = new URLSearchParams(window.location.search)
+      if (!urlParams.get('code')) {
+        setError('인증 코드가 없습니다.')
+        setStatus('error')
+        return
+      }
+
+      isProcessing.current = true
 
       try {
         setStatus('processing')
@@ -36,13 +47,12 @@ const KakaoCallback = () => {
         console.error('카카오 로그인 콜백 처리 실패:', error)
         setError(error.message || '로그인 처리 중 오류가 발생했습니다.')
         setStatus('error')
-
-        setTimeout(console.log('카카오 로그인 콜백 처리 실패:', error), 50000) // 5초 후에 에러 로그 출력
+        isProcessing.current = false // 에러 시에만 재시도 가능하도록
       }
     }
 
     handleCallback()
-  }, []) // 의존성 배열을 빈 배열로 변경
+  }, [])
 
   const handleRetry = () => {
     clearUrlParams()
@@ -63,7 +73,6 @@ const KakaoCallback = () => {
         )
 
       case 'error':
-        console.log(error)
         return (
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 max-w-md w-full">
             <div className="flex flex-col items-center space-y-4">

@@ -4,8 +4,8 @@
 
 // 역할 상수 정의
 export const ROLES = {
-  ADMIN: 'ADMIN',
-  USER: 'USER'
+  ADMIN: 'admin',
+  USER: 'user'
 }
 
 // 역할 계층 구조 (높은 권한부터)
@@ -21,17 +21,20 @@ export const ROLE_HIERARCHY = [
  * @returns {boolean}
  */
 export const hasRole = (user, requiredRole) => {
-  if (!user || !user.role) return false
+  console.log(user, requiredRole)
+  if (!user || !user.authorizations || !user.authorizations.role) return false
+
+  const userRole = user.authorizations.role
 
   // 관리자는 모든 권한 보유
-  if (user.role === ROLES.ADMIN) return true
+  if (userRole === ROLES.ADMIN) return true
 
   // 배열로 여러 역할 허용 가능
   if (Array.isArray(requiredRole)) {
-    return requiredRole.includes(user.role)
+    return requiredRole.includes(userRole)
   }
 
-  return user.role === requiredRole
+  return userRole === requiredRole
 }
 
 /**
@@ -41,9 +44,10 @@ export const hasRole = (user, requiredRole) => {
  * @returns {boolean}
  */
 export const hasMinRole = (user, minRole) => {
-  if (!user || !user.role) return false
+  if (!user || !user.authorizations || !user.authorizations.role) return false
 
-  const userRoleIndex = ROLE_HIERARCHY.indexOf(user.role)
+  const userRole = user.authorizations.role
+  const userRoleIndex = ROLE_HIERARCHY.indexOf(userRole)
   const minRoleIndex = ROLE_HIERARCHY.indexOf(minRole)
 
   // 역할이 계층에 없으면 false

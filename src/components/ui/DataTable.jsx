@@ -6,7 +6,7 @@ const DataTable = ({
                        columns = [],
                        searchableColumns = [],
                        loading = false,
-                       itemsPerPage = 10,
+                       itemsPerPage = null,
                        showPagination = true,
                        showSearch = true,
                        emptyMessage = "데이터가 없습니다.",
@@ -65,10 +65,10 @@ const DataTable = ({
         })
     }, [filteredData, sortConfig])
 
-    // 페이지네이션
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage)
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage)
+    // 페이지네이션 (itemsPerPage가 없으면 전체 데이터 표시)
+    const totalPages = itemsPerPage ? Math.ceil(sortedData.length / itemsPerPage) : 1
+    const startIndex = itemsPerPage ? (currentPage - 1) * itemsPerPage : 0
+    const paginatedData = itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData
 
     // 정렬 핸들러
     const handleSort = (key) => {
@@ -325,7 +325,7 @@ const DataTable = ({
             </div>
 
             {/* 페이지네이션 */}
-            {showPagination && totalPages > 1 && (
+            {showPagination && itemsPerPage && totalPages > 1 && (
                 <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
                     <div className="text-sm text-gray-700">
             <span>

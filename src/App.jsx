@@ -15,6 +15,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import MyLearning from "./pages-mobile/MyLearning.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -39,6 +40,9 @@ function AppContent() {
                 <Route path="/" element={<SampleDashboard/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
                 <Route path="/design-guide" element={<DesignGuidePage/>}/>
+
+                // 모바일
+                <Route path="mobile/my-learning" element={<MyLearning />}/>
 
                 // 관리자 전용 라우트
                 <Route path="/courses" element={

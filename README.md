@@ -18,4 +18,5 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 [//]: # (todo: 회원가입 페이지 상세설명 만들기)
-[//]: # (todo: 사용자 페이지 - 수강신청/출설체크)
+[//]: # (done: 사용자 페이지 - 수강신청/출설체크)
+[//]: # (todo: 수강신청)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
 import { Card, CardContent } from '../components/mobile/ui/card';
 import { Button } from '../components/mobile/ui/button';
@@ -194,8 +195,18 @@ export default function Attendance() {
   if (!user) {
     return (
       <MobileLayout headerTitle="출석">
-        <div className="p-5 flex flex-col items-center justify-center h-64">
-          <p className="text-slate-500">로그인이 필요한 서비스입니다.</p>
+        <div className="p-5 space-y-8">
+          <section className="space-y-4">
+            <div className="text-center py-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">출석 체크를 시작하세요</h2>
+              <p className="text-sm text-slate-500 mb-6">로그인하여 강의 출석을 체크하고 관리해보세요</p>
+              <Link to="/login">
+                <Button className="w-full max-w-xs">
+                  로그인하여 시작하기
+                </Button>
+              </Link>
+            </div>
+          </section>
         </div>
       </MobileLayout>
     );

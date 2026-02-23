@@ -30,7 +30,6 @@ class ApiClient {
 
         try {
             const response = await fetch(url, config)
-
             // 401 Unauthorized - 토큰 만료 또는 인증 실패
             if (response.status === 401) {
                 this.clearAuthToken()

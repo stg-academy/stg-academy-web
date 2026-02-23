@@ -31,6 +31,8 @@ export default function MyLearning() {
   useEffect(() => {
     if (user?.id) {
       fetchMyLearningData();
+    } else {
+      setLoading(false);
     }
   }, [user?.id]);
 
@@ -160,16 +162,18 @@ export default function MyLearning() {
   if (!user) {
     return (
       <MobileLayout headerTitle="내 강의">
-        <div className="p-4 flex flex-col items-center justify-center h-64 text-slate-500">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <BookOpenIcon className="h-8 w-8 text-slate-300" />
-          </div>
-          <p>로그인이 필요한 서비스입니다.</p>
-          <Link to="/login">
-            <Button className="mt-4">
-              로그인하기
-            </Button>
-          </Link>
+        <div className="p-5 space-y-8">
+          <section className="space-y-4">
+            <div className="text-center py-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">내 강의를 확인하세요</h2>
+              <p className="text-sm text-slate-500 mb-6">로그인하여 수강 중인 강의와 진도를 확인해보세요</p>
+              <Link to="/login">
+                <Button className="w-full max-w-xs">
+                  로그인하여 시작하기
+                </Button>
+              </Link>
+            </div>
+          </section>
         </div>
       </MobileLayout>
     );

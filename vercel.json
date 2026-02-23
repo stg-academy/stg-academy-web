@@ -1,13 +1,13 @@
 {
   "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "http://3.35.188.23/:path*",
+      "src": "/api/(.*)",
+      "dest": "http://3.35.188.23/$1",
       "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

@@ -8,6 +8,7 @@ import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getAttendancesBySession } from '../services/attendanceService';
+import { getLecturesBySession } from '../services/lectureService';
 
 const ChevronRightIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,6 +26,7 @@ export default function MyLearning() {
   const { user } = useAuth();
   const [enrollments, setEnrollments] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
+  const [lectureData, setLectureData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -48,29 +50,40 @@ export default function MyLearning() {
       // API 응답이 배열이 아닌 경우 처리
       const enrollmentsArray = Array.isArray(enrollmentsData) ? enrollmentsData : [];
 
-      // 각 강좌별 출석 데이터 조회
-      const attendancePromises = enrollmentsArray.map(async (enrollment) => {
+      // 각 강좌별 출석 데이터와 강의 데이터 조회
+      const dataPromises = enrollmentsArray.map(async (enrollment) => {
         try {
-          const attendances = await getAttendancesBySession(enrollment.session_id);
+          const [attendances, lectures] = await Promise.all([
+            getAttendancesBySession(enrollment.session_id),
+            getLecturesBySession(enrollment.session_id)
+          ]);
+
           return {
             sessionId: enrollment.session_id,
-            attendances: attendances || []
+            attendances: attendances || [],
+            lectures: lectures || []
           };
         } catch (err) {
-          console.error(`세션 ${enrollment.session_id}의 출석 데이터 조회 실패:`, err);
+          console.error(`세션 ${enrollment.session_id}의 데이터 조회 실패:`, err);
           return {
             sessionId: enrollment.session_id,
-            attendances: []
+            attendances: [],
+            lectures: []
           };
         }
       });
 
-      const attendanceResults = await Promise.all(attendancePromises);
+      const dataResults = await Promise.all(dataPromises);
       const attendanceMap = {};
-      attendanceResults.forEach(result => {
+      const lectureMap = {};
+
+      dataResults.forEach(result => {
         attendanceMap[result.sessionId] = result.attendances;
+        lectureMap[result.sessionId] = result.lectures;
       });
+
       setAttendanceData(attendanceMap);
+      setLectureData(lectureMap);
 
     } catch (err) {
       console.error('내 강의 데이터 조회 실패:', err);
@@ -80,17 +93,24 @@ export default function MyLearning() {
     }
   };
 
-  const calculateAttendanceRate = (sessionId, totalLectures) => {
+  const calculateAttendanceRate = (sessionId) => {
     const attendances = attendanceData[sessionId] || [];
-    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.attendance_status === 'PRESENT');
+    const lectures = lectureData[sessionId] || [];
+    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
+    const totalLectures = lectures.length;
 
     if (totalLectures === 0) return 0;
     return Math.round((userAttendances.length / totalLectures) * 100);
   };
 
-  const calculateProgress = (currentLecture, totalLectures) => {
+  const calculateProgress = (sessionId) => {
+    const attendances = attendanceData[sessionId] || [];
+    const lectures = lectureData[sessionId] || [];
+    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
+    const totalLectures = lectures.length;
+
     if (totalLectures === 0) return 0;
-    return Math.round((currentLecture / totalLectures) * 100);
+    return Math.round((userAttendances.length / totalLectures) * 100);
   };
 
   const getActiveEnrollments = () => {
@@ -108,12 +128,14 @@ export default function MyLearning() {
   };
 
   const CourseCard = ({ enrollment, isCompleted = false }) => {
-    console.log(enrollment)
+    const lectures = lectureData[enrollment.session_id] || [];
+    const attendances = attendanceData[enrollment.session_id] || [];
+    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
 
-    const totalLectures = enrollment.lecture_count || 10;
-    const currentLecture = isCompleted ? totalLectures : Math.floor(totalLectures * 0.3); // 임시로 30% 진행으로 설정
-    const attendanceRate = calculateAttendanceRate(enrollment.session_id, totalLectures);
-    const progress = calculateProgress(currentLecture, totalLectures);
+    const totalLectures = lectures.length;
+    const attendedLectures = userAttendances.length;
+    const attendanceRate = calculateAttendanceRate(enrollment.session_id);
+    const progress = calculateProgress(enrollment.session_id);
     return (
       <Card className="border-slate-100 shadow-sm">
         <CardContent className="p-5 space-y-4">
@@ -123,7 +145,7 @@ export default function MyLearning() {
                 {enrollment.session_title || '강의명 없음'}
               </h3>
               <p className="text-sm text-slate-500 mt-1">
-                진행: {currentLecture}/{totalLectures}회차
+                진행도 ({attendedLectures}/{totalLectures}회차)
               </p>
             </div>
           </div>

@@ -8,6 +8,8 @@ import { Badge } from '../components/mobile/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
+import { getLecturesBySession } from '../services/lectureService';
+import { getAttendancesBySession } from '../services/attendanceService';
 
 const ChevronRightIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,6 +28,7 @@ export default function Home() {
   const [activeCourses, setActiveCourses] = useState([]);
   const [recruitingSessions, setRecruitingSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [courseProgress, setCourseProgress] = useState({});
 
   useEffect(() => {
     fetchHomeData();
@@ -45,7 +48,11 @@ export default function Home() {
           ? enrollments.filter(e => e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE')
           : [];
 
-        setActiveCourses(activeEnrollments.slice(0, 3)); // 최대 3개만
+        const limitedActiveCourses = activeEnrollments.slice(0, 3); // 최대 3개만
+        setActiveCourses(limitedActiveCourses);
+
+        // 활성 강의들의 진행률과 출석률 계산
+        await calculateCourseProgress(limitedActiveCourses);
       }
 
       // 모집중인 강좌 (session_status가 RECRUITING인 것들)
@@ -62,17 +69,57 @@ export default function Home() {
     }
   };
 
-  const calculateProgress = (enrollment) => {
-    // 실제 진행률 계산 로직 (임시)
-    if (enrollment.session?.lecture_count) {
-      return Math.floor(Math.random() * 80) + 20; // 20-100% 사이의 임시값
+  const calculateCourseProgress = async (enrollments) => {
+    try {
+      const progressData = {};
+
+      for (const enrollment of enrollments) {
+        try {
+          // 해당 세션의 모든 강의 조회
+          const lectures = await getLecturesBySession(enrollment.session_id);
+          const totalLectures = Array.isArray(lectures) ? lectures.length : 0;
+
+          // 해당 세션의 출석 기록 조회
+          const attendances = await getAttendancesBySession(enrollment.session_id);
+          const userAttendances = Array.isArray(attendances)
+            ? attendances.filter(att => att.user_id === user.id && att.status === 'PRESENT')
+            : [];
+
+          // 진행률 계산 (출석한 강의 수 기준)
+          const progress = totalLectures > 0 ? Math.round((userAttendances.length / totalLectures) * 100) : 0;
+
+          // 출석률 계산 (총 강의 중 출석한 비율)
+          const attendanceRate = totalLectures > 0 ? Math.round((userAttendances.length / totalLectures) * 100) : 0;
+
+          progressData[enrollment.session_id] = {
+            progress,
+            attendanceRate,
+            totalLectures,
+            attendedLectures: userAttendances.length
+          };
+        } catch (err) {
+          console.error(`세션 ${enrollment.session_id}의 진행률 계산 실패:`, err);
+          progressData[enrollment.session_id] = {
+            progress: 0,
+            attendanceRate: 0,
+            totalLectures: 0,
+            attendedLectures: 0
+          };
+        }
+      }
+
+      setCourseProgress(progressData);
+    } catch (error) {
+      console.error('강의 진행률 계산 실패:', error);
     }
-    return 30;
   };
 
-  const calculateAttendanceRate = (enrollment) => {
-    // 실제 출석률 계산 로직 (임시)
-    return Math.floor(Math.random() * 30) + 70; // 70-100% 사이의 임시값
+  const getProgress = (enrollment) => {
+    return courseProgress[enrollment.session_id]?.progress || 0;
+  };
+
+  const getAttendanceRate = (enrollment) => {
+    return courseProgress[enrollment.session_id]?.attendanceRate || 0;
   };
 
   const formatPeriod = (session) => {
@@ -144,26 +191,31 @@ export default function Home() {
             {activeCourses.length > 0 ? (
               <div className="space-y-3">
                 {activeCourses.map((enrollment) => {
-                  const progress = calculateProgress(enrollment);
-                  const attendanceRate = calculateAttendanceRate(enrollment);
+                  const progress = getProgress(enrollment);
+                  const attendanceRate = getAttendanceRate(enrollment);
+                  const progressData = courseProgress[enrollment.session_id];
+                  const attendedLectures = progressData?.attendedLectures || 0;
+                  const totalLectures = progressData?.totalLectures || 0;
 
                   return (
                     <Link to={`/course/${enrollment.session_id}`} key={enrollment.id}>
                       <Card className="border-slate-100 shadow-sm active:scale-[0.99] transition-transform">
                         <CardContent className="p-5">
                           <div className="flex justify-between items-start mb-3">
-                            <h3 className="font-bold text-slate-800 text-lg">
-                              {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
-                            </h3>
+                            <div>
+                              <h3 className="font-bold text-slate-800 text-lg">
+                                {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
+                              </h3>
+                            </div>
                             <Badge variant="blue">진행중</Badge>
                           </div>
                           <div className="space-y-3">
                             <div className="space-y-1.5">
                               <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">진행도</span>
+                                <span className="text-slate-500">진행도 ({attendedLectures}/{totalLectures}회차)</span>
                                 <span className="text-blue-600 font-bold">{progress}%</span>
                               </div>
-                              <Progress value={progress} className="h-2" />
+                              <Progress value={progress} className="h-2"/>
                             </div>
                             <div className="flex justify-between text-sm pt-1">
                               <span className="text-slate-500">출석률</span>

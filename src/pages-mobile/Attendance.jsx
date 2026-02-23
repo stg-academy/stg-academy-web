@@ -29,7 +29,6 @@ const MapPinIcon = ({ className }) => (
 
 export default function Attendance() {
   const { user } = useAuth();
-  const [isScanning, setIsScanning] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
   const [todaysLectures, setTodaysLectures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -309,38 +308,6 @@ export default function Attendance() {
               </CardContent>
             </Card>
           )}
-        </section>
-
-        <div className="relative flex items-center py-2">
-          <div className="flex-grow border-t border-slate-200"></div>
-          <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">또는 QR코드로 출석</span>
-          <div className="flex-grow border-t border-slate-200"></div>
-        </div>
-
-        <section>
-          <Card
-            className="border-dashed border-2 border-slate-200 bg-slate-50 cursor-pointer active:bg-slate-100 transition-colors"
-            onClick={() => setIsScanning(!isScanning)}
-          >
-            <CardContent className="p-10 flex flex-col items-center justify-center text-center space-y-3 h-64">
-              {isScanning ? (
-                <div className="w-full h-full bg-black rounded-lg flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 border-2 border-blue-500 opacity-50 animate-pulse"></div>
-                  <p className="text-white font-medium z-10">카메라 스캔 중...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="p-4 bg-white rounded-full shadow-sm">
-                    <QrCodeIcon className="h-10 w-10 text-slate-900" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">QR 코드 스캔</h3>
-                    <p className="text-sm text-slate-500">강의실 앞의 QR코드를 스캔하세요</p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
         </section>
 
       </div>

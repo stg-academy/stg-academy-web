@@ -4,7 +4,7 @@ import apiClient from "./apiClient.js";
 export const authAPI = {
     // 카카오 로그인 (POST /auth/kakao/login)
     async loginWithKakao(authCode) {
-        const response = await apiClient.post('/auth/kakao/login', {
+        const response = await apiClient.post('/api/auth/kakao/login', {
             code: authCode,
         })
 
@@ -18,7 +18,7 @@ export const authAPI = {
 
     // 일반 로그인 (POST /auth/login)
     async loginWithCredentials(username, password) {
-        const response = await apiClient.post('/auth/login', {
+        const response = await apiClient.post('/api/auth/login', {
             username,
             password
         })
@@ -44,7 +44,7 @@ export const authAPI = {
             requestData.existing_user_id = userData.existing_user_id
         }
 
-        const response = await apiClient.post('/auth/register', requestData)
+        const response = await apiClient.post('/api/auth/register', requestData)
 
         // JWT 토큰 저장
         if (response.token) {
@@ -66,7 +66,7 @@ export const authAPI = {
             requestData.existing_user_id = userData.existing_user_id
         }
 
-        const response = await apiClient.post('/auth/kakao/register', requestData)
+        const response = await apiClient.post('/api/auth/kakao/register', requestData)
 
         // 정식 JWT 토큰으로 교체
         if (response.token) {
@@ -78,13 +78,13 @@ export const authAPI = {
 
     // 아이디 중복 확인 (GET /auth/username?username=user_id)
     async checkUsernameAvailable(username) {
-        return await apiClient.get('/auth/username', { username })
+        return await apiClient.get('/api/auth/username', { username })
     },
 
     // 로그아웃 (POST /auth/logout)
     async logout() {
         try {
-            await apiClient.post('/auth/logout')
+            await apiClient.post('/api/auth/logout')
         } finally {
             // 서버 요청 성공 여부와 관계없이 로컬 토큰 삭제
             apiClient.clearAuthToken()
@@ -93,13 +93,13 @@ export const authAPI = {
 
     // 사용자 정보 조회 (GET /auth/me)
     async getUserInfo() {
-        return apiClient.get('/auth/me')
+        return apiClient.get('/api/auth/me')
     },
 
     // 토큰 유효성 검증 (GET /auth/me를 사용)
     async validateToken() {
         try {
-            return await apiClient.get('/auth/me')
+            return await apiClient.get('/api/auth/me')
         } catch (error) {
             apiClient.clearAuthToken()
             throw error
@@ -108,7 +108,7 @@ export const authAPI = {
 
     // 관리자 직접 사용자 등록 (POST /auth/manual/register)
     async manualRegister(userData) {
-        return await apiClient.post('/auth/manual/register', {
+        return await apiClient.post('/api/auth/manual/register', {
             username: userData.username,
             information: userData.information,
             auth: userData.auth

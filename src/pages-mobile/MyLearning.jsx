@@ -159,7 +159,7 @@ export default function MyLearning() {
           </div>
 
           {!isCompleted && (
-            <Link to={`/course/${enrollment.session_id}`}>
+            <Link to={`/mobile/session/${enrollment.session_id}`}>
               <Button className="w-full mt-2" variant="outline">
                 강의실 입장
                 <ChevronRightIcon className="h-4 w-4 ml-2" />

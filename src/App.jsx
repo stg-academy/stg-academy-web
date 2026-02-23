@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import MyLearning from "./pages-mobile/MyLearning.jsx";
 import Home from "./pages-mobile/Home.jsx";
 import Attendance from "./pages-mobile/Attendance.jsx";
+import SessionDetail from "./pages-mobile/SessionDetail.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -47,6 +48,7 @@ function AppContent() {
                 <Route path="mobile/home" element={<Home />}/>
                 <Route path="mobile/my-learning" element={<MyLearning />}/>
                 <Route path="mobile/attendance" element={<Attendance />}/>
+                <Route path="mobile/session/:sessionId" element={<SessionDetail />}/>
 
                 // 관리자 전용 라우트
                 <Route path="/courses" element={

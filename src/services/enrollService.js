@@ -72,7 +72,7 @@ export const getUserEnrollmentInSession = async (userId, sessionId) => {
  */
 export const createEnroll = async (enrollData) => {
   try {
-    return await apiClient.post('/api/enrolls/', enrollData)
+    return await apiClient.post('/api/enrolls', enrollData)
   } catch (error) {
     console.error('수강 신청 생성 실패:', error)
     throw error

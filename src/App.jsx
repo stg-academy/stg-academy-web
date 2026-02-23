@@ -19,6 +19,7 @@ import MyLearning from "./pages-mobile/MyLearning.jsx";
 import Home from "./pages-mobile/Home.jsx";
 import Attendance from "./pages-mobile/Attendance.jsx";
 import SessionDetail from "./pages-mobile/SessionDetail.jsx";
+import Profile from "./pages/Profile.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -43,6 +44,7 @@ function AppContent() {
                 <Route path="/" element={<Home/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
                 <Route path="/design-guide" element={<DesignGuidePage/>}/>
+                <Route path="/profile" element={<Profile />}/>
 
                 // 모바일
                 <Route path="mobile/home" element={<Home />}/>

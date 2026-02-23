@@ -78,11 +78,6 @@ const Header = () => {
     }
   }
 
-  const handleLoginClick = () => {
-    // 로그인 페이지로 이동
-    window.location.href = '/login'
-  }
-
   const handleLogout = async () => {
     try {
       await logout()
@@ -214,22 +209,22 @@ const Header = () => {
             ) : (
               /* 로그인한 상태 */
               <>
-                {/* 알림 아이콘 */}
-                <div className="relative hidden sm:block">
-                  <button
-                    className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
-                    aria-label="알림"
-                  >
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 21l4-7h8l-4 7H8z" />
-                    </svg>
-                    {notificationCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                        {notificationCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
+                {/*/!* 알림 아이콘 *!/*/}
+                {/*<div className="relative hidden sm:block">*/}
+                {/*  <button*/}
+                {/*    className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"*/}
+                {/*    aria-label="알림"*/}
+                {/*  >*/}
+                {/*    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">*/}
+                {/*      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 21l4-7h8l-4 7H8z" />*/}
+                {/*    </svg>*/}
+                {/*    {notificationCount > 0 && (*/}
+                {/*      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">*/}
+                {/*        {notificationCount}*/}
+                {/*      </span>*/}
+                {/*    )}*/}
+                {/*  </button>*/}
+                {/*</div>*/}
 
                 {/* 사용자 프로필 드롭다운 */}
                 <div className="relative">
@@ -265,20 +260,13 @@ const Header = () => {
                           <div className="text-gray-500 text-xs truncate">{user.email}</div>
                         )}
                       </div>
-                      <a
-                        href="#"
+                      <Link
+                        to="/profile"
                         className="block px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={(e) => e.preventDefault()}
+                        onClick={() => setDropdownOpen(false)}
                       >
                         프로필
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        설정
-                      </a>
+                      </Link>
                       <hr className="my-1 border-gray-200" />
                       <button
                         onClick={handleLogout}
@@ -325,22 +313,22 @@ const Header = () => {
               ))}
 
               {/* 모바일 알림 */}
-              <button
-                className="flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <div className="flex items-center space-x-3">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 21l4-7h8l-4 7H8z" />
-                  </svg>
-                  <span>알림</span>
-                </div>
-                {notificationCount > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {notificationCount}
-                  </span>
-                )}
-              </button>
+              {/*<button*/}
+              {/*  className="flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"*/}
+              {/*  onClick={() => setMobileMenuOpen(false)}*/}
+              {/*>*/}
+              {/*  <div className="flex items-center space-x-3">*/}
+              {/*    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">*/}
+              {/*      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 21l4-7h8l-4 7H8z" />*/}
+              {/*    </svg>*/}
+              {/*    <span>알림</span>*/}
+              {/*  </div>*/}
+              {/*  {notificationCount > 0 && (*/}
+              {/*    <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">*/}
+              {/*      {notificationCount}*/}
+              {/*    </span>*/}
+              {/*  )}*/}
+              {/*</button>*/}
             </nav>
           </div>
         )}

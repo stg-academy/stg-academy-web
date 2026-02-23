@@ -116,50 +116,73 @@ export default function Home() {
     <MobileLayout>
       <div className="p-5 space-y-8">
 
+        {/* Welcome Section for non-logged users */}
+        {!user && (
+            <section className="space-y-4">
+              <div className="text-center py-8">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">시광 아카데미에 오신 것을 환영합니다</h2>
+                <p className="text-sm text-slate-500 mb-6">로그인/회원가입하여 출결관리를 진행해주세요</p>
+                <Link to="/login">
+                  <Button className="w-full max-w-xs">
+                    로그인하여 시작하기
+                  </Button>
+                </Link>
+              </div>
+            </section>
+        )}
+
         {/* Active Course Section */}
-        {user && activeCourses.length > 0 && (
+        {user && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">수강중인 교육</h2>
-              <Link to="/my-learning" className="text-xs text-slate-500 font-medium flex items-center">
+              <Link to="/mobile/my-learning" className="text-xs text-slate-500 font-medium flex items-center">
                 전체보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
               </Link>
             </div>
 
-            <div className="space-y-3">
-              {activeCourses.map((enrollment) => {
-                const progress = calculateProgress(enrollment);
-                const attendanceRate = calculateAttendanceRate(enrollment);
+            {activeCourses.length > 0 ? (
+              <div className="space-y-3">
+                {activeCourses.map((enrollment) => {
+                  const progress = calculateProgress(enrollment);
+                  const attendanceRate = calculateAttendanceRate(enrollment);
 
-                return (
-                  <Link to={`/course/${enrollment.session_id}`} key={enrollment.id}>
-                    <Card className="border-slate-100 shadow-sm active:scale-[0.99] transition-transform">
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-start mb-3">
-                          <h3 className="font-bold text-slate-800 text-lg">
-                            {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
-                          </h3>
-                          <Badge variant="blue">진행중</Badge>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-slate-500">진행도</span>
-                              <span className="text-blue-600 font-bold">{progress}%</span>
+                  return (
+                    <Link to={`/course/${enrollment.session_id}`} key={enrollment.id}>
+                      <Card className="border-slate-100 shadow-sm active:scale-[0.99] transition-transform">
+                        <CardContent className="p-5">
+                          <div className="flex justify-between items-start mb-3">
+                            <h3 className="font-bold text-slate-800 text-lg">
+                              {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
+                            </h3>
+                            <Badge variant="blue">진행중</Badge>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">진행도</span>
+                                <span className="text-blue-600 font-bold">{progress}%</span>
+                              </div>
+                              <Progress value={progress} className="h-2" />
                             </div>
-                            <Progress value={progress} className="h-2" />
+                            <div className="flex justify-between text-sm pt-1">
+                              <span className="text-slate-500">출석률</span>
+                              <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between text-sm pt-1">
-                            <span className="text-slate-500">출석률</span>
-                            <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card className="border-slate-100 shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <p className="text-slate-500">현재 수강중인 강의가 없어요</p>
+                </CardContent>
+              </Card>
+            )}
           </section>
         )}
 
@@ -167,7 +190,8 @@ export default function Home() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">모집중인 강의</h2>
-            <Link to="/courses" className="text-xs text-slate-500 font-medium flex items-center">
+            {/*todo: /mobile/courses */}
+            <Link to="/mobile/courses" className="text-xs text-slate-500 font-medium flex items-center">
               더보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
             </Link>
           </div>
@@ -199,34 +223,6 @@ export default function Home() {
               </CardContent>
             </Card>
           )}
-        </section>
-
-        {/* Welcome Section for non-logged users */}
-        {!user && (
-          <section className="space-y-4">
-            <div className="text-center py-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-2">STG 아카데미에 오신 것을 환영합니다</h2>
-              <p className="text-slate-600 mb-6">다양한 강의를 수강하고 성장해보세요.</p>
-              <Link to="/login">
-                <Button className="w-full max-w-xs">
-                  로그인하여 시작하기
-                </Button>
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {/* Ranking Placeholder */}
-        <section className="pt-2">
-          <Card className="bg-gradient-to-br from-slate-50 to-white border-dashed border-slate-200">
-            <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-2">
-              <div className="h-10 w-10 rounded-full bg-yellow-50 flex items-center justify-center mb-1">
-                <TrophyIcon className="h-5 w-5 text-yellow-500" />
-              </div>
-              <h3 className="font-semibold text-slate-400">이달의 열심 수강생</h3>
-              <p className="text-xs text-slate-400">랭킹 시스템이 곧 오픈됩니다!</p>
-            </CardContent>
-          </Card>
         </section>
 
       </div>

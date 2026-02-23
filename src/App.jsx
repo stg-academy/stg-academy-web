@@ -39,7 +39,7 @@ function AppContent() {
                 <Route path="/auth/complete-registration" element={<CompleteKakaoRegistration/>}/>
 
                 // 모든 사용자에게 공개된 라우트
-                <Route path="/" element={<SampleDashboard/>}/>
+                <Route path="/" element={<Home/>}/>
                 <Route path="/sample" element={<SamplePage/>}/>
                 <Route path="/design-guide" element={<DesignGuidePage/>}/>
 

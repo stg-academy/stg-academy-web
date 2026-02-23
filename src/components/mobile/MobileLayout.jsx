@@ -16,8 +16,8 @@ const MobileLayout = ({
   const navItems = [
     { icon: 'home', label: '홈', path: '/' },
     { icon: 'search', label: '찾기', path: '/courses' },
-    { icon: 'check', label: '출석', path: '/attendance' },
-    { icon: 'book', label: '내 강의', path: '/my-learning' },
+    { icon: 'check', label: '출석', path: '/mobile/attendance' },
+    { icon: 'book', label: '내 강의', path: '/mobile/my-learning' },
   ];
 
   const IconComponent = ({ icon, className }) => {

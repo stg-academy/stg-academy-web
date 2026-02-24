@@ -1,10 +1,37 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/mobile/ui/button';
+import { Card, CardContent } from '../components/mobile/ui/card';
 import { getSession } from '../services/sessionService';
 import { getEnrollsBySession } from '../services/enrollService';
 import { createAttendance, getAttendancesByLecture } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getUsersInfo } from '../services/userService';
+
+const XIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const BackspaceIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2H10.828a2 2 0 00-1.414.586L3 12z" />
+  </svg>
+);
+
+const CheckIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const ChevronLeftIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+  </svg>
+);
 
 const KioskAttendance = () => {
   const { session_id } = useParams();
@@ -174,6 +201,13 @@ const KioskAttendance = () => {
           : user
       ));
 
+      // 3초 후 초기 화면으로 돌아가기
+      setTimeout(() => {
+        setAttendanceStatus(null);
+        setSelectedUser(null);
+        setSearchQuery('');
+      }, 3000);
+
     } catch (err) {
       console.error('출석 처리 실패:', err);
       setAttendanceStatus('error');
@@ -189,6 +223,15 @@ const KioskAttendance = () => {
     setSearchQuery('');
   }, []);
 
+  // 뒤로가기 처리
+  const handleGoBack = useCallback(() => {
+    if (selectedUser) {
+      setSelectedUser(null);
+    } else {
+      navigate(-1);
+    }
+  }, [selectedUser, navigate]);
+
   // 날짜 포맷팅
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -201,15 +244,15 @@ const KioskAttendance = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">로딩 중...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-xl text-slate-600">로딩 중...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
           <div className="text-red-600 text-xl mb-4">{error}</div>
           <button
@@ -226,24 +269,14 @@ const KioskAttendance = () => {
   // 출석 완료 화면
   if (attendanceStatus === 'success' && selectedUser) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg border p-12 max-w-lg text-center">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+      <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-8">
+        <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-md w-full">
+          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
+            <CheckIcon className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedUser.username}님</h2>
-          <p className="text-xl text-gray-600 mb-6">
-            {formatDate(todaysLecture.lecture_date)} {sessionInfo?.title}
-          </p>
-          <div className="text-2xl font-bold text-green-600 mb-8">출석체크 완료</div>
-          <button
-            onClick={handleReset}
-            className="w-full px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold"
-          >
-            돌아가기
-          </button>
+          <h1 className="text-3xl font-bold text-slate-900 mb-4">출석 완료!</h1>
+          <p className="text-lg text-slate-600 mb-2">{selectedUser.username}님</p>
+          <p className="text-sm text-slate-500">출석이 성공적으로 처리되었습니다.</p>
         </div>
       </div>
     );
@@ -252,85 +285,98 @@ const KioskAttendance = () => {
   // 사용자 확인 화면
   if (selectedUser) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg border p-12 max-w-lg text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedUser.username}님</h2>
-          <div className="text-lg text-gray-600 mb-2">{selectedUser.information}</div>
-          <p className="text-xl text-gray-600 mb-8">
-            {formatDate(todaysLecture.lecture_date)} {sessionInfo?.title}
-          </p>
-          <div className="space-y-4">
-            <button
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
+            <div className="flex items-center justify-between mb-8">
+              <button
+                onClick={handleGoBack}
+                className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <ChevronLeftIcon className="h-6 w-6 text-slate-600" />
+              </button>
+              <div className="w-12"></div>
+            </div>
+
+            <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <span className="text-4xl font-bold text-blue-600">
+                {selectedUser.username?.charAt(0) || '?'}
+              </span>
+            </div>
+
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              {selectedUser.username || '이름 없음'}님
+            </h2>
+
+            {selectedUser.information && (
+                <div className="text-lg text-gray-600 mb-8">{selectedUser.information}</div>
+            )}
+
+            <Button
               onClick={handleAttendanceConfirm}
-              disabled={isProcessing}
-              className="w-full px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xl font-bold disabled:opacity-50"
+              disabled={isProcessing || !todaysLecture}
+              className="w-full h-16 text-xl font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
             >
-              {isProcessing ? '처리 중...' : '출석체크'}
-            </button>
-            <button
-              onClick={() => setSelectedUser(null)}
-              className="w-full px-8 py-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-lg"
-            >
-              다시 선택
-            </button>
+              {isProcessing ? '처리 중...' : '출석 체크'}
+            </Button>
+
+            {!todaysLecture && (
+              <p className="text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
+  // 메인 검색 화면
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6 flex-shrink-0">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* 상단 헤더 - 강의정보 영역 */}
+      <div className="bg-white shadow-sm p-6 flex items-center justify-between">
+        <button
+          onClick={handleGoBack}
+          className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+        >
+          <XIcon className="h-6 w-6 text-slate-600" />
+        </button>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-slate-900">{sessionInfo?.title} 출석체크</h1>
+          {todaysLecture ? (
+            <p className="text-lg text-slate-500 mt-2">
+              {formatDate(todaysLecture.lecture_date)} {sessionInfo?.title}
+            </p>
+          ) : (
+            <p className="text-lg text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+          )}
+        </div>
+        <div className="w-12"></div>
+      </div>
+
+      {/* 검색창 */}
+      <div className="bg-white p-6 border-b">
+        <div className="relative max-w-2xl mx-auto">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
+            className="w-full h-16 px-6 pr-16 text-lg border-2 border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
+          />
+          {searchQuery && (
             <button
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={handleClearSearch}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-slate-100 rounded-full transition-colors"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="h-6 w-6 text-slate-400" />
             </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{sessionInfo?.title}</h1>
-              <p className="text-gray-600">
-                {todaysLecture?.lecture_date ? formatDate(todaysLecture.lecture_date) : ''} 출석체크
-              </p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 메인 컨텐츠 - 스크롤 가능 */}
-      <div className="flex-1 overflow-hidden pb-60">
-        <div className="max-w-7xl mx-auto px-8 py-8 h-full overflow-y-auto">
-          {/* 검색 영역 */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">이름 검색</h2>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                placeholder="이름을 입력하거나 아래 키패드를 사용하세요"
-                className="w-full px-6 py-4 text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                readOnly
-              />
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* 검색 결과 */}
+      {/* 검색 결과 */}
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">수강생 목록</h2>
@@ -372,28 +418,29 @@ const KioskAttendance = () => {
         </div>
       </div>
 
-      {/* 키패드 - 하단 고정 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">한글 자음 키패드</h2>
-          <div className="grid grid-cols-7 gap-3">
+      {/* 하단 키패드 영역 */}
+      <div className="bg-white border-t p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-5 gap-3 mb-4">
             {KOREAN_CONSONANTS.map((consonant) => (
-              <button
+              <Button
                 key={consonant}
                 onClick={() => handleKeypadInput(consonant)}
-                className="h-16 bg-gray-100 hover:bg-gray-200 rounded-lg text-2xl font-bold text-gray-900 transition-colors active:bg-gray-300"
+                variant="outline"
+                className="h-16 text-xl font-bold hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all"
               >
                 {consonant}
-              </button>
+              </Button>
             ))}
-            <button
+
+            {/* 백스페이스 버튼 */}
+            <Button
               onClick={handleBackspace}
-              className="h-16 bg-red-100 hover:bg-red-200 rounded-lg text-gray-700 transition-colors active:bg-red-300 flex items-center justify-center"
+              variant="outline"
+              className="h-16 px-8 hover:bg-red-50 hover:border-red-300 active:scale-95 transition-all"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
-              </svg>
-            </button>
+              <BackspaceIcon className="h-6 w-6" />
+            </Button>
           </div>
         </div>
       </div>

@@ -69,7 +69,7 @@ const CourseListPage = () => {
 
 
     return (
-        <div>
+        <div className="min-w-[1024px]">
             {/* 에러 메시지 */}
             {error && (
                 <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">

@@ -245,8 +245,8 @@ const Header = () => {
                         <span className="text-white font-medium text-sm">{getUserAvatarText()}</span>
                       </div>
                     )}
-                    <span className="hidden md:block text-sm">{user?.username || '사용자'}</span>
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="hidden lg:block text-sm">{user?.username || '사용자'}</span>
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>

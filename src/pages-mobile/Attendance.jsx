@@ -268,12 +268,12 @@ export default function Attendance() {
                   <CardContent className="p-5 space-y-4">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-slate-900 text-lg">{lecture.sessionTitle}</h3>
-                        <span className={`text-sm font-semibold ${attendanceStatus.color}`}>
+                        <h3 className="font-bold text-slate-900 text-lg flex-1 min-w-0 mr-3 truncate">{lecture.sessionTitle}</h3>
+                        <span className={`text-sm font-semibold flex-shrink-0 ${attendanceStatus.color}`}>
                           {attendanceStatus.text}
                         </span>
                       </div>
-                      <p className="text-slate-600">
+                      <p className="text-slate-600 truncate">
                         {lecture.title} - {lecture.lecture_date ? formatDate(lecture.lecture_date) : '날짜 미정'}
                       </p>
                     </div>

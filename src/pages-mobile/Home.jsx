@@ -189,7 +189,7 @@ export default function Home() {
             </div>
 
             {activeCourses.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col">
                 {activeCourses.map((enrollment) => {
                   const progress = getProgress(enrollment);
                   const attendanceRate = getAttendanceRate(enrollment);
@@ -198,12 +198,12 @@ export default function Home() {
                   const totalLectures = progressData?.totalLectures || 0;
 
                   return (
-                    <Link to={`/course/${enrollment.session_id}`} key={enrollment.id}>
+                    <Link to={`/mobile/session/${enrollment.session_id}`} key={enrollment.id}>
                       <Card className="border-slate-100 shadow-sm active:scale-[0.99] transition-transform">
                         <CardContent className="p-5">
                           <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <h3 className="font-bold text-slate-800 text-lg">
+                            <div className="flex-1 min-w-0 mr-3">
+                              <h3 className="font-bold text-slate-800 text-lg truncate">
                                 {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
                               </h3>
                             </div>
@@ -212,7 +212,7 @@ export default function Home() {
                           <div className="space-y-3">
                             <div className="space-y-1.5">
                               <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">진행도 ({attendedLectures}/{totalLectures}회차)</span>
+                                <span className="text-slate-500 truncate">진행도 ({attendedLectures}/{totalLectures}회차)</span>
                                 <span className="text-blue-600 font-bold">{progress}%</span>
                               </div>
                               <Progress value={progress} className="h-2"/>
@@ -239,7 +239,7 @@ export default function Home() {
         )}
 
         {/* Recruiting Courses Section */}
-        <section className="space-y-4">
+        <section className="space-y-4 flex flex-col">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">모집중인 강의</h2>
             {/*todo: /mobile/courses */}
@@ -249,16 +249,16 @@ export default function Home() {
           </div>
 
           {recruitingSessions.length > 0 ? (
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {recruitingSessions.map((session) => (
                 <Link to={`/course/${session.id}/recruit`} key={session.id}>
                   <Card className="border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-5 flex items-center justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-bold text-slate-800">{session.title}</h3>
-                        <p className="text-sm text-slate-500">기간: {formatPeriod(session)}</p>
+                      <div className="space-y-1 flex-1 min-w-0 mr-3">
+                        <h3 className="font-bold text-slate-800 truncate">{session.title}</h3>
+                        <p className="text-sm text-slate-500 truncate">기간: {formatPeriod(session)}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         <Badge variant="blue" className="bg-blue-50 text-blue-600 hover:bg-blue-100">
                           신청마감 {getDeadline(session)}
                         </Badge>

@@ -275,11 +275,11 @@ export default function SessionDetail() {
           <Card className="border-blue-100 bg-blue-50/50">
             <CardContent className="p-5 space-y-4">
               <div>
-                <h1 className="text-xl font-bold text-slate-900 mb-2">
+                <h1 className="text-xl font-bold text-slate-900 mb-2 truncate">
                   {sessionInfo?.title || '강의명 없음'}
                 </h1>
                 {sessionInfo?.description && (
-                  <p className="text-sm text-slate-600 mb-3">
+                  <p className="text-sm text-slate-600 mb-3 truncate">
                     {sessionInfo.description}
                   </p>
                 )}
@@ -326,18 +326,18 @@ export default function SessionDetail() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0 mr-3">
                             <div className="flex items-center mb-2">
-                              <span className="text-sm font-medium text-slate-500 mr-2">
+                              <span className="text-sm font-medium text-slate-500 mr-2 flex-shrink-0">
                                 {index + 1}회차
                               </span>
-                              <h3 className="font-semibold text-slate-900">
+                              <h3 className="font-semibold text-slate-900 truncate">
                                 {lecture.title || `${index + 1}회차 강의`}
                               </h3>
                             </div>
 
                             <div className="flex items-center text-sm text-slate-600 space-x-4">
-                              <div className="flex items-center">
+                              <div className="flex items-center truncate">
                                 <CalendarIcon className="h-4 w-4 mr-1" />
                                 {lecture.lecture_date ? formatDate(lecture.lecture_date) : '날짜 미정'}
                               </div>
@@ -350,7 +350,7 @@ export default function SessionDetail() {
                             </div>
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-shrink-0">
                             <div className={`flex items-center px-3 py-1 rounded-full ${status.color} ${status.bgColor} border ${status.borderColor}`}>
                               {status.icon}
                               <span className="ml-1 text-sm font-medium">
@@ -373,7 +373,7 @@ export default function SessionDetail() {
                         </div>
 
                         {attendance?.created_at && (
-                          <div className="mt-2 text-xs text-slate-500">
+                          <div className="mt-2 text-xs text-slate-500 truncate">
                             체크 시간: {formatDate(attendance.created_at)} {formatTime(attendance.created_at)}
                           </div>
                         )}

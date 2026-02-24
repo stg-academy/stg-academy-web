@@ -140,11 +140,11 @@ export default function MyLearning() {
       <Card className="border-slate-100 shadow-sm">
         <CardContent className="p-5 space-y-4">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-bold text-slate-900 text-lg">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-slate-900 text-lg truncate">
                 {enrollment.session_title || '강의명 없음'}
               </h3>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-slate-500 mt-1 truncate">
                 진행도 ({attendedLectures}/{totalLectures}회차)
               </p>
             </div>

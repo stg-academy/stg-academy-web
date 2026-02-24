@@ -8,6 +8,7 @@ import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
 import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
 import EnrollTab from "./EnrollTab.jsx";
+import KioskTab from "./KioskTab.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -98,10 +99,6 @@ const SessionDetailPage = () => {
         alert('출석인원 엑셀 내보내기 기능') // todo: handleExportExcel 구현 필요
     }
 
-    // 키오스크 출석체크로 이동
-    const handleKioskAttendance = () => {
-        navigate(`/sessions/${sessionId}/attendance/kiosk`)
-    }
 
     if (loading) {
         return (
@@ -198,6 +195,16 @@ const SessionDetailPage = () => {
                                 출석부
                             </button>
                             <button
+                                onClick={() => setActiveTab('kiosk')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    activeTab === 'kiosk'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                현장 출석체크
+                            </button>
+                            <button
                                 onClick={() => setActiveTab('instructors')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                                     activeTab === 'instructors'
@@ -216,16 +223,6 @@ const SessionDetailPage = () => {
                                 }`}
                             >
                                 구글시트 관리
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('kiosk')}
-                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                                    activeTab === 'kiosk'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
-                            >
-                                키오스크 출석체크
                             </button>
                         </nav>
                     </div>
@@ -273,6 +270,14 @@ const SessionDetailPage = () => {
                     />
                 )}
 
+                {/* 현장 출석체크 탭 */}
+                {activeTab === 'kiosk' && (
+                    <KioskTab
+                        sessionId={sessionId}
+                        todaysLecture={todaysLecture}
+                    />
+                )}
+
                 {/* 강사/관리자 탭 */}
                 {activeTab === 'instructors' && (
                     <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -284,75 +289,6 @@ const SessionDetailPage = () => {
                 {activeTab === 'googleSheet' && (
                     <div className="bg-white rounded-lg shadow p-8 text-center">
                         <p className="text-gray-500">구글시트 관리 기능이 여기에 표시됩니다.</p>
-                    </div>
-                )}
-
-                {/* 키오스크 출석체크 탭 */}
-                {activeTab === 'kiosk' && (
-                    <div className="bg-white rounded-lg shadow p-8">
-                        <div className="text-center">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">키오스크 출석체크</h3>
-
-                            {todaysLecture ? (
-                                <div className="mb-6">
-                                    <div className="inline-flex items-center px-3 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium mb-4">
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        오늘 진행 강의 있음
-                                    </div>
-                                    <p className="text-gray-600 mb-2">
-                                        <strong>{todaysLecture.title}</strong>
-                                    </p>
-                                    <p className="text-sm text-gray-500 mb-6">
-                                        {new Date(todaysLecture.lecture_date).toLocaleDateString('ko-KR', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            weekday: 'long'
-                                        })}
-                                    </p>
-                                    <button
-                                        onClick={handleKioskAttendance}
-                                        className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                                    >
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        키오스크 출석체크 시작
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="mb-6">
-                                    <div className="inline-flex items-center px-3 py-2 rounded-full bg-gray-100 text-gray-600 text-sm font-medium mb-4">
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        오늘 진행 강의 없음
-                                    </div>
-                                    <p className="text-gray-500 mb-6">오늘 예정된 강의가 없어 키오스크 출석체크를 사용할 수 없습니다.</p>
-                                    <button
-                                        disabled
-                                        className="inline-flex items-center px-6 py-3 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed"
-                                    >
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        키오스크 출석체크 시작
-                                    </button>
-                                </div>
-                            )}
-
-                            <div className="text-left bg-blue-50 rounded-lg p-4">
-                                <h4 className="font-medium text-blue-900 mb-2">키오스크 출석체크 안내</h4>
-                                <ul className="text-sm text-blue-800 space-y-1">
-                                    <li>• 수강생들이 직접 이름을 검색하여 출석체크할 수 있습니다</li>
-                                    <li>• 한글 초성 검색이 가능하여 빠른 검색이 가능합니다</li>
-                                    <li>• 터치스크린에 최적화된 큰 버튼으로 구성되어 있습니다</li>
-                                    <li>• 실시간으로 출석 현황을 확인할 수 있습니다</li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                 )}
             </main>

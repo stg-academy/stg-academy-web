@@ -4,7 +4,7 @@ import { Button } from '../components/mobile/ui/button';
 import { Card, CardContent } from '../components/mobile/ui/card';
 import { getSession } from '../services/sessionService';
 import { getEnrollsBySession } from '../services/enrollService';
-import { createAttendance, getAttendancesByLecture } from '../services/attendanceService';
+import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getUsersInfo } from '../services/userService';
 
@@ -184,13 +184,11 @@ const KioskAttendance = () => {
 
     setIsProcessing(true);
     try {
-      const attendanceData = {
-        user_id: selectedUser.id,
-        status: 'PRESENT',
-        detail_type: 'PRESENT'
-      };
-
-      await createAttendance(todaysLecture.id, attendanceData);
+      await createOrUpdateAttendance(
+        todaysLecture.id,
+        selectedUser.id,
+        'PRESENT'
+      );
 
       setAttendanceStatus('success');
 

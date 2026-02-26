@@ -354,14 +354,14 @@ const KioskAttendance = () => {
       </div>
 
       {/* 검색창 */}
-      <div className="bg-white p-6 border-b">
+      <div className="bg-white p-6 border-b border-slate-100">
         <div className="relative max-w-2xl mx-auto">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
-            className="w-full h-16 px-6 pr-16 text-lg border-2 border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full h-16 px-6 pr-16 text-lg border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
           />
           {searchQuery && (
             <button
@@ -377,7 +377,7 @@ const KioskAttendance = () => {
       {/* 검색 결과 */}
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">수강생 목록</h2>
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
@@ -391,7 +391,7 @@ const KioskAttendance = () => {
                   <div
                     key={user.id}
                     onClick={() => handleUserSelect(user)}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all ${
                       user.attendance
                         ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
@@ -419,7 +419,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 하단 키패드 영역 */}
-      <div className="bg-white border-t p-6">
+      <div className="bg-white border-t border-slate-100 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-5 gap-3 mb-4">
             {KOREAN_CONSONANTS.map((consonant) => (
@@ -427,7 +427,7 @@ const KioskAttendance = () => {
                 key={consonant}
                 onClick={() => handleKeypadInput(consonant)}
                 variant="outline"
-                className="h-16 text-xl font-bold hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all"
+                className="h-16 text-xl font-bold border-none hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all shadow-sm"
               >
                 {consonant}
               </Button>

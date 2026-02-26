@@ -372,11 +372,11 @@ const AttendanceTable = ({
                                 {/* 출석 상태 셀들 */}
                                 {lectures.map((lecture, lectureIndex) => {
                                     const attendance = userGroup.attendanceMap[lecture.id]
-                                    const status = attendance?.status || 'None'
+                                    const status = attendance?.detail_type || 'None'
                                     const style = getAttendanceStyle(status)
                                     const config = ATTENDANCE_CONFIG[status]
 
-                                    const displayContent = config?.displayShortName || config?.shortName || '-'
+                                    const displayContent = config?.label || '-'
                                     const isHovered = isCellHovered(userIndex, lectureIndex)
                                     const isClickable = !cellUpdateLoading
                                     const isSelected = isMultiSelectMode && isCellSelected(userGroup, lecture)

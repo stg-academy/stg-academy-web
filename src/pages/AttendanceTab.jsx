@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import {useAuth} from '../contexts/AuthContext'
-import {createAttendance, getAttendancesBySession, updateAttendance} from '../services/attendanceService'
+import {createOrUpdateAttendance, getAttendancesBySession} from '../services/attendanceService'
 import AttendanceTable from '../components/tables/AttendanceTable'
 import AttendanceEditModal from '../components/modals/AttendanceEditModal'
 import BulkAttendanceEditModal from '../components/modals/BulkAttendanceEditModal'
@@ -92,21 +92,12 @@ const AttendanceTab = ({
 
         setCellUpdateLoading(true)
         try {
-            if (cellInfo.attendance?.id) {
-                // 기존 출석 수정
-                await updateAttendance(cellInfo.attendance.id, {
-                    status: selectedStatus,
-                    detail_type: selectedStatus,
-                    description: note
-                })
-            } else {
-                await createAttendance(cellInfo.lectureId, {
-                    user_id: cellInfo.userId,
-                    status: selectedStatus,
-                    detail_type: selectedStatus,
-                    description: note
-                })
-            }
+            await createOrUpdateAttendance(
+                cellInfo.lectureId,
+                cellInfo.userId,
+                selectedStatus,
+                note
+            )
             await loadAttendances()
         } catch (err) {
             console.error('출석 정보 업데이트 실패:', err)
@@ -150,22 +141,12 @@ const AttendanceTab = ({
 
             // 변경이 필요한 셀들에 대해서만 업데이트
             const updatePromises = cellsToUpdate.map(async (cellInfo) => {
-                if (cellInfo.attendance?.id) {
-                    // 기존 출석 수정
-                    return updateAttendance(cellInfo.attendance.id, {
-                        status: bulkStatus,
-                        detail_type: bulkStatus,
-                        description: bulkNote
-                    })
-                } else {
-                    // 새 출석 생성
-                    return createAttendance(cellInfo.lectureId, {
-                        user_id: cellInfo.userId,
-                        status: bulkStatus,
-                        detail_type: bulkStatus,
-                        description: bulkNote
-                    })
-                }
+                return createOrUpdateAttendance(
+                    cellInfo.lectureId,
+                    cellInfo.userId,
+                    bulkStatus,
+                    bulkNote
+                )
             })
 
             await Promise.all(updatePromises)

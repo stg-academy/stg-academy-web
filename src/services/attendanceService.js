@@ -1,4 +1,5 @@
 import apiClient from "./apiClient.js";
+import {ATTENDANCE_CONFIG} from "../utils/attendanceStatus.js";
 
 /**
  * 특정 강의의 출석 목록 조회
@@ -8,12 +9,12 @@ import apiClient from "./apiClient.js";
  * @returns {Promise<Array>} 출석 목록
  */
 export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 100) => {
-  try {
-    return await apiClient.get(`/api/attendances/lectures/${lectureId}/attendances`, { skip, limit })
-  } catch (error) {
-    console.error('강의별 출석 목록 조회 실패:', error)
-    throw error
-  }
+    try {
+        return await apiClient.get(`/api/attendances/lectures/${lectureId}/attendances`, {skip, limit})
+    } catch (error) {
+        console.error('강의별 출석 목록 조회 실패:', error)
+        throw error
+    }
 }
 
 /**
@@ -24,12 +25,12 @@ export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 100) 
  * @returns {Promise<Array>} 출석 목록
  */
 export const getAttendancesBySession = async (sessionId, skip = 0, limit = 100) => {
-  try {
-    return await apiClient.get(`/api/attendances/sessions/${sessionId}/attendances`, { skip, limit })
-  } catch (error) {
-    console.error('강좌별 출석 목록 조회 실패:', error)
-    throw error
-  }
+    try {
+        return await apiClient.get(`/api/attendances/sessions/${sessionId}/attendances`, {skip, limit})
+    } catch (error) {
+        console.error('강좌별 출석 목록 조회 실패:', error)
+        throw error
+    }
 }
 
 /**
@@ -38,12 +39,12 @@ export const getAttendancesBySession = async (sessionId, skip = 0, limit = 100) 
  * @returns {Promise<Object>} 출석 정보
  */
 export const getAttendance = async (attendanceId) => {
-  try {
-    return await apiClient.get(`/api/attendances/${attendanceId}`)
-  } catch (error) {
-    console.error('출석 조회 실패:', error)
-    throw error
-  }
+    try {
+        return await apiClient.get(`/api/attendances/${attendanceId}`)
+    } catch (error) {
+        console.error('출석 조회 실패:', error)
+        throw error
+    }
 }
 
 /**
@@ -53,12 +54,12 @@ export const getAttendance = async (attendanceId) => {
  * @returns {Promise<Object>} 생성된 출석 정보
  */
 export const createAttendance = async (lectureId, attendanceData) => {
-  try {
-    return await apiClient.post(`/api/attendances/lectures/${lectureId}/attendances`, attendanceData)
-  } catch (error) {
-    console.error('출석 생성 실패:', error)
-    throw error
-  }
+    try {
+        return await apiClient.post(`/api/attendances/lectures/${lectureId}/attendances`, attendanceData)
+    } catch (error) {
+        console.error('출석 생성 실패:', error)
+        throw error
+    }
 }
 
 /**
@@ -68,17 +69,62 @@ export const createAttendance = async (lectureId, attendanceData) => {
  * @returns {Promise<Object>} 수정된 출석 정보
  */
 export const updateAttendance = async (attendanceId, attendanceData) => {
-  try {
-    return await apiClient.put(`/api/attendances/${attendanceId}`, attendanceData)
-  } catch (error) {
-    console.error('출석 수정 실패:', error)
-    throw error
-  }
+    try {
+        return await apiClient.put(`/api/attendances/${attendanceId}`, attendanceData)
+    } catch (error) {
+        console.error('출석 수정 실패:', error)
+        throw error
+    }
+}
+
+/**
+ * 출석 생성 또는 수정 (존재하지 않으면 생성, 존재하면 수정)
+ * @param {string} lectureId - 강의 ID (UUID)
+ * @param {string} userId - 사용자 ID (UUID)
+ * @param {string} attendanceType - 출석 타입 (ATTENDANCE_CONFIG의 키)
+ * @param {string} note - 비고 (선택사항)
+ * @returns {Promise<Object>} 생성 또는 수정된 출석 정보
+ */
+export const createOrUpdateAttendance = async (lectureId, userId, attendanceType, note = '') => {
+    try {
+        const config = ATTENDANCE_CONFIG[attendanceType]
+
+        if (!config) {
+            throw new Error(`유효하지 않은 출석 타입: ${attendanceType}`);
+        }
+
+        // 출석 데이터 구성
+        const attendanceData = {
+            user_id: userId,
+            status: config.status || attendanceType,
+            detail_type: config.detail_type || attendanceType,
+            note: note || ''
+        }
+
+        const existingAttendances = await getAttendancesByLecture(lectureId)
+        const existingAttendance = existingAttendances.find(
+            att => (att.user_id === userId || att.student_id === userId)
+        )
+
+        if (existingAttendance) {
+            // 기존 출석이 있으면 수정
+            return await updateAttendance(existingAttendance.id, attendanceData)
+        } else {
+            // 기존 출석이 없으면 새로 생성
+            return await createAttendance(lectureId, attendanceData)
+        }
+
+    } catch (error) {
+        console.error('출석 생성/수정 실패:', error)
+        throw error
+    }
 }
 
 export default {
-  getAttendancesByLecture,
-  getAttendance,
-  createAttendance,
-  updateAttendance,
+    getAttendancesByLecture,
+    getAttendancesBySession,
+    getAttendance,
+    createAttendance,
+    updateAttendance,
+    createOrUpdateAttendance,
 }

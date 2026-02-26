@@ -7,7 +7,7 @@ import { Badge } from '../components/mobile/ui/badge';
 import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
-import { getAttendancesBySession, createAttendance } from '../services/attendanceService';
+import { getAttendancesBySession, createOrUpdateAttendance } from '../services/attendanceService';
 
 const CheckCircleIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,13 +173,12 @@ export default function SessionDetail() {
     setCheckingIn(lecture.id);
 
     try {
-      const attendanceData = {
-        user_id: user.id,
-        status: 'PRESENT',
-        detail_type: 'PRESENT'
-      };
-
-      const newAttendance = await createAttendance(lecture.id, attendanceData);
+      // 출석 생성/수정 API 호출
+      const newAttendance = await createOrUpdateAttendance(
+        lecture.id,
+        user.id,
+        'PRESENT'
+      );
 
       // 출석 기록 업데이트
       setAttendances(prev => [...prev, newAttendance]);

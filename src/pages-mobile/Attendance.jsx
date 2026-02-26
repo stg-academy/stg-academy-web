@@ -6,7 +6,7 @@ import { Button } from '../components/mobile/ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
-import { createAttendance, getAttendancesByLecture } from '../services/attendanceService';
+import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
 
 const QrCodeIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,14 +130,12 @@ export default function Attendance() {
     setCheckingIn(true);
 
     try {
-      // 출석 생성 API 호출
-      const attendanceData = {
-        user_id: user.id,
-        status: 'PRESENT',
-        detail_type: 'PRESENT'
-      };
-
-      const newAttendance = await createAttendance(lecture.id, attendanceData);
+      // 출석 생성/수정 API 호출
+      const newAttendance = await createOrUpdateAttendance(
+        lecture.id,
+        user.id,
+        'PRESENT'
+      );
 
       // 출석 기록 업데이트
       setLectureAttendances(prev => ({
@@ -216,35 +214,6 @@ export default function Attendance() {
       <MobileLayout headerTitle="출석">
         <div className="p-5 flex justify-center items-center h-64">
           <div className="text-slate-500">로딩 중...</div>
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  if (checkedIn && checkedInLecture) {
-    return (
-      <MobileLayout headerTitle="출석">
-        <div className="h-full flex flex-col items-center justify-center p-6 space-y-6 pt-20">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-            <CheckCircle2Icon className="h-12 w-12 text-green-600" />
-          </div>
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-slate-900">출석 완료!</h2>
-            <p className="text-slate-500">
-              {checkedInLecture.sessionTitle}<br/>
-              {checkedInLecture.lecture_date ? formatDate(checkedInLecture.lecture_date) : ''} {formatTime(new Date())}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full max-w-xs"
-            onClick={() => {
-              setCheckedIn(false);
-              setCheckedInLecture(null);
-            }}
-          >
-            돌아가기
-          </Button>
         </div>
       </MobileLayout>
     );

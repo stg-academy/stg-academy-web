@@ -1,53 +1,42 @@
 // 출석 상태 설정
 export const ATTENDANCE_CONFIG = {
   PRESENT: {
-    shortName: '출석',
-    displayShortName: '출석',
     label: '출석',
+    status: 'PRESENT',
+    detail_type: 'PRESENT',
     color: 'text-green-700',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
     className: 'text-green-700'
   },
-  ABSENT: {
-    shortName: '결석',
-    displayShortName: '결석',
-    label: '결석',
-    color: 'text-red-700',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
-    className: 'text-red-700'
-  },
-  LATE: {
-    shortName: '지각',
-    displayShortName: '지각',
-    label: '지각',
-    color: 'text-yellow-700',
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200',
-    className: 'text-yellow-700'
-  },
-  EARLY_LEAVE: {
-    shortName: '조퇴',
-    displayShortName: '조퇴',
-    label: '조퇴',
-    color: 'text-orange-700',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
-    className: 'text-orange-700'
-  },
-  EXCUSED: {
-    shortName: '공결',
-    displayShortName: '공결',
-    label: '공결',
+  ASSIGNMENT: {
+    label: '과제물 제출',
+    status: 'PRESENT',
+    detail_type: 'ASSIGNMENT',
     color: 'text-blue-700',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     className: 'text-blue-700'
   },
+  ALTERNATIVE: {
+    label: '교차수강',
+    status: 'PRESENT',
+    detail_type: 'ALTERNATIVE',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    className: 'text-blue-700'
+  },
+  ABSENT: {
+    label: '결석',
+    status: 'ABSENT',
+    detail_type: 'ABSENT',
+    color: 'text-red-700',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-200',
+    className: 'text-red-700'
+  },
   None: {
-    shortName: '-',
-    displayShortName: '-',
     label: '미입력',
     color: 'text-gray-500',
     bgColor: 'bg-gray-50',
@@ -95,7 +84,6 @@ export const getAttendanceTooltip = (attendance) => {
 export const getAttendanceOptions = () => {
   return Object.keys(ATTENDANCE_CONFIG).filter(key => key !== 'None').map(key => ({
     value: key,
-    label: ATTENDANCE_CONFIG[key].label,
-    shortName: ATTENDANCE_CONFIG[key].shortName
+    label: ATTENDANCE_CONFIG[key].label
   }))
 }

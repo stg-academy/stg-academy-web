@@ -8,6 +8,7 @@ import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
 import { getAttendancesBySession, createOrUpdateAttendance } from '../services/attendanceService';
+import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
 
 const CheckCircleIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,55 +91,28 @@ export default function SessionDetail() {
   const getAttendanceStatus = (attendance) => {
     if (!attendance) {
       return {
-        text: '미체크',
+        label: '출석 안함',
         color: 'text-slate-500',
         bgColor: 'bg-slate-50',
         borderColor: 'border-slate-200',
-        icon: <ClockIcon className="h-4 w-4" />
-      };
+        className: 'text-slate-500'
+      }
     }
 
-    switch (attendance.status) {
+    const detailType = attendance.detail_type || 'None'
+    return ATTENDANCE_CONFIG[detailType]
+  };
+
+  const getAttendanceIcon = (detailType) => {
+    switch (detailType) {
       case 'PRESENT':
-        return {
-          text: '출석',
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
-          icon: <CheckCircleIcon className="h-4 w-4" />
-        };
+      case 'ASSIGNMENT':
+      case 'ALTERNATIVE':
+        return <CheckCircleIcon className="h-4 w-4" />
       case 'ABSENT':
-        return {
-          text: '결석',
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
-          icon: <XCircleIcon className="h-4 w-4" />
-        };
-      case 'LATE':
-        return {
-          text: '지각',
-          color: 'text-orange-600',
-          bgColor: 'bg-orange-50',
-          borderColor: 'border-orange-200',
-          icon: <ClockIcon className="h-4 w-4" />
-        };
-      case 'EXCUSED':
-        return {
-          text: '사유결석',
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
-          icon: <ClockIcon className="h-4 w-4" />
-        };
+        return <XCircleIcon className="h-4 w-4" />
       default:
-        return {
-          text: '미확인',
-          color: 'text-slate-500',
-          bgColor: 'bg-slate-50',
-          borderColor: 'border-slate-200',
-          icon: <ClockIcon className="h-4 w-4" />
-        };
+        return <ClockIcon className="h-4 w-4" />
     }
   };
 
@@ -317,11 +291,12 @@ export default function SessionDetail() {
                 .map((lecture, index) => {
                   const attendance = getUserAttendanceForLecture(lecture.id);
                   const status = getAttendanceStatus(attendance);
+                  const icon = getAttendanceIcon(attendance?.detail_type || 'None');
 
                   return (
                     <Card
                       key={lecture.id}
-                      className={`border ${status.borderColor} ${status.bgColor}`}
+                      className={`border ${status?.borderColor} ${status?.bgColor}`}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -350,12 +325,12 @@ export default function SessionDetail() {
                           </div>
 
                           <div className="flex items-center space-x-2 flex-shrink-0">
-                            <div className={`flex items-center px-3 py-1 rounded-full ${status.color} ${status.bgColor} border ${status.borderColor}`}>
-                              {status.icon}
-                              <span className="ml-1 text-sm font-medium">
-                                {status.text}
+                            <Badge className={`${status?.className} ${status?.bgColor} ${status?.borderColor} border flex items-center`}>
+                              {icon}
+                              <span className="ml-1">
+                                {status?.label || '미확인'}
                               </span>
-                            </div>
+                            </Badge>
 
                             {/* 출석 체크 버튼 */}
                             {canCheckAttendance(lecture) && (

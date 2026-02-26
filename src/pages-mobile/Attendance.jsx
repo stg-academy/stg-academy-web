@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
 import { Card, CardContent } from '../components/mobile/ui/card';
 import { Button } from '../components/mobile/ui/button';
+import { Badge } from '../components/mobile/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
 import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
+import { ATTENDANCE_CONFIG, getAttendanceStyle } from '../utils/attendanceStatus';
 
 const QrCodeIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,20 +175,18 @@ export default function Attendance() {
   };
 
   const getAttendanceStatus = (attendance) => {
-    if (!attendance) return { text: '출석 안함', color: 'text-slate-500' };
-
-    switch (attendance.status) {
-      case 'PRESENT':
-        return { text: '출석', color: 'text-green-600' };
-      case 'ABSENT':
-        return { text: '결석', color: 'text-red-600' };
-      case 'LATE':
-        return { text: '지각', color: 'text-orange-600' };
-      case 'EXCUSED':
-        return { text: '사유결석', color: 'text-blue-600' };
-      default:
-        return { text: '미확인', color: 'text-slate-500' };
+    if (!attendance) {
+      return {
+        label: '출석 안함',
+        color: 'text-slate-500',
+        bgColor: 'bg-slate-50',
+        borderColor: 'border-slate-200',
+        className: 'text-slate-500'
+      }
     }
+
+    const detailType = attendance.detail_type || 'None'
+    return ATTENDANCE_CONFIG[detailType]
   };
 
   if (!user) {
@@ -238,9 +238,9 @@ export default function Attendance() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-slate-900 text-lg flex-1 min-w-0 mr-3 truncate">{lecture.sessionTitle}</h3>
-                        <span className={`text-sm font-semibold flex-shrink-0 ${attendanceStatus.color}`}>
-                          {attendanceStatus.text}
-                        </span>
+                        <Badge className={`${attendanceStatus.className} ${attendanceStatus.bgColor} ${attendanceStatus.borderColor} border`}>
+                          {attendanceStatus.label}
+                        </Badge>
                       </div>
                       <p className="text-slate-600 truncate">
                         {lecture.title} - {lecture.lecture_date ? formatDate(lecture.lecture_date) : '날짜 미정'}
@@ -250,7 +250,7 @@ export default function Attendance() {
                     <Button
                       className={`w-full h-14 text-lg font-semibold shadow-lg ${
                         isAlreadyChecked
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200 shadow-green-200'
+                          ? `${attendanceStatus.bgColor} ${attendanceStatus.className} hover:opacity-80 border ${attendanceStatus.borderColor}`
                           : 'shadow-blue-200'
                       }`}
                       onClick={() => handleCheckIn(lecture)}

@@ -21,6 +21,7 @@ import Attendance from "./pages-mobile/Attendance.jsx";
 import SessionDetail from "./pages-mobile/SessionDetail.jsx";
 import Profile from "./pages/Profile.jsx";
 import Search from "./pages-mobile/Search.jsx";
+import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
     // 현재 URL이 카카오 콜백인지 확인
@@ -53,6 +54,9 @@ function AppContent() {
                 <Route path="mobile/attendance" element={<Attendance />}/>
                 <Route path="mobile/session/:sessionId" element={<SessionDetail />}/>
                 <Route path="mobile/search" element={<Search />}/>
+
+                // 키오스크
+                <Route path="/sessions/:session_id/attendance/kiosk" element={<KioskAttendance />}/>
 
                 // 관리자 전용 라우트
                 <Route path="/courses" element={

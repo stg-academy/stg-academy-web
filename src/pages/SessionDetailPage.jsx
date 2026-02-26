@@ -8,6 +8,7 @@ import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
 import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
 import EnrollTab from "./EnrollTab.jsx";
+import KioskTab from "./KioskTab.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -22,6 +23,7 @@ const SessionDetailPage = () => {
     const [enrolls, setEnrolls] = useState([])
     const [enrollsLoading, setEnrollsLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [todaysLecture, setTodaysLecture] = useState(null)
 
     // 강좌 데이터 로드
     useEffect(() => {
@@ -41,6 +43,17 @@ const SessionDetailPage = () => {
             setLecturesLoading(true)
             const data = await getLecturesBySession(sessionId)
             setLectures(data)
+
+            // 오늘 강의 찾기
+            const today = new Date().toISOString().split('T')[0]
+            const todayLecture = data.find(lecture => {
+                if (lecture.lecture_date) {
+                    const lectureDate = new Date(lecture.lecture_date).toISOString().split('T')[0]
+                    return lectureDate === today
+                }
+                return false
+            })
+            setTodaysLecture(todayLecture || null)
         } catch (err) {
             console.error('강의 목록 조회 실패:', err)
             setError('강의 목록을 불러오는데 실패했습니다')
@@ -85,6 +98,7 @@ const SessionDetailPage = () => {
     const handleExportExcel = () => {
         alert('출석인원 엑셀 내보내기 기능') // todo: handleExportExcel 구현 필요
     }
+
 
     if (loading) {
         return (
@@ -181,6 +195,16 @@ const SessionDetailPage = () => {
                                 출석부
                             </button>
                             <button
+                                onClick={() => setActiveTab('kiosk')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    activeTab === 'kiosk'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                현장 출석체크
+                            </button>
+                            <button
                                 onClick={() => setActiveTab('instructors')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                                     activeTab === 'instructors'
@@ -243,6 +267,14 @@ const SessionDetailPage = () => {
                         enrollsLoading={enrollsLoading}
                         loading={loading}
                         onError={setError}
+                    />
+                )}
+
+                {/* 현장 출석체크 탭 */}
+                {activeTab === 'kiosk' && (
+                    <KioskTab
+                        sessionId={sessionId}
+                        todaysLecture={todaysLecture}
                     />
                 )}
 

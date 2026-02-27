@@ -6,7 +6,7 @@ import apiClient from "./apiClient.js";
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 수강 신청 목록
  */
-export const getEnrolls = async (skip = 0, limit = 100) => {
+export const getEnrolls = async (skip = 0, limit = 1000) => {
   try {
     return await apiClient.get('/api/enrolls/', { skip, limit })
   } catch (error) {
@@ -22,7 +22,7 @@ export const getEnrolls = async (skip = 0, limit = 100) => {
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 사용자의 수강 신청 목록
  */
-export const getEnrollsByUser = async (userId, skip = 0, limit = 100) => {
+export const getEnrollsByUser = async (userId, skip = 0, limit = 1000) => {
   try {
     return await apiClient.get(`/api/enrolls/users/${userId}/enrolls`, { skip, limit })
   } catch (error) {
@@ -38,7 +38,7 @@ export const getEnrollsByUser = async (userId, skip = 0, limit = 100) => {
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 강좌의 수강 신청 목록
  */
-export const getEnrollsBySession = async (sessionId, skip = 0, limit = 100) => {
+export const getEnrollsBySession = async (sessionId, skip = 0, limit = 1000) => {
   try {
     return await apiClient.get(`/api/enrolls/sessions/${sessionId}/enrolls`, { skip, limit })
   } catch (error) {

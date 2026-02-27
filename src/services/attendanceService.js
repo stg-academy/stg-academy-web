@@ -8,7 +8,7 @@ import {ATTENDANCE_CONFIG} from "../utils/attendanceStatus.js";
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 출석 목록
  */
-export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 100) => {
+export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 1000) => {
     try {
         return await apiClient.get(`/api/attendances/lectures/${lectureId}/attendances`, {skip, limit})
     } catch (error) {
@@ -24,7 +24,7 @@ export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 100) 
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 출석 목록
  */
-export const getAttendancesBySession = async (sessionId, skip = 0, limit = 100) => {
+export const getAttendancesBySession = async (sessionId, skip = 0, limit = 1000) => {
     try {
         return await apiClient.get(`/api/attendances/sessions/${sessionId}/attendances`, {skip, limit})
     } catch (error) {

@@ -6,7 +6,7 @@ import apiClient from "./apiClient.js";
  * @param {number} limit - 조회할 항목 수 (최대 1000)
  * @returns {Promise<Array>} 사용자 정보 목록
  */
-export const getUsersInfo = async (skip = 0, limit = 100) => {
+export const getUsersInfo = async (skip = 0, limit = 1000) => {
   try {
     return await apiClient.get('/api/users/info', { skip, limit })
   } catch (error) {
@@ -21,7 +21,7 @@ export const getUsersInfo = async (skip = 0, limit = 100) => {
  * @param {number} limit - 조회할 항목 수 (최대 1000)
  * @returns {Promise<Array>} 사용자 목록
  */
-export const getUsers = async (skip = 0, limit = 100) => {
+export const getUsers = async (skip = 0, limit = 1000) => {
   try {
     return await apiClient.get('/api/users', { skip, limit })
   } catch (error) {

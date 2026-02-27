@@ -6,7 +6,7 @@ import apiClient from "./apiClient.js";
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 코스 목록
  */
-export const getCourses = async (skip = 0, limit = 100) => {
+export const getCourses = async (skip = 0, limit = 1000) => {
   try {
     return await apiClient.get('/api/courses', { skip, limit })
   } catch (error) {

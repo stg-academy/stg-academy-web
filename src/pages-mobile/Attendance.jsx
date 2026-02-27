@@ -210,13 +210,7 @@ export default function Attendance() {
 
   const getAttendanceStatus = (attendance) => {
     if (!attendance) {
-      return {
-        label: '출석 안함',
-        color: 'text-slate-500',
-        bgColor: 'bg-slate-50',
-        borderColor: 'border-slate-200',
-        className: 'text-slate-500'
-      }
+      return ATTENDANCE_CONFIG['None'];
     }
 
     const detailType = attendance.detail_type || 'None'
@@ -267,7 +261,7 @@ export default function Attendance() {
               const isAlreadyChecked = !!attendance;
 
               return (
-                <Card key={lecture.id} className={`mb-3 ${isAlreadyChecked ? 'border-green-100 bg-green-50/50' : 'border-blue-100 bg-blue-50/50'}`}>
+                <Card key={lecture.id} className={`mb-3 bg-white ${isAlreadyChecked ? 'border-green-100 ' : 'border-blue-100'} `}>
                   <CardContent className="p-5 space-y-4">
                     <div>
                       <div className="flex items-center justify-between mb-2">

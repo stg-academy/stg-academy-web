@@ -3,7 +3,7 @@ import * as React from "react"
 const Card = React.forwardRef(({className, ...props}, ref) => (
     <div
         ref={ref}
-        className={`rounded-xl border bg-white text-slate-950 shadow-sm ${className || ''}`}
+        className={`rounded-xl border text-slate-950 shadow-sm ${className || ''}`}
         {...props}
     />
 ))

@@ -2,7 +2,7 @@ import * as React from "react"
 
 const Badge = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
   const variants = {
-    default: "border-transparent bg-blue-600 text-white hover:bg-blue-700",
+    default: "",
     secondary: "border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200",
     destructive: "border-transparent bg-red-600 text-white hover:bg-red-700",
     outline: "text-slate-900 border-slate-200",

@@ -68,6 +68,9 @@ export default function SessionDetail() {
       setLectures(Array.isArray(lecturesData) ? lecturesData : []);
       setAttendances(Array.isArray(attendancesData) ? attendancesData : []);
 
+
+      console.log(lecturesData);
+
       // 첫 번째 강의에서 세션 정보 추출 (임시)
       if (lecturesData && lecturesData.length > 0) {
         setSessionInfo({
@@ -297,7 +300,7 @@ export default function SessionDetail() {
                   return (
                     <Card
                       key={lecture.id}
-                      className={`border ${status?.borderColor} ${status?.bgColor}`}
+                      className={`border ${status?.borderColor} bg-white`}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">

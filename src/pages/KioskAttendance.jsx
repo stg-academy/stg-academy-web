@@ -7,6 +7,7 @@ import { getEnrollsBySession } from '../services/enrollService';
 import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getUsersInfo } from '../services/userService';
+import UserRegistrationModal from '../components/modals/UserRegistrationModal';
 
 const XIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,6 +47,47 @@ const KioskAttendance = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
+
+  // 회원 등록 모달 열기
+  const handleOpenRegistrationModal = useCallback(() => {
+    setIsRegistrationModalOpen(true);
+  }, []);
+
+  // 회원 등록 모달 닫기
+  const handleCloseRegistrationModal = useCallback(() => {
+    setIsRegistrationModalOpen(false);
+  }, []);
+
+  // 사용자 등록 완료 처리
+  const handleUserRegistered = useCallback(async () => {
+    // 사용자 목록 새로고침
+    try {
+      const enrollments = await getEnrollsBySession(session_id);
+      const activeEnrollments = enrollments.filter(e =>
+        e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE'
+      );
+
+      const usersInfo = await getUsersInfo(0, 1000);
+      const enrolledUsers = usersInfo.filter(user =>
+        activeEnrollments.some(enrollment => enrollment.user_id === user.id)
+      );
+
+      if (todaysLecture) {
+        const attendances = await getAttendancesByLecture(todaysLecture.id);
+        const usersWithAttendance = enrolledUsers.map(user => ({
+          ...user,
+          attendance: attendances.find(att => att.user_id === user.id)
+        }));
+
+        setAllUsers(usersWithAttendance);
+        setFilteredUsers(usersWithAttendance);
+      }
+    } catch (err) {
+      console.error('사용자 목록 새로고침 실패:', err);
+      setError('사용자 목록 새로고침에 실패했습니다.');
+    }
+  }, [session_id, todaysLecture]);
 
   // 한글 자음 키패드
   const KOREAN_CONSONANTS = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -372,6 +414,27 @@ const KioskAttendance = () => {
         </div>
       </div>
 
+      {/* 도움말 및 신규 회원 등록 */}
+      <div className="bg-slate-100 p-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center text-sm text-slate-600">
+            <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span>이름이 조회되지 않으시나요?</span>
+          </div>
+          <button
+            onClick={handleOpenRegistrationModal}
+            className="bg-gray-700 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            신규 회원 등록하기
+          </button>
+        </div>
+      </div>
+
       {/* 검색 결과 */}
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-6xl mx-auto">
@@ -389,7 +452,7 @@ const KioskAttendance = () => {
                   <div
                     key={user.id}
                     onClick={() => handleUserSelect(user)}
-                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all ${
+                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all shadow-sm ${
                       user.attendance
                         ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
@@ -442,6 +505,15 @@ const KioskAttendance = () => {
           </div>
         </div>
       </div>
+
+      {/* 회원 등록 모달 */}
+      <UserRegistrationModal
+        isOpen={isRegistrationModalOpen}
+        onClose={handleCloseRegistrationModal}
+        sessionId={session_id}
+        onUserRegistered={handleUserRegistered}
+        onError={setError}
+      />
     </div>
   );
 };

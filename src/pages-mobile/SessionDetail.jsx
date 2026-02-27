@@ -7,8 +7,9 @@ import { Badge } from '../components/mobile/ui/badge';
 import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
-import { getAttendancesBySession, createOrUpdateAttendance } from '../services/attendanceService';
+import { getAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
+import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
 
 const CheckCircleIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,6 +44,7 @@ export default function SessionDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [checkingIn, setCheckingIn] = useState(null);
+  const [attendanceModal, setAttendanceModal] = useState({ isOpen: false, lecture: null });
 
   useEffect(() => {
     if (sessionId && user?.id) {
@@ -143,27 +145,26 @@ export default function SessionDetail() {
     return isToday(lecture.lecture_date) && !attendance;
   };
 
-  const handleCheckIn = async (lecture) => {
-    setCheckingIn(lecture.id);
-
-    try {
-      // 출석 생성/수정 API 호출
-      const newAttendance = await createOrUpdateAttendance(
-        lecture.id,
-        user.id,
-        'PRESENT'
-      );
-
-      // 출석 기록 업데이트
-      setAttendances(prev => [...prev, newAttendance]);
-
-      alert('출석이 완료되었습니다!');
-    } catch (error) {
-      console.error('출석 처리 실패:', error);
-      alert('출석 처리 중 오류가 발생했습니다.');
-    } finally {
-      setCheckingIn(null);
+  // 출석 체크 모달 열기
+  const handleShowAttendanceModal = (lecture) => {
+    const attendance = getUserAttendanceForLecture(lecture.id);
+    if (attendance) {
+      alert('이미 출석 처리된 강의입니다.');
+      return;
     }
+    setAttendanceModal({ isOpen: true, lecture });
+  };
+
+  // 출석 체크 모달 닫기
+  const handleCloseAttendanceModal = () => {
+    setAttendanceModal({ isOpen: false, lecture: null });
+  };
+
+  // 출석 체크 성공 처리
+  const handleAttendanceSuccess = (newAttendance) => {
+    // 출석 기록 업데이트
+    setAttendances(prev => [...prev, newAttendance]);
+    alert('출석이 완료되었습니다!');
   };
 
   const formatDate = (dateString) => {
@@ -334,14 +335,14 @@ export default function SessionDetail() {
 
                             {/* 출석 체크 버튼 */}
                             {canCheckAttendance(lecture) && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleCheckIn(lecture)}
-                                disabled={checkingIn === lecture.id}
-                                className="px-3 py-1 text-xs"
+
+                              <Badge className={`text-blue-700 bg-blue-50 border-blue-200 border flex items-center`}
+                                     onClick={() => handleShowAttendanceModal(lecture)}
                               >
-                                {checkingIn === lecture.id ? '처리중...' : '출석 체크'}
-                              </Button>
+                                <span className="ml-1">
+                                 출석 체크
+                                </span>
+                              </Badge>
                             )}
                           </div>
                         </div>
@@ -366,6 +367,15 @@ export default function SessionDetail() {
         </section>
 
       </div>
+
+      {/* 출석 체크 모달 */}
+      <AttendanceCodeModal
+        isOpen={attendanceModal.isOpen}
+        onClose={handleCloseAttendanceModal}
+        lecture={attendanceModal.lecture}
+        user={user}
+        onAttendanceSuccess={handleAttendanceSuccess}
+      />
     </MobileLayout>
   );
 }

@@ -9,6 +9,7 @@ import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
 import EnrollTab from "./EnrollTab.jsx";
 import KioskTab from "./KioskTab.jsx";
+import AttendanceCodeCard from "../components/AttendanceCodeCard.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -99,6 +100,12 @@ const SessionDetailPage = () => {
         alert('출석인원 엑셀 내보내기 기능') // todo: handleExportExcel 구현 필요
     }
 
+    // 출석 코드 새로고침 (추후 개발)
+    const handleRefreshCode = () => {
+        // TODO: API 호출로 새로운 출석 코드 생성
+        console.log('출석 코드 새로고침 - 추후 개발 예정')
+    }
+
 
     if (loading) {
         return (
@@ -147,14 +154,23 @@ const SessionDetailPage = () => {
                     </div>
 
                     <div className="flex items-center space-x-3">
+                        <AttendanceCodeCard
+                            attendanceCode={session.attendance_code}
+                            onRefreshCode={handleRefreshCode}
+                        />
+                        {/* todo: 구현   */}
                         <button
                             onClick={handleExportExcel}
-                            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium disabled:bg-gray-400"
+                            disabled
                         >
                             출석인원 내보내기(엑셀)
                         </button>
+                        {/* todo: 구현   */}
                         <button
-                            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium disabled:bg-gray-400"
+                            disabled
+                        >
                             강좌 설정
                         </button>
                     </div>

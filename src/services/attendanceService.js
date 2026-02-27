@@ -120,6 +120,39 @@ export const createOrUpdateAttendance = async (lectureId, userId, attendanceType
     }
 }
 
+/**
+ * 출석 인증코드를 이용한 출석 생성
+ * @param {string} lectureId - 강의 ID (UUID)
+ * @param {Object} attendanceData - 출석 데이터
+ * @param {string} attendanceData.status - 출석 상태
+ * @param {string} attendanceData.detail_type - 세부 타입 (선택사항)
+ * @param {string} attendanceData.description - 설명 (선택사항)
+ * @param {string} attendanceData.assignment_id - 과제 ID (선택사항)
+ * @param {string} attendanceData.user_id - 사용자 ID (UUID)
+ * @param {string} attendanceData.attendance_code - 출석 인증코드
+ * @returns {Promise<Object>} 생성된 출석 정보
+ */
+export const createAttendanceWithCode = async (lectureId, attendanceData) => {
+    try {
+        return await apiClient.post(`/api/attendances/lectures/${lectureId}/attendances/code`, attendanceData)
+    } catch (error) {
+        console.error('출석 인증코드 생성 실패:', error)
+
+        // 에러 메시지 매핑
+        const errorMessage = error.response?.data?.detail || error.message
+
+        if (errorMessage.includes('Lecture not found')) {
+            throw new Error('강의를 찾을 수 없습니다.')
+        } else if (errorMessage.includes('Session not found')) {
+            throw new Error('강좌를 찾을 수 없습니다.')
+        } else if (errorMessage.includes('Invalid attendance code')) {
+            throw new Error('출석 인증코드가 올바르지 않습니다.')
+        }
+
+        throw error
+    }
+}
+
 export default {
     getAttendancesByLecture,
     getAttendancesBySession,
@@ -127,4 +160,5 @@ export default {
     createAttendance,
     updateAttendance,
     createOrUpdateAttendance,
+    createAttendanceWithCode,
 }

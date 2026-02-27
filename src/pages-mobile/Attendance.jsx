@@ -7,7 +7,7 @@ import { Badge } from '../components/mobile/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
-import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
+import { createOrUpdateAttendance, createAttendanceWithCode, getAttendancesByLecture } from '../services/attendanceService';
 import { ATTENDANCE_CONFIG, getAttendanceStyle } from '../utils/attendanceStatus';
 
 const QrCodeIcon = ({ className }) => (
@@ -37,6 +37,9 @@ export default function Attendance() {
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkedInLecture, setCheckedInLecture] = useState(null);
   const [lectureAttendances, setLectureAttendances] = useState({});
+  const [showCodeInput, setShowCodeInput] = useState({});
+  const [attendanceCodes, setAttendanceCodes] = useState({});
+  const [codeError, setCodeError] = useState({});
 
   useEffect(() => {
     if (user?.id) {
@@ -122,22 +125,51 @@ export default function Attendance() {
     }
   };
 
-  const handleCheckIn = async (lecture) => {
+  // 인증코드 입력 화면 표시
+  const handleShowCodeInput = (lecture) => {
     // 이미 출석 기록이 있는 경우 처리 중단
     if (lectureAttendances[lecture.id]) {
       alert('이미 출석 처리된 강의입니다.');
       return;
     }
+    setShowCodeInput(prev => ({ ...prev, [lecture.id]: true }));
+    setCodeError(prev => ({ ...prev, [lecture.id]: '' }));
+  };
+
+  // 인증코드 입력 취소
+  const handleCancelCodeInput = (lectureId) => {
+    setShowCodeInput(prev => ({ ...prev, [lectureId]: false }));
+    setAttendanceCodes(prev => ({ ...prev, [lectureId]: '' }));
+    setCodeError(prev => ({ ...prev, [lectureId]: '' }));
+  };
+
+  // 인증코드 변경
+  const handleCodeChange = (lectureId, code) => {
+    setAttendanceCodes(prev => ({ ...prev, [lectureId]: code }));
+    if (codeError[lectureId]) {
+      setCodeError(prev => ({ ...prev, [lectureId]: '' }));
+    }
+  };
+
+  // 인증코드로 출석 체크
+  const handleCheckInWithCode = async (lecture) => {
+    const code = attendanceCodes[lecture.id];
+    if (!code || code.length !== 4) {
+      setCodeError(prev => ({ ...prev, [lecture.id]: '4자리 인증코드를 입력해주세요.' }));
+      return;
+    }
 
     setCheckingIn(true);
-
     try {
-      // 출석 생성/수정 API 호출
-      const newAttendance = await createOrUpdateAttendance(
-        lecture.id,
-        user.id,
-        'PRESENT'
-      );
+      // 출석 인증코드로 출석 생성 API 호출
+      const attendanceData = {
+        status: 'PRESENT',
+        detail_type: 'PRESENT',
+        user_id: user.id,
+        attendance_code: code
+      };
+
+      const newAttendance = await createAttendanceWithCode(lecture.id, attendanceData);
 
       // 출석 기록 업데이트
       setLectureAttendances(prev => ({
@@ -147,10 +179,12 @@ export default function Attendance() {
 
       setCheckedInLecture(lecture);
       setCheckedIn(true);
+      setShowCodeInput(prev => ({ ...prev, [lecture.id]: false }));
+      setAttendanceCodes(prev => ({ ...prev, [lecture.id]: '' }));
       alert('출석이 완료되었습니다!');
     } catch (error) {
       console.error('출석 처리 실패:', error);
-      alert('출석 처리 중 오류가 발생했습니다.');
+      setCodeError(prev => ({ ...prev, [lecture.id]: error.message || '출석 처리 중 오류가 발생했습니다.' }));
     } finally {
       setCheckingIn(false);
     }
@@ -247,19 +281,57 @@ export default function Attendance() {
                       </p>
                     </div>
 
-                    <Button
-                      className={`w-full h-14 text-lg font-semibold shadow-lg ${
-                        isAlreadyChecked
-                          ? `${attendanceStatus.bgColor} ${attendanceStatus.className} hover:opacity-80 border ${attendanceStatus.borderColor}`
-                          : 'shadow-blue-200'
-                      }`}
-                      onClick={() => handleCheckIn(lecture)}
-                      disabled={checkingIn || isAlreadyChecked}
-                      variant={isAlreadyChecked ? 'outline' : 'default'}
-                    >
-                      <MapPinIcon className="mr-2 h-5 w-5" />
-                      {checkingIn ? '출석 처리 중...' : isAlreadyChecked ? '출석 완료' : '출석 체크하기'}
-                    </Button>
+                    {showCodeInput[lecture.id] ? (
+                      // 인증코드 입력 UI
+                      <div className="space-y-3">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-slate-700 mb-2">출석 인증코드를 입력하세요</p>
+                          <input
+                            type="text"
+                            value={attendanceCodes[lecture.id] || ''}
+                            onChange={(e) => handleCodeChange(lecture.id, e.target.value)}
+                            placeholder="4자리 코드"
+                            maxLength="4"
+                            className="w-full px-3 py-2 text-center text-lg font-bold border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                          {codeError[lecture.id] && (
+                            <p className="text-xs text-red-500 mt-1">{codeError[lecture.id]}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleCancelCodeInput(lecture.id)}
+                            variant="outline"
+                            className="flex-1"
+                            disabled={checkingIn}
+                          >
+                            취소
+                          </Button>
+                          <Button
+                            onClick={() => handleCheckInWithCode(lecture)}
+                            className="flex-1"
+                            disabled={checkingIn || !attendanceCodes[lecture.id]?.trim()}
+                          >
+                            {checkingIn ? '처리 중...' : '출석 확인'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // 기본 출석 버튼
+                      <Button
+                        className={`w-full h-14 text-lg font-semibold shadow-lg ${
+                          isAlreadyChecked
+                            ? `${attendanceStatus.bgColor} ${attendanceStatus.className} hover:opacity-80 border ${attendanceStatus.borderColor}`
+                            : 'shadow-blue-200'
+                        }`}
+                        onClick={() => handleShowCodeInput(lecture)}
+                        disabled={checkingIn || isAlreadyChecked}
+                        variant={isAlreadyChecked ? 'outline' : 'default'}
+                      >
+                        <MapPinIcon className="mr-2 h-5 w-5" />
+                        {isAlreadyChecked ? '출석 완료' : '출석 체크하기'}
+                      </Button>
+                    )}
                     <p className="text-xs text-center text-slate-400">
                       {isAlreadyChecked
                         ? `* ${attendance?.created_at ? formatTime(attendance.created_at) : ''}에 출석 처리되었습니다.`

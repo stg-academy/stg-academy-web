@@ -22,7 +22,7 @@ const Header = () => {
     { name: '내 강의', href: '/mobile/my-learning/', icon: 'book', adminOnly: false },
     // { name: '샘플 페이지', href: '/sample', icon: 'page', adminOnly: false },
     // { name: '디자인 가이드', href: '/design-guide', icon: 'design', adminOnly: false },
-    { name: '코스 관리', href: '/courses', icon: 'settings', adminOnly: true },
+    { name: '강의 관리', href: '/courses/sessions', icon: 'settings', adminOnly: true },
     { name: '사용자 관리', href: '/users', icon: 'users', adminOnly: true }
   ]
 

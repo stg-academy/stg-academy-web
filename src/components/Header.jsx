@@ -146,7 +146,7 @@ const Header = () => {
                 alt="STG Academy Logo"
                 className="h-6 w-6"
               />
-              <span className="text-lg sm:text-xl font-bold text-gray-900">
+              <span className="text-lg sm:text-xl font-bold text-gray-900 font-stg-title">
                 시광 아카데미
               </span>
             </Link>

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@font-face {
+    font-family: 'SEBANG Gothic';
+    src: url('/fonts/SEBANG%20Gothic%20Bold.woff2') format('woff2'),
+         url('/fonts/SEBANG%20Gothic%20Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
 @theme inline {
     /* Tailwind 컬러예시 */
     /* 기본 Tailwind 컬러는 그대로 유지되며, 여기에 커스텀 추가 */
@@ -9,6 +18,9 @@
     /*--color-primary-600: var(--color-blue-600);*/
     --color-aa : var(--color-blue-500);
     --color-ba : var(--color-blue-600);
+
+    /* 커스텀 폰트 */
+    --font-stg-title: 'SEBANG Gothic', sans-serif;
     /* Brand Colors (주요 포인트 컬러) */
     --color-primary-500: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */
     --color-primary-600: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */

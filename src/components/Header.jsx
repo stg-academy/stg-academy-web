@@ -138,10 +138,17 @@ const Header = () => {
     <header className="h-16 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-full">
         <div className="flex items-center justify-between h-full">
-          {/* 좌측 제목 및 네비게이션 */}
+          {/* 좌측 로고, 제목 및 네비게이션 */}
           <div className="flex items-center space-x-4 sm:space-x-8">
-            <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
-              STG Academy
+            <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+              <img
+                src="/logo_grad_2.png"
+                alt="STG Academy Logo"
+                className="h-6 w-6"
+              />
+              <span className="text-lg sm:text-xl font-bold text-gray-900">
+                시광 아카데미
+              </span>
             </Link>
 
             {/* 데스크톱 네비게이션 메뉴 (로그인된 상태에서만 표시) */}

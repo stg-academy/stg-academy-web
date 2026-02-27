@@ -142,7 +142,7 @@ const Header = () => {
           <div className="flex items-center space-x-4 sm:space-x-8">
             <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <img
-                src="/logo_grad_2.png"
+                src="/logo_grad.png"
                 alt="STG Academy Logo"
                 className="h-6 w-6"
               />

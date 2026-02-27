@@ -246,7 +246,7 @@ const KioskAttendance = () => {
         setAttendanceStatus(null);
         setSelectedUser(null);
         setSearchQuery('');
-      }, 3000);
+      }, 1500);
 
     } catch (err) {
       console.error('출석 처리 실패:', err);
@@ -284,7 +284,7 @@ const KioskAttendance = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
         <div className="text-xl text-slate-600">로딩 중...</div>
       </div>
     );
@@ -292,7 +292,7 @@ const KioskAttendance = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
           <div className="text-red-600 text-xl mb-4">{error}</div>
           <button
@@ -309,7 +309,7 @@ const KioskAttendance = () => {
   // 출석 완료 화면
   if (attendanceStatus === 'success' && selectedUser) {
     return (
-      <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-8">
+      <div className="h-screen -mt-17 bg-green-50 flex flex-col items-center justify-center p-8 overflow-hidden">
         <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-md w-full">
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
             <CheckIcon className="h-12 w-12 text-green-600" />
@@ -325,7 +325,7 @@ const KioskAttendance = () => {
   // 사용자 확인 화면
   if (selectedUser) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
             <div className="flex items-center justify-between mb-8">
@@ -371,9 +371,9 @@ const KioskAttendance = () => {
 
   // 메인 검색 화면
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
       {/* 상단 헤더 - 강의정보 영역 */}
-      <div className="bg-white shadow-sm p-6 flex items-center justify-between">
+      <div className="bg-white shadow-sm p-6 flex items-center justify-between flex-shrink-0">
         <button
           onClick={handleGoBack}
           className="p-3 hover:bg-slate-100 rounded-full transition-colors"
@@ -394,7 +394,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 검색창 */}
-      <div className="bg-white p-6 border-b border-slate-100">
+      <div className="bg-white p-6 border-b border-slate-100 flex-shrink-0">
         <div className="relative max-w-2xl mx-auto">
           <input
             type="text"
@@ -415,7 +415,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 도움말 및 신규 회원 등록 */}
-      <div className="bg-slate-100 p-4">
+      <div className="bg-slate-100 p-4 flex-shrink-0">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center text-sm text-slate-600">
             <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -436,23 +436,23 @@ const KioskAttendance = () => {
       </div>
 
       {/* 검색 결과 */}
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6">
-            <div className="flex items-center justify-between mb-4">
+      <div className="flex-1 p-6 overflow-hidden">
+        <div className="max-w-6xl mx-auto h-full">
+          <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900">수강생 목록</h2>
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {filteredUsers.length}명
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto flex-1">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     onClick={() => handleUserSelect(user)}
-                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all shadow-sm ${
+                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
                       user.attendance
                         ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
@@ -470,7 +470,7 @@ const KioskAttendance = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-gray-500">
+                <div className="col-span-full flex items-center justify-center h-full text-gray-500">
                   검색 결과가 없습니다
                 </div>
               )}
@@ -480,7 +480,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 하단 키패드 영역 */}
-      <div className="bg-white border-t border-slate-100 p-6">
+      <div className="bg-white border-t border-slate-100 p-6 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-5 gap-3 mb-4">
             {KOREAN_CONSONANTS.map((consonant) => (

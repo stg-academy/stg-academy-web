@@ -91,7 +91,6 @@ const EnrollTable = ({
         </>
     )
 
-    console.log(enrolls)
     return (
         <DataTable
             data={enrolls}

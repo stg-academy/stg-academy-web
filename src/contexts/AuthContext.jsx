@@ -139,17 +139,12 @@ export function AuthProvider({ children }) {
 
       const response = await authAPI.loginWithKakao(authCode)
 
-      console.log('카카오 로그인 응답:', response) // 디버깅용
-      console.log('requires_registration:', response.requires_registration) // 디버깅용
-
       if (response.requires_registration) {
-        console.log('회원가입 필요:', response.user) // 디버깅용
         dispatch({
           type: AUTH_ACTIONS.NEEDS_REGISTRATION,
           payload: response.user,
         })
       } else {
-        console.log('로그인 성공:', response.user) // 디버깅용
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
           payload: response.user,

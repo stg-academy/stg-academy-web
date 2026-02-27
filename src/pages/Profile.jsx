@@ -4,7 +4,7 @@ import { MobileLayout } from '../components/mobile/MobileLayout.jsx';
 import { Card, CardContent } from '../components/mobile/ui/card.jsx';
 import { Button } from '../components/mobile/ui/button.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { authAPI } from '../services/authService.js';
+import { updateUser } from '../services/userService.js';
 
 const UserIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,65 +31,33 @@ const LogoutIcon = ({ className }) => (
 );
 
 export default function Profile() {
-  const { user, logout } = useAuth();
-  const [userInfo, setUserInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, logout, refreshUser } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    department: '',
-    position: ''
+    username: '',
+    information: ''
   });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchUserInfo();
-    } else {
-      setLoading(false);
-    }
-  }, [user?.id]);
-
-  const fetchUserInfo = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const userData = await authAPI.getUserInfo();
-      setUserInfo(userData);
-
-      // 편집 폼 초기화
-      const info = userData.information || {};
+    if (user) {
+      // user 데이터로 편집 폼 초기화
       setEditForm({
-        name: info.name || '',
-        email: info.email || '',
-        phone: info.phone || '',
-        department: info.department || '',
-        position: info.position || ''
+        username: user.username || '',
+        information: user.information || ''
       });
-
-    } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
-      setError('사용자 정보를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     if (isEditing) {
       // 취소 시 원래 데이터로 복원
-      const info = userInfo.information || {};
       setEditForm({
-        name: info.name || '',
-        email: info.email || '',
-        phone: info.phone || '',
-        department: info.department || '',
-        position: info.position || ''
+        username: user.username || '',
+        information: user.information || ''
       });
     }
   };
@@ -107,20 +75,16 @@ export default function Profile() {
 
       // 업데이트할 정보 구성
       const updateData = {
-        username: userInfo.username,
-        information: editForm
+        username: editForm.username,
+        information: editForm.information
       };
 
-      // 기존 사용자 정보 업데이트인 경우
-      if (userInfo.id) {
-        updateData.existing_user_id = userInfo.id;
-      }
+      // updateUser API 사용
+      await updateUser(user.id, updateData);
 
-      // API 호출 (register API를 사용하여 기존 사용자 정보 업데이트)
-      await authAPI.register(updateData);
+      // 사용자 정보 새로고침
+      await refreshUser();
 
-      // 성공 시 사용자 정보 다시 조회
-      await fetchUserInfo();
       setIsEditing(false);
       alert('정보가 성공적으로 수정되었습니다.');
 
@@ -191,13 +155,6 @@ export default function Profile() {
           <Card className="border-red-100">
             <CardContent className="p-6 text-center">
               <p className="text-red-600">{error}</p>
-              <Button
-                onClick={fetchUserInfo}
-                className="mt-4"
-                variant="outline"
-              >
-                다시 시도
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -217,14 +174,24 @@ export default function Profile() {
                 <UserIcon className="h-10 w-10 text-blue-600" />
               </div>
               <h1 className="text-xl font-bold text-slate-900 mb-1">
-                {userInfo?.information?.name || '이름 없음'}
+                {user?.username || '사용자명 없음'}
               </h1>
               <p className="text-sm text-slate-600">
-                {userInfo?.username || '사용자명 없음'}
+                {user?.information || '소속 정보 없음'}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
-                {getLoginTypeDisplay(userInfo?.auth_type)}
-              </p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <p className="text-xs text-slate-500">
+                  {getLoginTypeDisplay(user?.auth_type)}
+                </p>
+                {user?.authorizations?.role && (
+                  <>
+                    <span className="text-xs text-slate-400">•</span>
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                      {user.authorizations.role}
+                    </span>
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
         </section>
@@ -258,90 +225,44 @@ export default function Profile() {
             </Button>
           </div>
 
-          <Card>
+          <Card className="border-blue-100 bg-blue-50/50">
             <CardContent className="p-5 space-y-4">
-              {/* 이름 */}
+              {/* 사용자명 */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">이름</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">사용자명</label>
                 {isEditing ? (
                   <input
                     type="text"
-                    value={editForm.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="이름을 입력하세요"
+                    value={editForm.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                    placeholder="사용자명을 입력하세요"
                   />
                 ) : (
-                  <p className="text-slate-900">{userInfo?.information?.name || '입력되지 않음'}</p>
+                  <p className="text-slate-900">{user?.username || '입력되지 않음'}</p>
                 )}
               </div>
 
-              {/* 이메일 */}
+              {/* 소속 정보 */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">이메일</label>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="이메일을 입력하세요"
-                  />
-                ) : (
-                  <p className="text-slate-900">{userInfo?.information?.email || '입력되지 않음'}</p>
-                )}
-              </div>
-
-              {/* 전화번호 */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">전화번호</label>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    value={editForm.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="전화번호를 입력하세요"
-                  />
-                ) : (
-                  <p className="text-slate-900">{userInfo?.information?.phone || '입력되지 않음'}</p>
-                )}
-              </div>
-
-              {/* 부서 */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">부서</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">소속 정보</label>
                 {isEditing ? (
                   <input
                     type="text"
-                    value={editForm.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="부서를 입력하세요"
+                    value={editForm.information}
+                    onChange={(e) => handleInputChange('information', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                    placeholder="소속 정보를 입력하세요 (예: 신촌 청년1부, 문래 장년부 등)"
                   />
                 ) : (
-                  <p className="text-slate-900">{userInfo?.information?.department || '입력되지 않음'}</p>
-                )}
-              </div>
-
-              {/* 직급 */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">직급</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editForm.position}
-                    onChange={(e) => handleInputChange('position', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="직급을 입력하세요"
-                  />
-                ) : (
-                  <p className="text-slate-900">{userInfo?.information?.position || '입력되지 않음'}</p>
+                  <p className="text-slate-900">{user?.information || '입력되지 않음'}</p>
                 )}
               </div>
             </CardContent>
           </Card>
+        </section>
 
+        <section>
           {/* 편집 중일 때 취소 버튼 */}
           {isEditing && (
             <Button

@@ -33,17 +33,11 @@ export const isTemporaryToken = (token) => {
   const payload = decodeToken(token)
   if (!payload) return false
 
-  console.log('토큰 검사:', payload) // 디버깅용
-
   // 임시 토큰은 kakao_user 필드가 있거나 registration_complete가 false인 경우
   // 정식 토큰은 sub만 있고 kakao_user 필드가 없음
   const hasKakaoUser = !!payload.kakao_user
   const isIncomplete = payload.registration_complete === false
   const isTemp = hasKakaoUser || isIncomplete
-
-  console.log('kakao_user 존재:', hasKakaoUser) // 디버깅용
-  console.log('registration_complete:', payload.registration_complete) // 디버깅용
-  console.log('임시 토큰 여부:', isTemp) // 디버깅용
 
   return isTemp
 }

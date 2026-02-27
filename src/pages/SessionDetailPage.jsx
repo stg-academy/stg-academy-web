@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {useNavigate, useParams} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {getSession} from '../services/sessionService'
+import {getSession, updateSessionCode} from '../services/sessionService'
 import {getLecturesBySession} from '../services/lectureService'
 import {getEnrollsBySession} from '../services/enrollService'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
@@ -100,10 +100,21 @@ const SessionDetailPage = () => {
         alert('출석인원 엑셀 내보내기 기능') // todo: handleExportExcel 구현 필요
     }
 
-    // 출석 코드 새로고침 (추후 개발)
-    const handleRefreshCode = () => {
-        // TODO: API 호출로 새로운 출석 코드 생성
-        console.log('출석 코드 새로고침 - 추후 개발 예정')
+    // 출석 코드 새로고침
+    const handleRefreshCode = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            // 출석 인증코드 새로고침 API 호출
+            await updateSessionCode(sessionId)
+            // 세션 정보 다시 불러오기
+            await loadSession()
+        } catch (err) {
+            console.error('출석 코드 새로고침 실패:', err)
+            setError('출석 코드 새로고침에 실패했습니다.')
+        } finally {
+            setLoading(false)
+        }
     }
 
 

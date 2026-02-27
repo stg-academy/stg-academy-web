@@ -72,10 +72,25 @@ export const deleteSession = async (sessionId) => {
   }
 }
 
+/**
+ * 강좌 출석 인증코드 새로고침
+ * @param {string} sessionId - 강좌 ID (UUID)
+ * @returns {Promise<Object>} 수정된 강좌 정보
+ */
+export const updateSessionCode = async (sessionId) => {
+  try {
+    return await apiClient.put(`/api/sessions/${sessionId}/code`)
+  } catch (error) {
+    console.error('출석 인증코드 새로고침 실패:', error)
+    throw error
+  }
+}
+
 export default {
   getSessions,
   getSession,
   createSession,
   updateSession,
   deleteSession,
+  updateSessionCode,
 }

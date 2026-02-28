@@ -31,7 +31,7 @@ const LogoutIcon = ({ className }) => (
 );
 
 export default function Profile() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,6 +40,9 @@ export default function Profile() {
     information: ''
   });
   const [saving, setSaving] = useState(false);
+
+  // 전체 로딩 상태 (AuthContext 로딩 + 개별 로딩)
+  const isPageLoading = authLoading || loading;
 
   useEffect(() => {
     if (user) {
@@ -118,6 +121,16 @@ export default function Profile() {
     }
   };
 
+  if (isPageLoading) {
+    return (
+        <MobileLayout headerTitle="내 정보">
+          <div className="p-5 flex justify-center items-center h-64">
+            <div className="text-slate-500">로딩 중...</div>
+          </div>
+        </MobileLayout>
+    );
+  }
+
   if (!user) {
     return (
       <MobileLayout headerTitle="내 정보">
@@ -133,16 +146,6 @@ export default function Profile() {
               </Link>
             </div>
           </section>
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  if (loading) {
-    return (
-      <MobileLayout headerTitle="내 정보">
-        <div className="p-5 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );
@@ -168,7 +171,7 @@ export default function Profile() {
 
         {/* 프로필 헤더 */}
         <section>
-          <Card className="border-blue-100 bg-blue-50/50">
+          <Card className="border-none">
             <CardContent className="p-6 text-center">
               <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserIcon className="h-10 w-10 text-blue-600" />

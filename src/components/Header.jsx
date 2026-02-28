@@ -202,7 +202,12 @@ const Header = () => {
             )}
 
             {/* 로그인 상태에 따른 분기 */}
-            {!isAuthenticated && !needsRegistration ? (
+            {isLoading ? (
+              /* 로딩 중 */
+              <div className="px-3 sm:px-4 py-2 text-sm text-gray-500">
+                로딩 중...
+              </div>
+            ) : !isAuthenticated && !needsRegistration ? (
               /* 로그인하지 않은 상태 */
               <Link
                 to="/login"

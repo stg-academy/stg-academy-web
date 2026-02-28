@@ -217,6 +217,16 @@ export default function Attendance() {
     return ATTENDANCE_CONFIG[detailType]
   };
 
+  if (loading) {
+    return (
+        <MobileLayout headerTitle="출석">
+          <div className="p-5 flex justify-center items-center h-64">
+            <div className="text-slate-500">로딩 중...</div>
+          </div>
+        </MobileLayout>
+    );
+  }
+
   if (!user) {
     return (
       <MobileLayout headerTitle="출석">
@@ -232,16 +242,6 @@ export default function Attendance() {
               </Link>
             </div>
           </section>
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  if (loading) {
-    return (
-      <MobileLayout headerTitle="출석">
-        <div className="p-5 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );

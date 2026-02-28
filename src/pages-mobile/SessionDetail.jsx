@@ -187,6 +187,16 @@ export default function SessionDetail() {
     });
   };
 
+  if (loading) {
+    return (
+        <MobileLayout headerTitle="강의 상세" showBack={true}>
+          <div className="p-5 flex justify-center items-center h-64">
+            <div className="text-slate-500">로딩 중...</div>
+          </div>
+        </MobileLayout>
+    );
+  }
+
   if (!user) {
     return (
       <MobileLayout headerTitle="강의 상세" showBack={true}>
@@ -202,16 +212,6 @@ export default function SessionDetail() {
               </Link>
             </div>
           </section>
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  if (loading) {
-    return (
-      <MobileLayout headerTitle="강의 상세" showBack={true}>
-        <div className="p-5 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );

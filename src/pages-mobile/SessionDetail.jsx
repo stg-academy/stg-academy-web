@@ -8,6 +8,7 @@ import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
 import { getAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
+import { getSession } from '../services/sessionService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
 import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
 
@@ -59,25 +60,21 @@ export default function SessionDetail() {
       setLoading(true);
       setError(null);
 
-      // 세션의 강의 목록과 출석 기록을 병렬로 조회
-      const [lecturesData, attendancesData] = await Promise.all([
+      // 세션 정보, 강의 목록, 출석 기록을 병렬로 조회
+      const [sessionData, lecturesData, attendancesData] = await Promise.all([
+        getSession(sessionId),
         getLecturesBySession(sessionId),
         getAttendancesBySession(sessionId)
       ]);
 
+      // 세션 정보 설정
+      setSessionInfo({
+        title: sessionData?.title || '강의명 없음',
+        description: sessionData?.description || '',
+      });
+
       setLectures(Array.isArray(lecturesData) ? lecturesData : []);
       setAttendances(Array.isArray(attendancesData) ? attendancesData : []);
-
-
-      console.log(lecturesData);
-
-      // 첫 번째 강의에서 세션 정보 추출 (임시)
-      if (lecturesData && lecturesData.length > 0) {
-        setSessionInfo({
-          title: lecturesData[0].session?.title || '강의명 없음',
-          description: lecturesData[0].session?.description || '',
-        });
-      }
 
     } catch (error) {
       console.error('세션 데이터 조회 실패:', error);

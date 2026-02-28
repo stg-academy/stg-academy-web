@@ -18,11 +18,6 @@ const Step2UserInfo = ({
     })
     const [errors, setErrors] = useState({})
 
-    // 디스플레이용 사용자명 (formData에서 제거)
-    const displayUsername = useMemo(() => {
-        return selectedUser?.username || username || ''
-    }, [selectedUser, username])
-
     // 기존 사용자 선택 시 자동 채우기
     useEffect(() => {
         if (selectedUser?.information) {
@@ -151,9 +146,9 @@ const Step2UserInfo = ({
                     이전 단계
                 </button>
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900">사용자 정보 입력</h2>
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs sm:text-sm text-blue-800">
-                        사용자명: <span className="font-semibold">{displayUsername}</span>
+                <div className="mt-3 p-3  border border-gray-200 rounded-lg">
+                    <p className="text-xs sm:text-sm">
+                        이름: <span className="font-semibold">{username}</span>
                     </p>
                     {selectedUser && (
                         <p className="text-xs sm:text-sm text-green-700 mt-1">
@@ -165,23 +160,13 @@ const Step2UserInfo = ({
 
             {/* 폼 */}
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* 표시명 (읽기 전용) */}
-                <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">표시명</label>
-                    <input
-                        type="text"
-                        value={displayUsername}
-                        className="w-full px-3 py-2 sm:py-3 border bg-gray-100 rounded-md sm:rounded-lg focus:outline-none border-gray-300 transition-all text-sm sm:text-base"
-                        disabled
-                    />
-                </div>
 
                 {/* 추가 정보 */}
                 <InputField
                     id="information"
-                    label="추가 정보"
+                    label="소속 정보"
                     type="textarea"
-                    placeholder="소속, 직급 등 추가 정보를 입력하세요"
+                    placeholder="캠퍼스와 부서 정보를 입력해주세요(문래 장년부, 신촌 청년1부 등)"
                     rows={3}
                 />
 
@@ -219,7 +204,7 @@ const Step2UserInfo = ({
             <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
                 <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">안내사항</h4>
                 <ul className="text-xs text-gray-600 space-y-1">
-                    <li>• 표시명은 시스템에서 사용자를 식별하는 데 사용됩니다.</li>
+                    <li>• 이름과 소속정보는 출석관리자가 사용자를 식별하는 데 사용됩니다.</li>
                     {selectedUser ? (
                         <li>• 기존 수강 이력은 그대로 유지됩니다.</li>
                     ) : (

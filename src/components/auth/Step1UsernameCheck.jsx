@@ -8,6 +8,7 @@ const Step1UsernameCheck = ({
                                 onExistingUserSelect,
                                 isLoading = false
                             }) => {
+
     const [username, setUsername] = useState(initialUsername)
     const [checkState, setCheckState] = useState({
         isChecking: false,
@@ -17,6 +18,12 @@ const Step1UsernameCheck = ({
     })
     const [similarUsers, setSimilarUsers] = useState([])
     const [error, setError] = useState('')
+
+    useEffect(() => {
+        if (initialUsername && initialUsername !== username) {
+            setUsername(initialUsername)
+        }
+    }, [initialUsername])
 
     // 상태 초기화 함수
     const resetCheckState = useCallback(() => {
@@ -30,7 +37,7 @@ const Step1UsernameCheck = ({
         setError('')
     }, [])
 
-    // 사용자명 검사 함수
+    // 이름 검사 함수
     const checkUsername = useCallback(async (usernameToCheck) => {
         setCheckState(prev => ({...prev, isChecking: true}))
         setError('')
@@ -54,8 +61,8 @@ const Step1UsernameCheck = ({
             })
             setSimilarUsers(similarUsersData || [])
         } catch (err) {
-            console.error('사용자명 검사 실패:', err)
-            setError('사용자명 검사 중 오류가 발생했습니다.')
+            console.error('이름 검사 실패:', err)
+            setError('이름 검사 중 오류가 발생했습니다.')
             setCheckState(prev => ({...prev, isChecking: false}))
         }
     }, [])
@@ -108,8 +115,8 @@ const Step1UsernameCheck = ({
         if (checkState.isChecking) return {text: "중복 확인 중...", className: "text-gray-500"}
         if (error) return {text: error, className: "text-red-600"}
         if (checkState.checkCompleted && !checkState.isChecking) {
-            if (checkState.isAvailable) return {text: "사용 가능한 사용자명입니다", className: "text-green-600"}
-            if (checkState.isDuplicate) return {text: "이미 사용 중인 사용자명입니다", className: "text-red-600"}
+            if (checkState.isAvailable) return {text: "사용 가능한 이름입니다", className: "text-green-600"}
+            if (checkState.isDuplicate) return {text: "이미 사용 중인 이름입니다", className: "text-red-600"}
         }
         return null
     }, [checkState, error])
@@ -128,7 +135,8 @@ const Step1UsernameCheck = ({
                     className="px-2 sm:px-3 py-1 rounded-full text-xs border border-gray-400 bg-gray-200 text-gray-900">{users.length}명</span>
             </div>
             <p className="text-xs sm:text-sm text-gray-400 mb-3">
-                기존 수강 이력이 있는 사용자 중에서 선택하시면 이력이 유지됩니다.
+                기존 수강 이력을 유지하시려면 아래 사용자를 선택하세요<br/>
+                새로운 계정으로 시작하시려면 "신규 사용자로 등록하기"를 선택하세요
             </p>
             <div className="border-t-gray-200 border-b-gray-200 space-y-3 max-h-60 overflow-y-auto">
                 {users.map((user, index) => (
@@ -150,7 +158,8 @@ const Step1UsernameCheck = ({
                                 )}
                             </div>
                         </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor"
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none"
+                             stroke="currentColor"
                              viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                   d="M9 5l7 7-7 7"/>
@@ -163,10 +172,10 @@ const Step1UsernameCheck = ({
 
     return (
         <div>
-            {/* 사용자명 입력 */}
+            {/* 이름 입력 */}
             <div className="mb-6">
                 <label htmlFor="username" className="block text-xs font-medium text-gray-700 mb-2">
-                    사용자명
+                    이름
                     <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
@@ -178,10 +187,10 @@ const Step1UsernameCheck = ({
                         error || checkState.isDuplicate
                             ? 'border-[#ef4444]'
                             : checkState.isAvailable
-                            ? 'border-[#2563eb] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
-                            : 'border-[#e5e5e5] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
+                                ? 'border-[#2563eb] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
+                                : 'border-[#e5e5e5] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
                     }`}
-                    placeholder="사용자명을 입력하세요"
+                    placeholder="이름을 입력하세요"
                     disabled={isLoading}
                 />
                 {statusMessage && (
@@ -194,25 +203,26 @@ const Step1UsernameCheck = ({
             {/* 검사 결과 */}
             {checkState.checkCompleted && !checkState.isChecking && (
                 <div className="space-y-4">
-                    {checkState.isAvailable && (
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-center mb-3">
-                                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <p className="text-green-800 font-medium text-sm sm:text-base">사용 가능한 사용자명입니다</p>
-                            </div>
-                            <button
-                                onClick={handleProceedAsNew}
-                                disabled={isLoading}
-                                className="w-full px-4 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm sm:text-base"
-                            >
-                                {isLoading ? '진행 중...' : '다음 단계로'}
-                            </button>
-                        </div>
-                    )}
+                    {/*{checkState.isAvailable && (*/}
+                    {/*    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">*/}
+                    {/*        <div className="flex items-center mb-3">*/}
+                    {/*            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" fill="none"*/}
+                    {/*                 stroke="currentColor"*/}
+                    {/*                 viewBox="0 0 24 24">*/}
+                    {/*                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}*/}
+                    {/*                      d="M5 13l4 4L19 7"/>*/}
+                    {/*            </svg>*/}
+                    {/*            <p className="text-green-800 font-medium text-sm sm:text-base">사용 가능한 이름입니다</p>*/}
+                    {/*        </div>*/}
+                    {/*        <button*/}
+                    {/*            onClick={handleProceedAsNew}*/}
+                    {/*            disabled={isLoading}*/}
+                    {/*            className="w-full px-4 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm sm:text-base"*/}
+                    {/*        >*/}
+                    {/*            {isLoading ? '진행 중...' : '다음 단계로'}*/}
+                    {/*        </button>*/}
+                    {/*    </div>*/}
+                    {/*)}*/}
 
                     {/* 유사한 사용자 목록 */}
                     {similarUsers.length > 0 && (
@@ -222,8 +232,56 @@ const Step1UsernameCheck = ({
                         />
                     )}
 
+
+                    <div
+                        className={"flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg cursor-pointer transition-all"
+                            + (checkState.isAvailable ? " hover:bg-gray-50 hover:border-blue-300 " : " opacity-50 cursor-not-allowed")}
+                        onClick={checkState.isAvailable ? handleProceedAsNew : null}
+                    >
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">신규 사용자로 등록하기</p>
+                            <div className="mt-1 text-xs sm:text-sm text-gray-600 space-y-1">
+                                <span
+                                    className="inline-block text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">
+                                        기존 수강 이력이 없는 새로운 계정으로 시작합니다.
+                                </span>
+
+                                {!checkState.isAvailable &&
+                                    <span
+                                        className="inline-block text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded mr-1">
+                                    이미 사용 중인 이름입니다
+                                </span>
+                                }
+                            </div>
+                        </div>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+
                 </div>
             )}
+
+
+
+            {/* 안내 메시지 */}
+            <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">안내사항</h4>
+                <ul className="text-xs text-gray-600 space-y-1">
+                    <li>• 이름과 소속정보는 출석관리자가 사용자를 식별하는 데 사용됩니다.</li>
+                    {/*{selectedUser ? (*/}
+                    {/*    <li>• 기존 수강 이력은 그대로 유지됩니다.</li>*/}
+                    {/*) : (*/}
+                    {/*    <li>• 새로운 계정이 생성됩니다.</li>*/}
+                    {/*)}*/}
+                    {/*{showPassword && (*/}
+                    {/*    <li>• 비밀번호는 안전하게 암호화되어 저장됩니다.</li>*/}
+                    {/*)}*/}
+                </ul>
+            </div>
         </div>
     )
 }

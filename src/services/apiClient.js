@@ -47,7 +47,7 @@ class ApiClient {
             }
 
             if (!response.ok) {
-                const errorMessage = data.message || data.error || `HTTP ${response.status}`
+                const errorMessage = data.message || data.detail || data.error || `HTTP ${response.status}`
                 throw new Error(errorMessage)
             }
 

@@ -330,11 +330,15 @@ const KioskAttendance = () => {
           <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
             <div className="flex items-center justify-between mb-8">
               <button
-                onClick={handleGoBack}
-                className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+                  onClick={handleGoBack}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4 text-lg sm:text-base"
               >
-                <ChevronLeftIcon className="h-6 w-6 text-slate-600" />
+                <svg className="w-6 h-6 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
+                </svg>
+                돌아가기
               </button>
+
               <div className="w-12"></div>
             </div>
 

@@ -5,6 +5,7 @@ const AuthLayout = ({
     subtitle,
     currentStep,
     totalSteps,
+    stepNames = [], // 새로 추가된 stepNames prop
     error,
     children,
     showLoginLink = false,
@@ -15,46 +16,47 @@ const AuthLayout = ({
         if (!totalSteps || totalSteps < 2) return null
 
         const steps = Array.from({ length: totalSteps }, (_, i) => i + 1)
-        const hasKakaoStep = totalSteps === 3 // 카카오 등록의 경우
+
+        // stepNames가 제공되고 첫 번째 step이 완료된 것으로 표시해야 하는 경우 확인
+        const hasCompletedFirstStep = stepNames.length > 0 && currentStep > 1
 
         return (
             <div className="mt-5 flex items-start px-4 sm:px-0 overflow-x-auto">
-                {hasKakaoStep && (
-                    <>
-                        <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                            <div className="w-7 h-7 bg-gray-900 border-gray-900 text-white rounded-full flex items-center justify-center">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M5 13l4 4L19 7"/>
-                                </svg>
+                {steps.map((step, index) => {
+                    const stepName = stepNames[step - 1] || (step === 1 ? '사용자명 확인' : step === 2 ? '계정 설정' : `단계 ${step}`)
+                    const isCompleted = hasCompletedFirstStep && step < currentStep
+                    const isCurrent = currentStep === step
+
+                    return (
+                        <div key={step} className="flex items-center">
+                            {index > 0 && (
+                                <div className="h-[1px] bg-gray-400 w-6 sm:w-9 -mt-6 mx-1 sm:mx-2 flex-shrink-0"></div>
+                            )}
+                            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                                <div className={`w-7 h-7 rounded-full border-[1.5px] flex items-center justify-center text-xs font-mono font-medium ${
+                                    isCompleted
+                                        ? 'bg-gray-900 border-gray-900 text-white'
+                                        : isCurrent
+                                        ? 'bg-[#111111] border-[#111111] text-white'
+                                        : 'bg-white border-[#e5e5e5] text-[#888888]'
+                                }`}>
+                                    {isCompleted ? (
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    ) : (
+                                        step
+                                    )}
+                                </div>
+                                <span className={`text-xs whitespace-nowrap ${
+                                    isCompleted || isCurrent ? 'text-gray-900 font-medium' : 'text-[#888888]'
+                                }`}>
+                                    {stepName}
+                                </span>
                             </div>
-                            <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                                카카오 로그인
-                            </span>
                         </div>
-                        <div className="h-[1px] bg-gray-400 w-6 sm:w-9 mt-4 mx-1 sm:mx-2 flex-shrink-0"></div>
-                    </>
-                )}
-                {steps.slice(hasKakaoStep ? 1 : 0).map((step, index) => (
-                    <div key={step} className="flex items-center">
-                        {index > 0 && <div className="h-[1px] bg-gray-400 w-6 sm:w-9 -mt-6 mx-1 sm:mx-2 flex-shrink-0"></div>}
-                        <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                            <div className={`w-7 h-7 rounded-full border-[1.5px] flex items-center justify-center text-xs font-mono font-medium ${
-                                currentStep === step
-                                    ? 'bg-[#111111] border-[#111111] text-white'
-                                    : 'bg-white border-[#e5e5e5] text-[#888888]'
-                            }`}>
-                                {step}
-                            </div>
-                            <span className={`text-xs whitespace-nowrap ${
-                                currentStep === step ? 'text-gray-900 font-medium' : 'text-[#888888]'
-                            }`}>
-                                {step === 1 ? '사용자명 확인' : step === 2 ? '계정 설정' : `단계 ${step}`}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
         )
     }

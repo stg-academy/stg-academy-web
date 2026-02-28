@@ -59,6 +59,7 @@ const RegisterPage = () => {
       title="새 계정을 만드세요"
       subtitle="회원가입"
       currentStep={currentStep}
+      stepNames={['이름 확인', '계정 설정']}
       totalSteps={2}
       error={error}
       showLoginLink={true}

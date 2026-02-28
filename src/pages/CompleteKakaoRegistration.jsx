@@ -10,7 +10,7 @@ const CompleteKakaoRegistration = () => {
     const {user, isAuthenticated, needsRegistration, completeKakaoRegistration, logout, isLoading, error, clearError} = useAuth()
 
     // 2단계 상태 관리
-    const [currentStep, setCurrentStep] = useState(1)
+    const [currentStep, setCurrentStep] = useState(2)
     const [username, setUsername] = useState('')
     const [selectedUser, setSelectedUser] = useState(null)
 
@@ -39,17 +39,17 @@ const CompleteKakaoRegistration = () => {
     const handleUsernameConfirm = useCallback((confirmedUsername, user) => {
         setUsername(confirmedUsername)
         setSelectedUser(user)
-        setCurrentStep(2)
+        setCurrentStep(3)
     }, [])
 
     const handleExistingUserSelect = useCallback((user, inputUsername) => {
         setUsername(user.username)
         setSelectedUser(user)
-        setCurrentStep(2)
+        setCurrentStep(3)
     }, [])
 
     const handleBack = useCallback(() => {
-        setCurrentStep(1)
+        setCurrentStep(2)
         setSelectedUser(null)
     }, [])
 
@@ -93,11 +93,12 @@ const CompleteKakaoRegistration = () => {
             title="STG Academy"
             subtitle="카카오 회원가입을 완료해주세요"
             currentStep={currentStep}
+            stepNames={['카카오 로그인', '이름 확인', '계정 설정']}
             totalSteps={3}
             error={error}
             extraContent={KakaoUserInfo}
         >
-            {currentStep === 1 && (
+            {currentStep === 2 && (
                 <Step1UsernameCheck
                     initialUsername={username || user?.username || ''}
                     onUsernameConfirm={handleUsernameConfirm}
@@ -106,7 +107,7 @@ const CompleteKakaoRegistration = () => {
                 />
             )}
 
-            {currentStep === 2 && (
+            {currentStep === 3 && (
                 <Step2UserInfo
                     username={username}
                     selectedUser={selectedUser}

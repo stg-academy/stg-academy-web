@@ -41,12 +41,49 @@ const Step2UserInfo = ({
     const handleInputChange = useCallback((field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }))
 
-        // 관련 필드 오류 제거
-        const fieldsToRemove = [field]
-        if (field === 'password') fieldsToRemove.push('confirmPassword')
+        // 실시간 유효성 검사 (비밀번호 필드만)
+        if (showPassword && (field === 'password' || field === 'confirmPassword')) {
+            const newErrors = { ...errors }
 
-        clearFieldErrors(fieldsToRemove)
-    }, [clearFieldErrors])
+            if (field === 'password') {
+                // 비밀번호 유효성 검사
+                if (!value) {
+                    newErrors.password = '비밀번호를 입력해주세요.'
+                } else if (value.length < 4) {
+                    newErrors.password = '비밀번호는 4자 이상이어야 합니다.'
+                } else {
+                    delete newErrors.password
+                }
+
+                // 비밀번호 확인 재검사 (기존 confirmPassword 값이 있을 때만)
+                if (formData.confirmPassword) {
+                    if (value !== formData.confirmPassword) {
+                        newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.'
+                    } else {
+                        delete newErrors.confirmPassword
+                    }
+                }
+            }
+
+            if (field === 'confirmPassword') {
+                // 비밀번호 확인 유효성 검사
+                if (!value) {
+                    newErrors.confirmPassword = '비밀번호 확인을 입력해주세요.'
+                } else if (formData.password !== value) {
+                    newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.'
+                } else {
+                    delete newErrors.confirmPassword
+                }
+            }
+
+            setErrors(newErrors)
+        } else {
+            // 다른 필드는 기존처럼 오류만 제거
+            const fieldsToRemove = [field]
+            if (field === 'password') fieldsToRemove.push('confirmPassword')
+            clearFieldErrors(fieldsToRemove)
+        }
+    }, [clearFieldErrors, showPassword, errors, formData.password, formData.confirmPassword])
 
     // 폼 검증
     const validateForm = useCallback(() => {

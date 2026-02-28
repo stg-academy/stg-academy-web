@@ -98,12 +98,7 @@ export const authAPI = {
 
     // 토큰 유효성 검증 (GET /auth/me를 사용)
     async validateToken() {
-        try {
-            return await apiClient.get('/api/auth/me')
-        } catch (error) {
-            apiClient.clearAuthToken()
-            throw error
-        }
+        return await apiClient.get('/api/auth/me')
     },
 
     // 관리자 직접 사용자 등록 (POST /auth/manual/register)

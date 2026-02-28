@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import { authAPI } from '../services/authService.js'
 import { isTemporaryToken, getUserFromToken } from '../utils/tokenUtils.js'
 
@@ -88,9 +88,20 @@ function authReducer(state, action) {
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
+  // 인증 상태 확인 중복 실행 방지를 위한 ref
+  const isCheckingAuthRef = useRef(false)
+
   // 앱 시작 시 인증 상태 확인
   useEffect(() => {
+    // 이미 인증 확인 중이면 중복 실행 방지
+    if (isCheckingAuthRef.current) {
+      return
+    }
+
     const checkAuth = async () => {
+      // 인증 확인 시작 플래그 설정
+      isCheckingAuthRef.current = true
+
       try {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
 
@@ -120,12 +131,15 @@ export function AuthProvider({ children }) {
       } catch (error) {
         console.error('인증 확인 실패:', error)
 
-        // 토큰이 유효하지 않으면 삭제
+        // 토큰이 유효하지 않으면 삭제 (ApiClient에서 이미 삭제했지만 확실히 하기 위해)
         localStorage.removeItem('auth_token')
         dispatch({
           type: AUTH_ACTIONS.LOGIN_FAILURE,
           payload: '로그인이 필요합니다.',
         })
+      } finally {
+        // 인증 확인 완료 플래그 해제
+        isCheckingAuthRef.current = false
       }
     }
 

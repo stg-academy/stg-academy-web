@@ -243,7 +243,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">모집중인 강의</h2>
             {/*todo: /mobile/courses */}
-            <Link to="/mobile/courses" className="text-xs text-slate-500 font-medium flex items-center">
+            <Link to="/mobile/search" className="text-xs text-slate-500 font-medium flex items-center">
               더보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
             </Link>
           </div>

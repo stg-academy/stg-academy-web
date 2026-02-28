@@ -377,7 +377,7 @@ const KioskAttendance = () => {
   return (
     <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
       {/* 상단 헤더 - 강의정보 영역 */}
-      <div className="bg-white shadow-sm p-6 flex items-center justify-between flex-shrink-0">
+      <div className="bg-white shadow-sm p-3 flex items-center justify-between flex-shrink-0">
         <button
           onClick={handleGoBack}
           className="p-3 hover:bg-slate-100 rounded-full transition-colors"
@@ -385,10 +385,10 @@ const KioskAttendance = () => {
           <XIcon className="h-6 w-6 text-slate-600" />
         </button>
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900">{sessionInfo?.title} 출석체크</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{sessionInfo?.title} 출석체크</h1>
           {todaysLecture ? (
-            <p className="text-lg text-slate-500 mt-2">
-              {formatDate(todaysLecture.lecture_date)} {sessionInfo?.title}
+            <p className=" text-slate-500 mt-1">
+              {formatDate(todaysLecture.lecture_date)} {todaysLecture.title}
             </p>
           ) : (
             <p className="text-lg text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
@@ -398,14 +398,14 @@ const KioskAttendance = () => {
       </div>
 
       {/* 검색창 */}
-      <div className="bg-white p-6 border-b border-slate-100 flex-shrink-0">
+      <div className="bg-white p-3 border-b border-slate-100 flex-shrink-0">
         <div className="relative max-w-2xl mx-auto">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
-            className="w-full h-16 px-6 pr-16 text-lg border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full h-12 px-6 pr-16 text-lg border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
           />
           {searchQuery && (
             <button
@@ -419,7 +419,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 도움말 및 신규 회원 등록 */}
-      <div className="bg-slate-100 p-4 flex-shrink-0">
+      <div className="bg-slate-100 px-4 py-2 flex-shrink-0">
         <div className="max-w-6xl px-6  mx-auto flex items-center justify-between">
           <div className="flex items-center text-sm text-slate-600">
             <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -440,11 +440,11 @@ const KioskAttendance = () => {
       </div>
 
       {/* 검색 결과 */}
-      <div className="flex-1 p-6 overflow-hidden">
+      <div className="flex-1 p-3 overflow-hidden">
         <div className="max-w-6xl mx-auto h-full">
           <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-900">수강생 목록</h2>
+              <h2 className="font-bold text-gray-900">수강생 목록</h2>
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {filteredUsers.length}명
               </span>
@@ -484,7 +484,7 @@ const KioskAttendance = () => {
       </div>
 
       {/* 하단 키패드 영역 */}
-      <div className="bg-white border-t border-slate-100 p-6 flex-shrink-0">
+      <div className="bg-white border-t border-slate-100 p-3 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-5 gap-3 mb-4">
             {KOREAN_CONSONANTS.map((consonant) => (
@@ -492,7 +492,7 @@ const KioskAttendance = () => {
                 key={consonant}
                 onClick={() => handleKeypadInput(consonant)}
                 variant="outline"
-                className="h-16 text-xl font-bold border-none hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all shadow-sm"
+                className="h-14 text-xl font-bold border-none hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all shadow-sm"
               >
                 {consonant}
               </Button>

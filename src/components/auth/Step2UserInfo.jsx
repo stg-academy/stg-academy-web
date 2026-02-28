@@ -55,8 +55,8 @@ const Step2UserInfo = ({
         if (showPassword) {
             if (!formData.password) {
                 newErrors.password = '비밀번호를 입력해주세요.'
-            } else if (formData.password.length < 6) {
-                newErrors.password = '비밀번호는 6자 이상이어야 합니다.'
+            } else if (formData.password.length < 4) {
+                newErrors.password = '비밀번호는 4자 이상이어야 합니다.'
             }
 
             if (!formData.confirmPassword) {
@@ -92,44 +92,15 @@ const Step2UserInfo = ({
         onSubmit(submitData)
     }, [username, formData.information, formData.password, showPassword, selectedUser, onSubmit, validateForm])
 
-    // 공통 입력 필드 스타일
-    const getInputClassName = useCallback((fieldName) => {
-        const baseClasses = "w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:border-transparent"
-        const errorClasses = "border-red-500 focus:ring-red-500"
-        const normalClasses = "border-gray-300 focus:ring-blue-500"
+    // // 공통 입력 필드 스타일
+    // const getInputClassName = useCallback((fieldName) => {
+    //     const baseClasses = "w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:border-transparent"
+    //     const errorClasses = "border-red-500 focus:ring-red-500"
+    //     const normalClasses = "border-gray-300 focus:ring-blue-500"
+    //
+    //     return `${baseClasses} ${errors[fieldName] ? errorClasses : normalClasses}`
+    // }, [errors])
 
-        return `${baseClasses} ${errors[fieldName] ? errorClasses : normalClasses}`
-    }, [errors])
-
-    // 입력 필드 컴포넌트
-    const InputField = ({ id, label, type = "text", required = false, placeholder, disabled = false, rows }) => {
-        const Component = type === 'textarea' ? 'textarea' : 'input'
-        const inputClassName = `w-full px-3 py-2 sm:py-3 border rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
-            errors[id] ? 'border-red-500' : 'border-gray-300'
-        }`
-
-        return (
-            <div>
-                <label htmlFor={id} className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                    {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-                <Component
-                    type={type !== 'textarea' ? type : undefined}
-                    id={id}
-                    value={formData[id] || ''}
-                    onChange={(e) => handleInputChange(id, e.target.value)}
-                    className={inputClassName}
-                    placeholder={placeholder}
-                    disabled={disabled || isLoading}
-                    rows={rows}
-                />
-                {errors[id] && (
-                    <p className="mt-2 text-xs sm:text-sm text-red-500">{errors[id]}</p>
-                )}
-            </div>
-        )
-    }
 
     return (
         <div>
@@ -161,32 +132,71 @@ const Step2UserInfo = ({
             {/* 폼 */}
             <form onSubmit={handleSubmit} className="space-y-4">
 
-                {/* 추가 정보 */}
-                <InputField
-                    id="information"
-                    label="소속 정보"
-                    type="textarea"
-                    placeholder="캠퍼스와 부서 정보를 입력해주세요(문래 장년부, 신촌 청년1부 등)"
-                    rows={3}
-                />
+                {/* 소속 정보 */}
+                <div>
+                    <label htmlFor="information" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        소속 정보
+                    </label>
+                    <textarea
+                        id="information"
+                        value={formData.information || ''}
+                        onChange={(e) => handleInputChange('information', e.target.value)}
+                        className={`w-full px-3 py-2 sm:py-3 border rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
+                            errors.information ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="캠퍼스와 부서 정보를 입력해주세요(문래 장년부, 신촌 청년1부 등)"
+                        disabled={isLoading}
+                        rows={3}
+                    />
+                    {errors.information && (
+                        <p className="mt-2 text-xs sm:text-sm text-red-500">{errors.information}</p>
+                    )}
+                </div>
 
                 {/* 비밀번호 필드들 */}
                 {showPassword && (
                     <>
-                        <InputField
-                            id="password"
-                            label="비밀번호"
-                            type="password"
-                            required
-                            placeholder="6자 이상의 비밀번호를 입력하세요"
-                        />
-                        <InputField
-                            id="confirmPassword"
-                            label="비밀번호 확인"
-                            type="password"
-                            required
-                            placeholder="비밀번호를 다시 입력하세요"
-                        />
+                        <div>
+                            <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                                비밀번호
+                                <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                value={formData.password || ''}
+                                onChange={(e) => handleInputChange('password', e.target.value)}
+                                className={`w-full px-3 py-2 sm:py-3 border rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
+                                    errors.password ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                                placeholder="4자 이상의 비밀번호를 입력하세요"
+                                disabled={isLoading}
+                            />
+                            {errors.password && (
+                                <p className="mt-2 text-xs sm:text-sm text-red-500">{errors.password}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                                비밀번호 확인
+                                <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                value={formData.confirmPassword || ''}
+                                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                className={`w-full px-3 py-2 sm:py-3 border rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
+                                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                                placeholder="비밀번호를 다시 입력하세요"
+                                disabled={isLoading}
+                            />
+                            {errors.confirmPassword && (
+                                <p className="mt-2 text-xs sm:text-sm text-red-500">{errors.confirmPassword}</p>
+                            )}
+                        </div>
                     </>
                 )}
 

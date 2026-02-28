@@ -71,7 +71,7 @@ const Step1UsernameCheck = ({
     useEffect(() => {
         const trimmedUsername = username.trim()
 
-        if (trimmedUsername.length >= 3) {
+        if (trimmedUsername.length >= 2) {
             const timeoutId = setTimeout(() => {
                 checkUsername(trimmedUsername)
             }, 500)
@@ -203,26 +203,6 @@ const Step1UsernameCheck = ({
             {/* 검사 결과 */}
             {checkState.checkCompleted && !checkState.isChecking && (
                 <div className="space-y-4">
-                    {/*{checkState.isAvailable && (*/}
-                    {/*    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">*/}
-                    {/*        <div className="flex items-center mb-3">*/}
-                    {/*            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" fill="none"*/}
-                    {/*                 stroke="currentColor"*/}
-                    {/*                 viewBox="0 0 24 24">*/}
-                    {/*                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}*/}
-                    {/*                      d="M5 13l4 4L19 7"/>*/}
-                    {/*            </svg>*/}
-                    {/*            <p className="text-green-800 font-medium text-sm sm:text-base">사용 가능한 이름입니다</p>*/}
-                    {/*        </div>*/}
-                    {/*        <button*/}
-                    {/*            onClick={handleProceedAsNew}*/}
-                    {/*            disabled={isLoading}*/}
-                    {/*            className="w-full px-4 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm sm:text-base"*/}
-                    {/*        >*/}
-                    {/*            {isLoading ? '진행 중...' : '다음 단계로'}*/}
-                    {/*        </button>*/}
-                    {/*    </div>*/}
-                    {/*)}*/}
 
                     {/* 유사한 사용자 목록 */}
                     {similarUsers.length > 0 && (
@@ -272,14 +252,10 @@ const Step1UsernameCheck = ({
                 <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">안내사항</h4>
                 <ul className="text-xs text-gray-600 space-y-1">
                     <li>• 이름과 소속정보는 출석관리자가 사용자를 식별하는 데 사용됩니다.</li>
-                    {/*{selectedUser ? (*/}
-                    {/*    <li>• 기존 수강 이력은 그대로 유지됩니다.</li>*/}
-                    {/*) : (*/}
-                    {/*    <li>• 새로운 계정이 생성됩니다.</li>*/}
-                    {/*)}*/}
-                    {/*{showPassword && (*/}
-                    {/*    <li>• 비밀번호는 안전하게 암호화되어 저장됩니다.</li>*/}
-                    {/*)}*/}
+                    <li>• 교회 내 동명이인으로 인해 이름이 중복되는 경우 별명과 함께 등록해주세요</li>
+                    <li className="px-3">예: 이정규(시광대담임목사) 서금옥(큐티) 등</li>
+                    <li>• 교리반 등 이전 수강 데이터를 유지하시려면 <strong>"기존 등록 사용자"</strong>를 선택해주세요</li>
+                    <li>• 그 외 사용문의는 시스템 담당자에게 문의해주세요 (문의하기)</li>
                 </ul>
             </div>
         </div>

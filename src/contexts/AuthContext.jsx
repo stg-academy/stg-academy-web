@@ -195,6 +195,9 @@ export function AuthProvider({ children }) {
         payload: response.user,
       })
 
+      // 회원가입 완료 알림
+      alert('회원가입이 완료되었습니다! 환영합니다.')
+
       return response
     } catch (error) {
       console.error('회원가입 실패:', error)
@@ -224,6 +227,9 @@ export function AuthProvider({ children }) {
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: response.user,
       })
+
+      // 카카오 회원가입 완료 알림
+      alert('카카오 회원가입이 완료되었습니다! 환영합니다.')
 
       return response
     } catch (error) {

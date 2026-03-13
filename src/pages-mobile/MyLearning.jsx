@@ -131,6 +131,7 @@ export default function MyLearning() {
   const getActiveEnrollments = () => {
     const enrollmentsArray = Array.isArray(enrollments) ? enrollments : [];
     return enrollmentsArray.filter(enrollment => {
+      if (enrollment.enroll_status === 'INACTIVE') return false;
       const status = sessionStatusMap[enrollment.session_id];
       return status === 'IN_PROGRESS' || status === 'RECRUITING';
     });
@@ -139,6 +140,7 @@ export default function MyLearning() {
   const getCompletedEnrollments = () => {
     const enrollmentsArray = Array.isArray(enrollments) ? enrollments : [];
     return enrollmentsArray.filter(enrollment =>
+      enrollment.enroll_status !== 'INACTIVE' &&
       sessionStatusMap[enrollment.session_id] === 'FINISHED'
     );
   };

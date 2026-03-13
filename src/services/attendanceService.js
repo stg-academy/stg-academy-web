@@ -8,9 +8,19 @@ import {ATTENDANCE_CONFIG} from "../utils/attendanceStatus.js";
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 출석 목록
  */
-export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 1000) => {
+export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 10000) => {
     try {
-        return await apiClient.get(`/api/attendances/lectures/${lectureId}/attendances`, {skip, limit})
+        const pageSize = Math.min(limit, 1000) // API의 최대 페이지 크기에 맞춰 조정;
+        const allData = []
+        let currentSkip = skip
+        while (true) {
+            const page = await apiClient.get(`/api/attendances/lectures/${lectureId}/attendances`, {skip: currentSkip, limit: pageSize})
+            if (!Array.isArray(page) || page.length === 0) break
+            allData.push(...page)
+            if (page.length < pageSize) break
+            currentSkip += pageSize
+        }
+        return allData
     } catch (error) {
         console.error('강의별 출석 목록 조회 실패:', error)
         throw error
@@ -24,9 +34,19 @@ export const getAttendancesByLecture = async (lectureId, skip = 0, limit = 1000)
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 출석 목록
  */
-export const getAttendancesBySession = async (sessionId, skip = 0, limit = 1000) => {
+export const getAttendancesBySession = async (sessionId, skip = 0, limit = 10000) => {
     try {
-        return await apiClient.get(`/api/attendances/sessions/${sessionId}/attendances`, {skip, limit})
+        const pageSize = Math.min(limit, 1000) // API의 최대 페이지 크기에 맞춰 조정;
+        const allData = []
+        let currentSkip = skip
+        while (true) {
+            const page = await apiClient.get(`/api/attendances/sessions/${sessionId}/attendances`, {skip: currentSkip, limit: pageSize})
+            if (!Array.isArray(page) || page.length === 0) break
+            allData.push(...page)
+            if (page.length < pageSize) break
+            currentSkip += pageSize
+        }
+        return allData
     } catch (error) {
         console.error('강좌별 출석 목록 조회 실패:', error)
         throw error

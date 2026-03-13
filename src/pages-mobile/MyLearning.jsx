@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
+import { getSessions } from '../services/sessionService';
 
 const ChevronRightIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,6 +28,7 @@ export default function MyLearning() {
   const [enrollments, setEnrollments] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [lectureData, setLectureData] = useState({});
+  const [sessionStatusMap, setSessionStatusMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,6 +48,19 @@ export default function MyLearning() {
       // 사용자의 수강 신청 목록 조회
       const enrollmentsData = await getEnrollsByUser(user.id);
       setEnrollments(enrollmentsData || []);
+
+      // 수강신청된 session_id 목록
+      const enrolledSessionIds = new Set(
+        (Array.isArray(enrollmentsData) ? enrollmentsData : []).map(e => e.session_id)
+      );
+
+      // 세션 전체 1회 조회 후 수강신청된 세션만 필터링하여 course_status 맵 생성
+      const allSessions = await getSessions(0, 200);
+      const statusMap = {};
+      (Array.isArray(allSessions) ? allSessions : [])
+        .filter(s => enrolledSessionIds.has(s.id))
+        .forEach(s => { statusMap[s.id] = s.course_status; });
+      setSessionStatusMap(statusMap);
 
       // API 응답이 배열이 아닌 경우 처리
       const enrollmentsArray = Array.isArray(enrollmentsData) ? enrollmentsData : [];
@@ -115,15 +130,16 @@ export default function MyLearning() {
 
   const getActiveEnrollments = () => {
     const enrollmentsArray = Array.isArray(enrollments) ? enrollments : [];
-    return enrollmentsArray.filter(enrollment =>
-      enrollment.enroll_status === 'ENROLLED' || enrollment.enroll_status === 'ACTIVE'
-    );
+    return enrollmentsArray.filter(enrollment => {
+      const status = sessionStatusMap[enrollment.session_id];
+      return status === 'IN_PROGRESS' || status === 'RECRUITING';
+    });
   };
 
   const getCompletedEnrollments = () => {
     const enrollmentsArray = Array.isArray(enrollments) ? enrollments : [];
     return enrollmentsArray.filter(enrollment =>
-      enrollment.enroll_status === 'COMPLETED'
+      sessionStatusMap[enrollment.session_id] === 'FINISHED'
     );
   };
 
@@ -158,14 +174,12 @@ export default function MyLearning() {
             <Progress value={progress} className="h-2" />
           </div>
 
-          {!isCompleted && (
-            <Link to={`/mobile/session/${enrollment.session_id}`}>
-              <Button className="w-full mt-2" variant="outline">
-                강의실 입장
-                <ChevronRightIcon className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-          )}
+          <Link to={`/mobile/session/${enrollment.session_id}`}>
+            <Button className="w-full mt-2" variant="outline">
+              강의실 입장
+              <ChevronRightIcon className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     );

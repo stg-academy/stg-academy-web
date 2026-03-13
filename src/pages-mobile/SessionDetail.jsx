@@ -36,6 +36,13 @@ const CalendarIcon = ({ className }) => (
   </svg>
 );
 
+const getCourseStatusBadge = (status) => {
+  if (status === 'IN_PROGRESS') return { variant: 'blue', label: '진행중', cardBorder: 'border-blue-100', cardBg: 'bg-blue-50/50', accentText: 'text-blue-600' }
+  if (status === 'FINISHED') return { variant: 'green', label: '완료', cardBorder: 'border-green-100', cardBg: 'bg-green-50/50', accentText: 'text-green-600' }
+  if (status === 'RECRUITING') return { variant: 'gray', label: '모집중', cardBorder: 'border-slate-100', cardBg: 'bg-slate-50/50', accentText: 'text-slate-600' }
+  return { variant: 'gray', label: '알 수 없음', cardBorder: 'border-slate-100', cardBg: 'bg-slate-50/50', accentText: 'text-slate-600' }
+}
+
 export default function SessionDetail() {
   const { sessionId } = useParams();
   const { user } = useAuth();
@@ -71,6 +78,7 @@ export default function SessionDetail() {
       setSessionInfo({
         title: sessionData?.title || '강의명 없음',
         description: sessionData?.description || '',
+        course_status: sessionData?.course_status || null,
       });
 
       setLectures(Array.isArray(lecturesData) ? lecturesData : []);
@@ -239,6 +247,7 @@ export default function SessionDetail() {
   }
 
   const stats = calculateAttendanceStats();
+  const { variant: statusVariant, label: statusLabel, cardBorder, cardBg, accentText } = getCourseStatusBadge(sessionInfo?.course_status);
 
   return (
     <MobileLayout headerTitle={sessionInfo?.title || "강의 상세"} showBack={true}>
@@ -246,7 +255,7 @@ export default function SessionDetail() {
 
         {/* 강의 정보 헤더 */}
         <section>
-          <Card className="border-blue-100 bg-blue-50/50">
+          <Card className={`${cardBorder} ${cardBg}`}>
             <CardContent className="p-5 space-y-4">
               <div>
                 <h1 className="text-xl font-bold text-slate-900 mb-2 truncate">
@@ -263,14 +272,14 @@ export default function SessionDetail() {
                 <div className="text-sm text-slate-600">
                   총 {stats.totalLectures}회차 강의
                 </div>
-                <Badge variant="blue">진행중</Badge>
+                <Badge variant={statusVariant}>{statusLabel}</Badge>
               </div>
 
               {/* 출석률 표시 */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">출석률</span>
-                  <span className="text-blue-600 font-bold">{stats.attendanceRate}%</span>
+                  <span className={`${accentText} font-bold`}>{stats.attendanceRate}%</span>
                 </div>
                 <Progress value={stats.attendanceRate} className="h-2" />
                 <div className="text-xs text-slate-500 text-center">

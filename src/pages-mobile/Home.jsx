@@ -23,12 +23,20 @@ const TrophyIcon = ({ className }) => (
   </svg>
 );
 
+const getCourseStatusBadge = (status) => {
+  if (status === 'IN_PROGRESS') return { variant: 'blue', label: '진행중' }
+  if (status === 'FINISHED') return { variant: 'green', label: '완료' }
+  if (status === 'RECRUITING') return { variant: 'gray', label: '모집중' }
+  return { variant: 'gray', label: '알 수 없음' }
+}
+
 export default function Home() {
   const { user } = useAuth();
   const [activeCourses, setActiveCourses] = useState([]);
   const [recruitingSessions, setRecruitingSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [courseProgress, setCourseProgress] = useState({});
+  const [sessionCourseStatus, setSessionCourseStatus] = useState({});
 
   useEffect(() => {
     fetchHomeData();
@@ -41,11 +49,21 @@ export default function Home() {
       // 모든 강좌 목록 조회
       const allSessions = await getSessions(0, 50);
 
+      // sessionId → course_status 맵 생성
+      const sessionMap = {};
+      (Array.isArray(allSessions) ? allSessions : []).forEach(s => {
+        sessionMap[s.id] = s.course_status;
+      });
+      setSessionCourseStatus(sessionMap);
+
       if (user?.id) {
         // 로그인한 사용자의 수강 중인 강의
         const enrollments = await getEnrollsByUser(user.id);
         const activeEnrollments = Array.isArray(enrollments)
-          ? enrollments.filter(e => e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE')
+          ? enrollments.filter(
+              e => (e.enroll_status === 'ACTIVE')
+                && sessionMap[e.session_id] === 'IN_PROGRESS'
+            )
           : [];
 
         const limitedActiveCourses = activeEnrollments.slice(0, 3); // 최대 3개만
@@ -55,9 +73,10 @@ export default function Home() {
         await calculateCourseProgress(limitedActiveCourses);
       }
 
-      // 모집중인 강좌 (session_status가 RECRUITING인 것들)
+      // 모집중인 강좌 (course_status가 RECRUITING인 것들)
+      // todo: RECRUITING 추가하기!!
       const recruiting = Array.isArray(allSessions)
-        ? allSessions.filter(session => session.session_status === 'RECRUITING')
+        ? allSessions.filter(session => session.course_status === 'RECRUITING')
         : [];
 
       setRecruitingSessions(recruiting.slice(0, 4)); // 최대 4개만
@@ -207,7 +226,10 @@ export default function Home() {
                                 {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
                               </h3>
                             </div>
-                            <Badge variant="blue">진행중</Badge>
+                            {(() => {
+                              const { variant, label } = getCourseStatusBadge(sessionCourseStatus[enrollment.session_id]);
+                              return <Badge variant={variant}>{label}</Badge>;
+                            })()}
                           </div>
                           <div className="space-y-3">
                             <div className="space-y-1.5">

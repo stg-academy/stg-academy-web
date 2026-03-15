@@ -111,21 +111,29 @@ export default function MyLearning() {
   const calculateAttendanceRate = (sessionId) => {
     const attendances = attendanceData[sessionId] || [];
     const lectures = lectureData[sessionId] || [];
-    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
+    const presentCount = attendances.filter(att => att.status === 'PRESENT').length;
     const totalLectures = lectures.length;
 
     if (totalLectures === 0) return 0;
-    return Math.round((userAttendances.length / totalLectures) * 100);
+    return Math.round((presentCount / totalLectures) * 100);
   };
 
   const calculateProgress = (sessionId) => {
-    const attendances = attendanceData[sessionId] || [];
     const lectures = lectureData[sessionId] || [];
-    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
     const totalLectures = lectures.length;
-
     if (totalLectures === 0) return 0;
-    return Math.round((userAttendances.length / totalLectures) * 100);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pastLectures = lectures.filter(l => l.lecture_date && new Date(l.lecture_date) < today).length;
+    return Math.round((pastLectures / totalLectures) * 100);
+  };
+
+  const getPastLectureCount = (sessionId) => {
+    const lectures = lectureData[sessionId] || [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return lectures.filter(l => l.lecture_date && new Date(l.lecture_date) < today).length;
   };
 
   const getActiveEnrollments = () => {
@@ -146,14 +154,11 @@ export default function MyLearning() {
   };
 
   const CourseCard = ({ enrollment, isCompleted = false }) => {
-    const lectures = lectureData[enrollment.session_id] || [];
-    const attendances = attendanceData[enrollment.session_id] || [];
-    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
-
-    const totalLectures = lectures.length;
-    const attendedLectures = userAttendances.length;
+    const totalLectures = (lectureData[enrollment.session_id] || []).length;
+    const pastLectures = getPastLectureCount(enrollment.session_id);
     const attendanceRate = calculateAttendanceRate(enrollment.session_id);
     const progress = calculateProgress(enrollment.session_id);
+
     return (
       <Card className="border-slate-100 shadow-sm">
         <CardContent className="p-5 space-y-4">
@@ -162,18 +167,21 @@ export default function MyLearning() {
               <h3 className="font-bold text-slate-900 text-lg truncate">
                 {enrollment.session_title || '강의명 없음'}
               </h3>
-              <p className="text-sm text-slate-500 mt-1 truncate">
-                진행도 ({attendedLectures}/{totalLectures}회차)
-              </p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>출석률</span>
-              <span className="font-medium text-slate-900">{attendanceRate}%</span>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
+                <span className="text-blue-600 font-bold">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between text-sm pt-1">
+              <span className="text-slate-500">출석률</span>
+              <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
+            </div>
           </div>
 
           <Link to={`/mobile/session/${enrollment.session_id}`}>

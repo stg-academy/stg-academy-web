@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react'
 import {useNavigate, useParams} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {getSession, updateSessionCode} from '../services/sessionService'
+import {getSession, updateSession, updateSessionCode} from '../services/sessionService'
 import {getLecturesBySession} from '../services/lectureService'
 import {getEnrollsBySession} from '../services/enrollService'
+import {getCourses} from '../services/courseService'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
+import SessionModal from "../components/modals/SessionModal.jsx";
 import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
 import EnrollTab from "./EnrollTab.jsx";
@@ -25,10 +27,13 @@ const SessionDetailPage = () => {
     const [enrollsLoading, setEnrollsLoading] = useState(false)
     const [error, setError] = useState(null)
     const [todaysLecture, setTodaysLecture] = useState(null)
+    const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
+    const [courses, setCourses] = useState([])
 
     // 강좌 데이터 로드
     useEffect(() => {
         loadSession()
+        loadCourses()
     }, [sessionId])
 
     // 강의 목록 로드
@@ -88,6 +93,21 @@ const SessionDetailPage = () => {
         } finally {
             setLoading(false)
         }
+    }
+
+    const loadCourses = async () => {
+        try {
+            const data = await getCourses()
+            setCourses(data)
+        } catch (err) {
+            console.error('코스 목록 로드 실패:', err)
+        }
+    }
+
+    // 강좌 설정 저장
+    const handleSaveSession = async (sessionData) => {
+        await updateSession(sessionId, sessionData)
+        await loadSession()
     }
 
     // 뒤로가기
@@ -177,10 +197,9 @@ const SessionDetailPage = () => {
                         >
                             출석인원 내보내기(엑셀)
                         </button>
-                        {/* todo: 구현   */}
                         <button
-                            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium disabled:bg-gray-400"
-                            disabled
+                            onClick={() => setIsSessionModalOpen(true)}
+                            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                         >
                             강좌 설정
                         </button>
@@ -319,6 +338,14 @@ const SessionDetailPage = () => {
                     </div>
                 )}
             </main>
+
+            <SessionModal
+                isOpen={isSessionModalOpen}
+                onClose={() => setIsSessionModalOpen(false)}
+                onSubmit={handleSaveSession}
+                editingSession={session}
+                courses={courses}
+            />
         </div>
     )
 }

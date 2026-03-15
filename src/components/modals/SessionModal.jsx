@@ -18,6 +18,11 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
   })
   const [errors, setErrors] = useState({})
 
+  const toDateString = (value) => {
+    if (!value) return ''
+    return value.split('T')[0]
+  }
+
   // 수정 모드일 때 기존 데이터 로드
   useEffect(() => {
     if (editingSession) {
@@ -27,8 +32,8 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         description: editingSession.description || '',
         lecturer_info: editingSession.lecturer_info || '',
         date_info: editingSession.date_info || '',
-        begin_date: editingSession.begin_date || '',
-        end_date: editingSession.end_date || '',
+        begin_date: toDateString(editingSession.begin_date),
+        end_date: toDateString(editingSession.end_date),
       })
     } else {
       setFormData({

@@ -7,7 +7,7 @@ import { Badge } from '../components/mobile/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
-import { createOrUpdateAttendance, createAttendanceWithCode, getAttendancesByLecture } from '../services/attendanceService';
+import { createOrUpdateAttendance, createAttendanceWithCode, getMyAttendanceByLecture } from '../services/attendanceService';
 import { ATTENDANCE_CONFIG, getAttendanceStyle } from '../utils/attendanceStatus';
 
 const QrCodeIcon = ({ className }) => (
@@ -106,13 +106,8 @@ export default function Attendance() {
 
       for (const lecture of lectures) {
         try {
-          // 강의별 출석 기록 조회
-          const attendances = await getAttendancesByLecture(lecture.id);
-          const userAttendance = Array.isArray(attendances)
-            ? attendances.find(att => att.user_id === user.id)
-            : null;
-
-          attendanceMap[lecture.id] = userAttendance;
+          // 나의 강의 출석 기록 조회
+          attendanceMap[lecture.id] = await getMyAttendanceByLecture(lecture.id);
         } catch (err) {
           console.error(`강의 ${lecture.id}의 출석 기록 조회 실패:`, err);
           attendanceMap[lecture.id] = null;

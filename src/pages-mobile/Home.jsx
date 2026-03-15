@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
 import { getLecturesBySession } from '../services/lectureService';
-import { getAttendancesBySession } from '../services/attendanceService';
+import { getMyAttendancesBySession } from '../services/attendanceService';
 
 const ChevronRightIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,23 +98,28 @@ export default function Home() {
           const lectures = await getLecturesBySession(enrollment.session_id);
           const totalLectures = Array.isArray(lectures) ? lectures.length : 0;
 
-          // 해당 세션의 출석 기록 조회
-          const attendances = await getAttendancesBySession(enrollment.session_id);
+          // 해당 세션의 나의 출석 기록 조회
+          const attendances = await getMyAttendancesBySession(enrollment.session_id);
           const userAttendances = Array.isArray(attendances)
-            ? attendances.filter(att => att.user_id === user.id && att.status === 'PRESENT')
+            ? attendances.filter(att => att.status === 'PRESENT')
             : [];
 
-          // 진행률 계산 (출석한 강의 수 기준)
-          const progress = totalLectures > 0 ? Math.round((userAttendances.length / totalLectures) * 100) : 0;
+          // 진행도 계산 (강의일이 오늘 이전인 강의 수 기준)
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const pastLectures = Array.isArray(lectures)
+            ? lectures.filter(l => l.lecture_date && new Date(l.lecture_date) < today).length
+            : 0;
+          const progress = totalLectures > 0 ? Math.round((pastLectures / totalLectures) * 100) : 0;
 
           // 출석률 계산 (총 강의 중 출석한 비율)
           const attendanceRate = totalLectures > 0 ? Math.round((userAttendances.length / totalLectures) * 100) : 0;
 
           progressData[enrollment.session_id] = {
+            pastLectures,
             progress,
             attendanceRate,
             totalLectures,
-            attendedLectures: userAttendances.length
           };
         } catch (err) {
           console.error(`세션 ${enrollment.session_id}의 진행률 계산 실패:`, err);
@@ -122,7 +127,6 @@ export default function Home() {
             progress: 0,
             attendanceRate: 0,
             totalLectures: 0,
-            attendedLectures: 0
           };
         }
       }
@@ -213,7 +217,7 @@ export default function Home() {
                   const progress = getProgress(enrollment);
                   const attendanceRate = getAttendanceRate(enrollment);
                   const progressData = courseProgress[enrollment.session_id];
-                  const attendedLectures = progressData?.attendedLectures || 0;
+                  const pastLectures = progressData?.pastLectures || 0;
                   const totalLectures = progressData?.totalLectures || 0;
 
                   return (
@@ -234,7 +238,7 @@ export default function Home() {
                           <div className="space-y-3">
                             <div className="space-y-1.5">
                               <div className="flex justify-between text-sm">
-                                <span className="text-slate-500 truncate">진행도 ({attendedLectures}/{totalLectures}회차)</span>
+                                <span className="text-slate-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
                                 <span className="text-blue-600 font-bold">{progress}%</span>
                               </div>
                               <Progress value={progress} className="h-2"/>

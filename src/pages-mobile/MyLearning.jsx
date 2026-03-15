@@ -7,7 +7,7 @@ import { Button } from '../components/mobile/ui/button';
 import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
-import { getAttendancesBySession } from '../services/attendanceService';
+import { getMyAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getSessions } from '../services/sessionService';
 
@@ -69,7 +69,7 @@ export default function MyLearning() {
       const dataPromises = enrollmentsArray.map(async (enrollment) => {
         try {
           const [attendances, lectures] = await Promise.all([
-            getAttendancesBySession(enrollment.session_id),
+            getMyAttendancesBySession(enrollment.session_id),
             getLecturesBySession(enrollment.session_id)
           ]);
 
@@ -111,7 +111,7 @@ export default function MyLearning() {
   const calculateAttendanceRate = (sessionId) => {
     const attendances = attendanceData[sessionId] || [];
     const lectures = lectureData[sessionId] || [];
-    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
+    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
     const totalLectures = lectures.length;
 
     if (totalLectures === 0) return 0;
@@ -121,7 +121,7 @@ export default function MyLearning() {
   const calculateProgress = (sessionId) => {
     const attendances = attendanceData[sessionId] || [];
     const lectures = lectureData[sessionId] || [];
-    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
+    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
     const totalLectures = lectures.length;
 
     if (totalLectures === 0) return 0;
@@ -148,7 +148,7 @@ export default function MyLearning() {
   const CourseCard = ({ enrollment, isCompleted = false }) => {
     const lectures = lectureData[enrollment.session_id] || [];
     const attendances = attendanceData[enrollment.session_id] || [];
-    const userAttendances = attendances.filter(att => att.user_id === user?.id && att.status === 'PRESENT');
+    const userAttendances = attendances.filter(att => att.status === 'PRESENT');
 
     const totalLectures = lectures.length;
     const attendedLectures = userAttendances.length;

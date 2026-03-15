@@ -7,7 +7,7 @@ import { Badge } from '../components/mobile/ui/badge';
 import { Progress } from '../components/mobile/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
-import { getAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
+import { getMyAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
 import { getSession } from '../services/sessionService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
 import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
@@ -71,7 +71,7 @@ export default function SessionDetail() {
       const [sessionData, lecturesData, attendancesData] = await Promise.all([
         getSession(sessionId),
         getLecturesBySession(sessionId),
-        getAttendancesBySession(sessionId)
+        getMyAttendancesBySession(sessionId)
       ]);
 
       // 세션 정보 설정
@@ -93,9 +93,7 @@ export default function SessionDetail() {
   };
 
   const getUserAttendanceForLecture = (lectureId) => {
-    return attendances.find(att =>
-      att.lecture_id === lectureId && att.user_id === user.id
-    );
+    return attendances.find(att => att.lecture_id === lectureId);
   };
 
   const getAttendanceStatus = (attendance) => {
@@ -128,8 +126,7 @@ export default function SessionDetail() {
 
   const calculateAttendanceStats = () => {
     const totalLectures = lectures.length;
-    const userAttendances = attendances.filter(att => att.user_id === user.id);
-    const presentCount = userAttendances.filter(att => att.status === 'PRESENT').length;
+    const presentCount = attendances.filter(att => att.status === 'PRESENT').length;
 
     return {
       totalLectures,

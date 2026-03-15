@@ -5,7 +5,7 @@ import SessionStatusBadge from "../SessionStatusBadge.jsx";
 const SessionTable = ({
                           sessions,
                           loading,
-                          onEditSession
+                          onCopySession,
                       }) => {
     const navigate = useNavigate()
     const sessionColumns = [
@@ -17,7 +17,6 @@ const SessionTable = ({
                 <div
                     className="font-medium text-gray-900 underline cursor-pointer hover:text-blue-600"
                     onClick={() => navigate(`/sessions/${row.id}`)}
-                    // todo: onClick={() => onEditSession && onEditSession(row)}
                 >
                     {value || `강좌 ${row.id?.slice(0, 8)}`}
                 </div>
@@ -82,6 +81,23 @@ const SessionTable = ({
             sortable: true,
             render: (value) => (
                 <SessionStatusBadge status={value}/>
+            )
+        },
+        {
+            key: '_actions',
+            label: '',
+            sortable: false,
+            render: (_, row) => (
+                <button
+                    onClick={() => onCopySession && onCopySession(row)}
+                    title="강좌 복사"
+                    className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </button>
             )
         },
     ]

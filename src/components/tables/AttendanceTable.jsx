@@ -13,6 +13,9 @@ const formatDate = (date) => {
     return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`
 }
 
+// 출석 상태 정렬 순서 (asc: 출석 우선)
+const ATTENDANCE_SORT_ORDER = {PRESENT: 0, ASSIGNMENT: 1, ALTERNATIVE: 2, ABSENT: 3, None: 4}
+
 /**
  * 출석부 테이블 컴포넌트
  */
@@ -93,10 +96,19 @@ const AttendanceTable = ({
             filtered = [...filtered].sort((a, b) => {
                 const aName = a.user?.name || ''
                 const bName = b.user?.name || ''
-
                 return sortConfig.direction === 'asc'
                     ? aName.localeCompare(bName, 'ko-KR')
                     : bName.localeCompare(aName, 'ko-KR')
+            })
+        } else if (sortConfig.key) {
+            // 강의 컬럼 정렬: lectureId 기준 출석 상태 순서로 정렬
+            const lectureId = sortConfig.key
+            filtered = [...filtered].sort((a, b) => {
+                const aStatus = a.attendanceMap[lectureId]?.detail_type || 'None'
+                const bStatus = b.attendanceMap[lectureId]?.detail_type || 'None'
+                const aOrder = ATTENDANCE_SORT_ORDER[aStatus] ?? 4
+                const bOrder = ATTENDANCE_SORT_ORDER[bStatus] ?? 4
+                return sortConfig.direction === 'asc' ? aOrder - bOrder : bOrder - aOrder
             })
         }
 
@@ -105,22 +117,33 @@ const AttendanceTable = ({
 
     // 정렬 핸들러
     const handleSort = (key) => {
-        if (key !== 'name') return
         setSortConfig(prevConfig => ({
-            key: key,
+            key,
             direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
         }))
     }
 
-    // 정렬 아이콘
+    // 정렬 아이콘 (DataTable 스타일 SVG)
     const getSortIcon = (key) => {
-        if (key !== 'name') return null
         if (sortConfig.key !== key) {
-            return <span className="text-gray-400 ml-1">⇅</span>
+            return (
+                <svg className="w-3 h-3 text-gray-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                </svg>
+            )
         }
-        return sortConfig.direction === 'asc'
-            ? <span className="text-blue-600 ml-1">↑</span>
-            : <span className="text-blue-600 ml-1">↓</span>
+        return sortConfig.direction === 'asc' ? (
+            <svg className="w-3 h-3 text-blue-600 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+            </svg>
+        ) : (
+            <svg className="w-3 h-3 text-blue-600 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
+            </svg>
+        )
     }
 
     // 셀 클릭 핸들러
@@ -330,10 +353,14 @@ const AttendanceTable = ({
                         {lectures.map((lecture, index) => (
                             <th
                                 key={lecture.id || index}
-                                className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0 min-w-[90px]"
+                                onClick={() => handleSort(lecture.id)}
+                                className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0 min-w-[90px] cursor-pointer hover:bg-gray-100 transition-colors select-none"
                             >
                                 <div className="flex flex-col items-center space-y-1">
-                                    <span>{lecture.sequence || `${index + 1}강`}</span>
+                                    <div className="flex items-center">
+                                        <span>{lecture.sequence || `${index + 1}강`}</span>
+                                        {getSortIcon(lecture.id)}
+                                    </div>
                                     <span className="text-xs text-gray-400 font-normal">
                                         {formatDate(lecture.lecture_date)}
                                     </span>

@@ -6,7 +6,7 @@ import SelectInput from '../forms/SelectInput.jsx'
 import DateInput from '../forms/DateInput.jsx'
 import NumberInput from '../forms/NumberInput.jsx'
 
-const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, courses = [], preselectedCourseId = null }) => {
+const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, courses = [], preselectedCourseId = null, copySourceSession = null }) => {
   const [formData, setFormData] = useState({
     course_id: '',
     title: '',
@@ -23,7 +23,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
     return value.split('T')[0]
   }
 
-  // 수정 모드일 때 기존 데이터 로드
+  // 수정/복사 모드일 때 기존 데이터 로드
   useEffect(() => {
     if (editingSession) {
       setFormData({
@@ -34,6 +34,16 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         date_info: editingSession.date_info || '',
         begin_date: toDateString(editingSession.begin_date),
         end_date: toDateString(editingSession.end_date),
+      })
+    } else if (copySourceSession) {
+      setFormData({
+        course_id: copySourceSession.course_id || '',
+        title: `${copySourceSession.title} (복사본)`,
+        description: copySourceSession.description || '',
+        lecturer_info: copySourceSession.lecturer_info || '',
+        date_info: copySourceSession.date_info || '',
+        begin_date: toDateString(copySourceSession.begin_date),
+        end_date: toDateString(copySourceSession.end_date),
       })
     } else {
       setFormData({
@@ -47,7 +57,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
       })
     }
     setErrors({})
-  }, [editingSession, isOpen, preselectedCourseId])
+  }, [editingSession, copySourceSession, isOpen, preselectedCourseId])
 
   // 폼 입력 처리
   const handleChange = (e) => {
@@ -145,7 +155,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={editingSession ? '강좌 수정하기' : '강좌 생성하기'}
+      title={editingSession ? '강좌 수정하기' : copySourceSession ? '강좌 복사하기' : '강좌 생성하기'}
       onSubmit={handleSubmit}
       submitText="저장하기"
       loadingText="저장 중..."

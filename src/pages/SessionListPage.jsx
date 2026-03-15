@@ -5,6 +5,7 @@ import SessionTable from '../components/tables/SessionTable.jsx'
 import SessionModal from '../components/modals/SessionModal.jsx'
 import {getSessions, createSession, updateSession} from '../services/sessionService'
 import {getCourses, getCourse} from '../services/courseService'
+import {getLecturesBySession, createLecture} from '../services/lectureService'
 
 const SessionListPage = () => {
     const {user} = useAuth()
@@ -18,6 +19,7 @@ const SessionListPage = () => {
     const [error, setError] = useState(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingSession, setEditingSession] = useState(null)
+    const [copyingSession, setCopyingSession] = useState(null)
 
     // 초기 데이터 로드
     useEffect(() => {
@@ -91,17 +93,39 @@ const SessionListPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false)
         setEditingSession(null)
+        setCopyingSession(null)
     }
 
-    // 강좌 저장 (생성 또는 수정)
+    // 강좌 복사 모달 열기
+    const handleCopySession = (session) => {
+        setEditingSession(null)
+        setCopyingSession(session)
+        setIsModalOpen(true)
+    }
+
+    // 강좌 저장 (생성 또는 수정 또는 복사)
     const handleSaveSession = async (sessionData) => {
         try {
             if (editingSession) {
                 // 수정
                 await updateSession(editingSession.id, sessionData)
             } else {
-                // 생성
-                await createSession(sessionData)
+                // 생성 (복사 포함)
+                const newSession = await createSession(sessionData)
+
+                // 복사 모드: 원본 Lectures 복제
+                if (copyingSession && newSession?.id) {
+                    const sourceLectures = await getLecturesBySession(copyingSession.id)
+                    for (const lecture of sourceLectures) {
+                        await createLecture({
+                            session_id: newSession.id,
+                            title: lecture.title,
+                            sequence: lecture.sequence,
+                            lecture_date: lecture.lecture_date,
+                            attendance_type: lecture.attendance_type,
+                        })
+                    }
+                }
             }
 
             // 목록 새로고침
@@ -138,6 +162,7 @@ const SessionListPage = () => {
                 sessions={sessions}
                 loading={loading}
                 onEditSession={handleEditSession}
+                onCopySession={handleCopySession}
             />
 
             {/* 강좌 생성/수정 모달 */}
@@ -146,6 +171,7 @@ const SessionListPage = () => {
                 onClose={handleCloseModal}
                 onSubmit={handleSaveSession}
                 editingSession={editingSession}
+                copySourceSession={copyingSession}
                 courses={courses}
                 preselectedCourseId={courseId}
             />

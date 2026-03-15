@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import {useAuth} from '../contexts/AuthContext'
-import {createOrUpdateAttendance, getAttendancesBySession} from '../services/attendanceService'
+import {createOrUpdateAttendance, createAttendance, getAttendancesBySession} from '../services/attendanceService'
 import AttendanceTable from '../components/tables/AttendanceTable'
 import AttendanceEditModal from '../components/modals/AttendanceEditModal'
 import BulkAttendanceEditModal from '../components/modals/BulkAttendanceEditModal'
@@ -58,7 +58,7 @@ const AttendanceTab = ({
     // 셀 클릭 핸들러
     const handleCellClick = (cellInfo) => {
         setEditModal({isOpen: true, cellInfo})
-        setSelectedStatus(cellInfo?.attendance?.status || 'PRESENT')
+        setSelectedStatus(cellInfo?.attendance?.detail_type || 'PRESENT')
         setNote(cellInfo?.attendance?.note || '')
     }
 
@@ -82,7 +82,7 @@ const AttendanceTab = ({
         if (!cellInfo) return
 
         // 기존 데이터와 비교하여 변경사항이 없으면 스킵
-        const currentStatus = cellInfo.attendance?.status || 'None'
+        const currentStatus = cellInfo.attendance?.detail_type || 'None'
         const currentNote = cellInfo.attendance?.description || cellInfo.attendance?.note || ''
 
         if (cellInfo.attendance?.id && currentStatus === selectedStatus && currentNote === note) {
@@ -107,6 +107,55 @@ const AttendanceTab = ({
         }
     }
 
+    // 일괄 결석처리 핸들러
+    const handleBulkAbsent = async () => {
+        if (!confirm('오늘보다 이전 강의들의 미입력자들의 출석을 전부 결석으로 변환합니다.\n진행하시겠습니까?')) return
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const pastLectures = lectures.filter(l =>
+            l.lecture_date && new Date(l.lecture_date) < today
+        )
+
+        const targets = []
+        for (const lecture of pastLectures) {
+            for (const enroll of activeEnrolls) {
+                const userId = enroll.user_id || enroll.id
+                const hasRecord = attendances.some(
+                    att => att.lecture_id === lecture.id &&
+                           (att.user_id || att.student_id) === userId
+                )
+                if (!hasRecord) targets.push({lectureId: lecture.id, userId})
+            }
+        }
+
+        if (targets.length === 0) {
+            alert('처리할 미입력 출석이 없습니다.')
+            return
+        }
+
+        setCellUpdateLoading(true)
+        try {
+            await Promise.all(
+                targets.map(({lectureId, userId}) =>
+                    createAttendance(lectureId, {
+                        user_id: userId,
+                        status: 'ABSENT',
+                        detail_type: 'ABSENT',
+                        note: ''
+                    })
+                )
+            )
+            await loadAttendances()
+        } catch (err) {
+            console.error('일괄 결석 처리 실패:', err)
+            onError('일괄 결석 처리에 실패했습니다')
+        } finally {
+            setCellUpdateLoading(false)
+        }
+    }
+
     // 일괄 편집 핸들러
     const handleBulkEdit = (selectedCells) => {
         setBulkEditModal({isOpen: true, selectedCells})
@@ -125,7 +174,7 @@ const AttendanceTab = ({
             const cellsToUpdate = selectedCells.filter(cellInfo => {
                 if (cellInfo.attendance?.id) {
                     // 기존 출석 데이터와 비교
-                    const currentStatus = cellInfo.attendance.status || 'None'
+                    const currentStatus = cellInfo.attendance.detail_type || 'None'
                     const currentNote = cellInfo.attendance.description || cellInfo.attendance.note || ''
                     return currentStatus !== bulkStatus || currentNote !== bulkNote
                 } else {
@@ -171,6 +220,7 @@ const AttendanceTab = ({
                 enrolls={activeEnrolls}
                 onCellClick={handleCellClick}
                 onBulkEdit={handleBulkEdit}
+                onBulkAbsent={handleBulkAbsent}
                 isMultiSelectMode={isMultiSelectMode}
                 onMultiSelectModeChange={setIsMultiSelectMode}
                 loading={(loading && attendancesLoading) || enrollsLoading}

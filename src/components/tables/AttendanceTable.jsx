@@ -25,6 +25,7 @@ const AttendanceTable = ({
                              enrolls = [],
                              onCellClick,
                              onBulkEdit,
+                             onBulkAbsent,
                              loading = false,
                              cellUpdateLoading = false,
                              className = '',
@@ -297,6 +298,14 @@ const AttendanceTable = ({
                                     일괄 수정 ({selectedCells.size})
                                 </button>
                             )}
+
+                            <button
+                                onClick={onBulkAbsent}
+                                disabled={cellUpdateLoading}
+                                className="px-3 py-2 text-sm font-medium rounded-lg border bg-white text-red-600 border-red-300 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                일괄 결석처리
+                            </button>
                         </div>
 
                         <div className="relative">

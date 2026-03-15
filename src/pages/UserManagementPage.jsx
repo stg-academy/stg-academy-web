@@ -186,11 +186,24 @@ const UserManagementPage = () => {
         <div className="min-h-screen bg-gray-50 min-w-[1024px]">
             <main className="max-w-7xl mx-auto px-8 md:px-6 py-8">
                 {/* 헤더 */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">사용자 관리</h1>
-                    <p className="mt-2 text-gray-600">
-                        시스템 사용자를 관리하고 사용자 정보를 수정할 수 있습니다.
-                    </p>
+                <div className="mb-8 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">사용자 관리</h1>
+                        <p className="mt-2 text-gray-600">
+                            시스템 사용자를 관리하고 사용자 정보를 수정할 수 있습니다.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleAddUser}
+                        disabled={addingUser}
+                        className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>{addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}</span>
+                    </button>
                 </div>
 
                 {/* 에러 메시지 */}

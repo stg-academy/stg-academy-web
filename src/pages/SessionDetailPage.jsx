@@ -81,9 +81,9 @@ const SessionDetailPage = () => {
         }
     }
 
-    const loadSession = async () => {
+    const loadSession = async (silent = false) => {
         try {
-            setLoading(true)
+            if (!silent) setLoading(true)
             setError(null)
             const data = await getSession(sessionId)
             setSession(data)
@@ -91,7 +91,7 @@ const SessionDetailPage = () => {
             console.error('강좌 조회 실패:', err)
             setError('강좌 정보를 불러오는데 실패했습니다')
         } finally {
-            setLoading(false)
+            if (!silent) setLoading(false)
         }
     }
 
@@ -107,7 +107,7 @@ const SessionDetailPage = () => {
     // 강좌 설정 저장
     const handleSaveSession = async (sessionData) => {
         await updateSession(sessionId, sessionData)
-        await loadSession()
+        await loadSession(true)
     }
 
     // 뒤로가기

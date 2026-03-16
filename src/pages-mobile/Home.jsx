@@ -56,15 +56,21 @@ export default function Home() {
       });
       setSessionCourseStatus(sessionMap);
 
+      let enrolledSessionIds = new Set();
+
       if (user?.id) {
         // 로그인한 사용자의 수강 중인 강의
         const enrollments = await getEnrollsByUser(user.id);
-        const activeEnrollments = Array.isArray(enrollments)
-          ? enrollments.filter(
-              e => (e.enroll_status === 'ACTIVE')
-                && sessionMap[e.session_id] === 'IN_PROGRESS'
-            )
+        const allActiveEnrollments = Array.isArray(enrollments)
+          ? enrollments.filter(e => e.enroll_status === 'ACTIVE')
           : [];
+
+        // 수강중인 session ID 수집 (모집중 목록 제외용)
+        enrolledSessionIds = new Set(allActiveEnrollments.map(e => e.session_id));
+
+        const activeEnrollments = allActiveEnrollments.filter(
+          e => sessionMap[e.session_id] === 'IN_PROGRESS'
+        );
 
         const limitedActiveCourses = activeEnrollments.slice(0, 3); // 최대 3개만
         setActiveCourses(limitedActiveCourses);
@@ -73,10 +79,11 @@ export default function Home() {
         await calculateCourseProgress(limitedActiveCourses);
       }
 
-      // 모집중인 강좌 (course_status가 RECRUITING인 것들)
-      // todo: RECRUITING 추가하기!!
+      // 모집중인 강좌 (is_recruiting=true이고 이미 수강중이 아닌 것)
       const recruiting = Array.isArray(allSessions)
-        ? allSessions.filter(session => session.course_status === 'RECRUITING')
+        ? allSessions.filter(session =>
+            session.is_recruiting === true && !enrolledSessionIds.has(session.id)
+          )
         : [];
 
       setRecruitingSessions(recruiting.slice(0, 4)); // 최대 4개만
@@ -146,30 +153,12 @@ export default function Home() {
   };
 
   const formatPeriod = (session) => {
-    if (session.start_date && session.end_date) {
-      const start = new Date(session.start_date);
+    if (session.begin_date && session.end_date) {
+      const start = new Date(session.begin_date);
       const end = new Date(session.end_date);
-      return `${start.getFullYear()}.${String(start.getMonth() + 1).padStart(2, '0')}~${String(end.getMonth() + 1).padStart(2, '0')}`;
+      return `${start.getFullYear()}.${String(start.getMonth() + 1).padStart(2, '0')} ~ ${end.getFullYear()}.${String(start.getMonth() + 1).padStart(2, '0')}`;
     }
     return "기간 미정";
-  };
-
-  const getDeadline = (session) => {
-    if (session.registration_deadline) {
-      const deadline = new Date(session.registration_deadline);
-      const now = new Date();
-      const diffTime = deadline - now;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays > 0) {
-        return `D-${diffDays}`;
-      } else if (diffDays === 0) {
-        return "D-Day";
-      } else {
-        return "마감";
-      }
-    }
-    return "D-?";
   };
 
   if (loading) {
@@ -195,7 +184,7 @@ export default function Home() {
                 <Link to="/login">
                   <Button className="w-full max-w-xs">
                     로그인하여 시작하기
-                  </Button>
+                  </Button>기간
                 </Link>
               </div>
             </section>
@@ -282,11 +271,11 @@ export default function Home() {
                     <CardContent className="p-5 flex items-center justify-between">
                       <div className="space-y-1 flex-1 min-w-0 mr-3">
                         <h3 className="font-bold text-slate-800 truncate">{session.title}</h3>
-                        <p className="text-sm text-slate-500 truncate">기간: {formatPeriod(session)}</p>
+                        <p className="text-sm text-slate-500 truncate">수강기간: {formatPeriod(session)}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <Badge variant="blue" className="bg-blue-50 text-blue-600 hover:bg-blue-100">
-                          신청마감 {getDeadline(session)}
+                        <Badge variant="gray" className="bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200">
+                          모집중
                         </Badge>
                       </div>
                     </CardContent>

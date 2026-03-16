@@ -15,6 +15,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
     date_info: '',
     begin_date: '',
     end_date: '',
+    is_recruiting: false,
   })
   const [errors, setErrors] = useState({})
 
@@ -34,6 +35,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         date_info: editingSession.date_info || '',
         begin_date: toDateString(editingSession.begin_date),
         end_date: toDateString(editingSession.end_date),
+        is_recruiting: editingSession.is_recruiting ?? false,
       })
     } else if (copySourceSession) {
       setFormData({
@@ -44,6 +46,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         date_info: copySourceSession.date_info || '',
         begin_date: toDateString(copySourceSession.begin_date),
         end_date: toDateString(copySourceSession.end_date),
+        is_recruiting: false,
       })
     } else {
       setFormData({
@@ -54,6 +57,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         date_info: '',
         begin_date: '',
         end_date: '',
+        is_recruiting: false,
       })
     }
     setErrors({})
@@ -61,10 +65,10 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
 
   // 폼 입력 처리
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
     // 입력 시 해당 필드의 에러 제거
     if (errors[name]) {
@@ -119,6 +123,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
         date_info: '',
         begin_date: '',
         end_date: '',
+        is_recruiting: false,
       })
       setErrors({})
     } catch (error) {
@@ -140,6 +145,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
       date_info: '',
       begin_date: '',
       end_date: '',
+      is_recruiting: false,
     })
     setErrors({})
     onClose()
@@ -227,6 +233,20 @@ const SessionModal = ({ isOpen, onClose, onSubmit, editingSession = null, course
             required={true}
             error={errors.end_date}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">수강 모집</label>
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="is_recruiting"
+              checked={formData.is_recruiting}
+              onChange={handleChange}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">모집 중으로 표시 (모바일 홈 화면에 노출)</span>
+          </label>
         </div>
 
         <TextareaInput

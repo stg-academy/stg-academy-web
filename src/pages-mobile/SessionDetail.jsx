@@ -10,6 +10,7 @@ import { getLecturesBySession } from '../services/lectureService';
 import { getMyAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
 import { getSession } from '../services/sessionService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
+import { renderWithLinks } from '../utils/renderUtils';
 import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
 
 const CheckCircleIcon = ({ className }) => (
@@ -259,8 +260,8 @@ export default function SessionDetail() {
                   {sessionInfo?.title || '강의명 없음'}
                 </h1>
                 {sessionInfo?.description && (
-                  <p className="text-sm text-slate-600 mb-3 truncate">
-                    {sessionInfo.description}
+                  <p className="text-sm text-slate-600 mb-3 whitespace-pre-wrap leading-relaxed">
+                    {renderWithLinks(sessionInfo.description)}
                   </p>
                 )}
               </div>

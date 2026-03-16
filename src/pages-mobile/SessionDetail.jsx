@@ -293,7 +293,7 @@ export default function SessionDetail() {
           <h2 className="text-lg font-bold text-slate-900 mb-4">출석 현황</h2>
 
           {lectures.length > 0 ? (
-            <div className="space-y-3">
+            <div className="flex flex-col space-y-3">
               {lectures
                 .sort((a, b) => new Date(a.lecture_date) - new Date(b.lecture_date))
                 .map((lecture, index) => {

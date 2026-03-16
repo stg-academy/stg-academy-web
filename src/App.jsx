@@ -22,6 +22,7 @@ import SessionDetail from "./pages-mobile/SessionDetail.jsx";
 import Profile from "./pages/Profile.jsx";
 import Search from "./pages-mobile/Search.jsx";
 import CourseRecruitPage from "./pages-mobile/CourseRecruitPage.jsx";
+import SessionInfoPage from "./pages-mobile/SessionInfoPage.jsx";
 import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
@@ -55,7 +56,8 @@ function AppContent() {
                 <Route path="mobile/attendance" element={<Attendance />}/>
                 <Route path="mobile/session/:sessionId" element={<SessionDetail />}/>
                 <Route path="mobile/search" element={<Search />}/>
-                <Route path="/course/:sessionId/recruit" element={<CourseRecruitPage />}/>
+                <Route path="mobile/recruit/:sessionId" element={<CourseRecruitPage />}/>
+                <Route path="mobile/info/:sessionId" element={<SessionInfoPage />}/>
 
                 // 키오스크
                 <Route path="/sessions/:session_id/attendance/kiosk" element={<KioskAttendance />}/>

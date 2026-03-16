@@ -266,7 +266,7 @@ export default function Home() {
           {recruitingSessions.length > 0 ? (
             <div className="grid gap-4">
               {recruitingSessions.map((session) => (
-                <Link to={`/course/${session.id}/recruit`} key={session.id}>
+                <Link to={`/mobile/recruit/${session.id}`} key={session.id}>
                   <Card className="border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-5 flex items-center justify-between">
                       <div className="space-y-1 flex-1 min-w-0 mr-3">

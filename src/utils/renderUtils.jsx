@@ -1,6 +1,18 @@
 import React from 'react';
 
 /**
+ * 강좌 수강 기간 포맷 (YYYY.MM ~ YYYY.MM)
+ */
+export const formatPeriod = (session) => {
+  if (session?.begin_date && session?.end_date) {
+    const start = new Date(session.begin_date);
+    const end = new Date(session.end_date);
+    return `${start.getFullYear()}.${String(start.getMonth() + 1).padStart(2, '0')} ~ ${end.getFullYear()}.${String(end.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return '기간 미정';
+};
+
+/**
  * 텍스트 내 URL을 외부 링크로 렌더링
  * - 줄바꿈은 whitespace-pre-wrap 으로 처리 (부모 요소에 적용 필요)
  * - 40자 초과 URL은 말줄임 처리, title 속성으로 전체 URL 표시

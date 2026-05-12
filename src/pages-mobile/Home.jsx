@@ -184,7 +184,7 @@ export default function Home() {
                 <Link to="/login">
                   <Button className="w-full max-w-xs">
                     로그인하여 시작하기
-                  </Button>기간
+                  </Button>
                 </Link>
               </div>
             </section>

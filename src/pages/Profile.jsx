@@ -209,6 +209,7 @@ export default function Profile() {
     );
   }
 
+  console.log(user);
   return (
     <MobileLayout>
       <div className="p-5 space-y-6">

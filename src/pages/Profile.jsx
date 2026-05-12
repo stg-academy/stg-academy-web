@@ -5,6 +5,7 @@ import { Card, CardContent } from '../components/mobile/ui/card.jsx';
 import { Button } from '../components/mobile/ui/button.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { updateUser } from '../services/userService.js';
+import { authAPI } from '../services/authService.js';
 
 const UserIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,6 +41,10 @@ export default function Profile() {
     information: ''
   });
   const [saving, setSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
 
   // 전체 로딩 상태 (AuthContext 로딩 + 개별 로딩)
   const isPageLoading = authLoading || loading;
@@ -99,6 +104,45 @@ export default function Profile() {
     }
   };
 
+  const handlePasswordCancel = () => {
+    setIsChangingPassword(false);
+    setPasswordForm({ current: '', new: '', confirm: '' });
+    setPasswordError(null);
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError(null);
+
+    if (passwordForm.new !== passwordForm.confirm) {
+      setPasswordError('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    try {
+      setPasswordSaving(true);
+
+      // 현재 비밀번호 검증
+      try {
+        await authAPI.loginWithCredentials(user.username, passwordForm.current);
+      } catch {
+        setPasswordError('현재 비밀번호가 올바르지 않습니다.');
+        return;
+      }
+
+      // 새 비밀번호로 업데이트
+      await updateUser(user.id, { password: passwordForm.new });
+
+      handlePasswordCancel();
+      alert('비밀번호가 성공적으로 변경되었습니다.');
+
+    } catch (error) {
+      console.error('비밀번호 변경 실패:', error);
+      setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   const handleLogout = async () => {
     if (window.confirm('정말 로그아웃하시겠습니까?')) {
       try {
@@ -114,7 +158,7 @@ export default function Profile() {
     switch (authType) {
       case 'kakao':
         return '카카오 로그인';
-      case 'credential':
+      case 'normal':
         return '일반 로그인';
       default:
         return '알 수 없음';
@@ -278,6 +322,98 @@ export default function Profile() {
             </Button>
           )}
         </section>
+
+        {/* 비밀번호 변경 (normal 계정만) */}
+        {user.auth_type === 'normal' && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-900">비밀번호 변경</h2>
+              {!isChangingPassword && (
+                <Button
+                  onClick={() => setIsChangingPassword(true)}
+                  size="sm"
+                  className="flex items-center"
+                >
+                  <EditIcon className="h-4 w-4 mr-1" />
+                  변경
+                </Button>
+              )}
+            </div>
+
+            {isChangingPassword ? (
+              <Card className="border-blue-100 bg-blue-50/50">
+                <CardContent className="p-5 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">현재 비밀번호</label>
+                    <input
+                      type="password"
+                      value={passwordForm.current}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, current: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                      placeholder="현재 비밀번호를 입력하세요"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">새 비밀번호</label>
+                    <input
+                      type="password"
+                      value={passwordForm.new}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, new: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                      placeholder="새 비밀번호를 입력하세요"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">새 비밀번호 확인</label>
+                    <input
+                      type="password"
+                      value={passwordForm.confirm}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                      placeholder="새 비밀번호를 다시 입력하세요"
+                    />
+                  </div>
+                  {passwordError && (
+                    <p className="text-sm text-red-600">{passwordError}</p>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      onClick={handlePasswordChange}
+                      disabled={passwordSaving}
+                      className="flex-1 flex items-center justify-center"
+                    >
+                      {passwordSaving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                          저장 중...
+                        </>
+                      ) : (
+                        <>
+                          <SaveIcon className="h-4 w-4 mr-1" />
+                          저장
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handlePasswordCancel}
+                      variant="outline"
+                      disabled={passwordSaving}
+                      className="flex-1"
+                    >
+                      취소
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-blue-100 bg-blue-50/50">
+                <CardContent className="p-5">
+                  <p className="text-sm text-slate-500">비밀번호를 변경하려면 변경 버튼을 눌러주세요.</p>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+        )}
 
         {/* 로그아웃 */}
         <section>

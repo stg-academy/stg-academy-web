@@ -46,7 +46,7 @@ const LoginPage = () => {
     const errors = {}
 
     if (!formData.username.trim()) {
-      errors.username = '아이디를 입력해주세요.'
+      errors.username = '이름을 입력해주세요.'
     }
 
     if (!formData.password) {
@@ -89,7 +89,7 @@ const LoginPage = () => {
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-            아이디
+            이름
           </label>
           <input
             id="username"
@@ -100,7 +100,7 @@ const LoginPage = () => {
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
               formErrors.username ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="아이디를 입력하세요"
+            placeholder="이름을 입력하세요"
             disabled={isLoading}
           />
           {formErrors.username && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
+import Button from '../ui/Button.jsx';
 import { createAttendanceWithCode } from '../../services/attendanceService';
 
 const AttendanceCodeModal = ({
@@ -75,30 +75,30 @@ const AttendanceCodeModal = ({
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-99 p-4">
             <div className="bg-white rounded-2xl w-full max-w-sm mx-auto shadow-xl">
                 {/* 헤더 */}
-                <div className="border-b border-gray-100 p-6 text-center">
-                    <h2 className="text-xl font-bold text-slate-900">출석 체크</h2>
+                <div className="border-b border-neutral-100 p-6 text-center">
+                    <h2 className="text-xl font-bold text-neutral-900">출석 체크</h2>
                 </div>
 
                 {/* 본문 */}
                 <div className="p-6 space-y-4">
                     {/* 강의 정보 */}
-                    <div className="bg-blue-50 p-4 rounded-lg text-center">
-                        <h3 className="font-medium text-blue-900 mb-1">{lecture?.title}</h3>
-                        <p className="text-sm text-blue-700">
+                    <div className="bg-accent-soft p-4 rounded-lg text-center">
+                        <h3 className="font-medium text-accent-hover mb-1">{lecture?.title}</h3>
+                        <p className="text-sm text-accent">
                             {lecture?.lecture_date && new Date(lecture.lecture_date).toLocaleDateString('ko-KR')}
                         </p>
                     </div>
 
                     {/* 에러 메시지 */}
                     {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <p className="text-sm text-red-600 text-center">{error}</p>
+                        <div className="bg-error-soft border border-error/20 rounded-lg p-3">
+                            <p className="text-sm text-error-text text-center">{error}</p>
                         </div>
                     )}
 
                     {/* 인증코드 입력 */}
                     <div className="text-center">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-neutral-700 mb-3">
                             출석 인증코드를 입력하세요
                         </label>
                         <input
@@ -107,22 +107,22 @@ const AttendanceCodeModal = ({
                             onChange={handleCodeChange}
                             placeholder="4자리"
                             maxLength="4"
-                            className="w-full px-4 py-4 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-4 py-4 text-center text-2xl font-bold border-2 border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent"
                             autoFocus
                             disabled={loading}
                         />
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-neutral-500 mt-2">
                             강사가 제공한 4자리 인증코드를 입력해주세요
                         </p>
                     </div>
                 </div>
 
                 {/* 버튼 */}
-                <div className="border-t border-gray-100 p-6">
+                <div className="border-t border-neutral-100 p-6">
                     <div className="flex gap-3">
                         <Button
                             onClick={handleClose}
-                            variant="outline"
+                            variant="secondary"
                             className="flex-1"
                             disabled={loading}
                         >

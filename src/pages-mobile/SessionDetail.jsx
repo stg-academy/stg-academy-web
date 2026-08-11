@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Button } from '../components/mobile/ui/button';
-import { Badge } from '../components/mobile/ui/badge';
-import { Progress } from '../components/mobile/ui/progress';
+import Card from '../components/ui/Card.jsx';
+import Button from '../components/ui/Button.jsx';
+import Badge from '../components/ui/Badge.jsx';
+import Progress from '../components/ui/Progress.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
 import { getMyAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
@@ -12,6 +12,7 @@ import { getSession } from '../services/sessionService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
 import { renderWithLinks } from '../utils/renderUtils';
 import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
+import { useToast } from '../components/ui/ToastProvider.jsx';
 
 const CheckCircleIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,15 +39,16 @@ const CalendarIcon = ({ className }) => (
 );
 
 const getCourseStatusBadge = (status) => {
-  if (status === 'IN_PROGRESS') return { variant: 'blue', label: '진행중', cardBorder: 'border-blue-100', cardBg: 'bg-blue-50/50', accentText: 'text-blue-600' }
-  if (status === 'FINISHED') return { variant: 'green', label: '완료', cardBorder: 'border-green-100', cardBg: 'bg-green-50/50', accentText: 'text-green-600' }
-  if (status === 'RECRUITING') return { variant: 'gray', label: '모집중', cardBorder: 'border-slate-100', cardBg: 'bg-slate-50/50', accentText: 'text-slate-600' }
-  return { variant: 'gray', label: '알 수 없음', cardBorder: 'border-slate-100', cardBg: 'bg-slate-50/50', accentText: 'text-slate-600' }
+  if (status === 'IN_PROGRESS') return { tone: 'info', label: '진행중', cardBorder: 'border-accent/20', cardBg: 'bg-accent-soft/50', accentText: 'text-accent' }
+  if (status === 'FINISHED') return { tone: 'success', label: '완료', cardBorder: 'border-success/20', cardBg: 'bg-success-soft/50', accentText: 'text-success-text' }
+  if (status === 'RECRUITING') return { tone: 'neutral', label: '모집중', cardBorder: 'border-neutral-200', cardBg: 'bg-neutral-50/50', accentText: 'text-neutral-600' }
+  return { tone: 'neutral', label: '알 수 없음', cardBorder: 'border-neutral-200', cardBg: 'bg-neutral-50/50', accentText: 'text-neutral-600' }
 }
 
 export default function SessionDetail() {
   const { sessionId } = useParams();
   const { user } = useAuth();
+  const toast = useToast();
   const [lectures, setLectures] = useState([]);
   const [attendances, setAttendances] = useState([]);
   const [sessionInfo, setSessionInfo] = useState(null);
@@ -101,10 +103,10 @@ export default function SessionDetail() {
     if (!attendance) {
       return {
         label: '출석 안함',
-        color: 'text-slate-500',
-        bgColor: 'bg-slate-50',
-        borderColor: 'border-slate-200',
-        className: 'text-slate-500'
+        color: 'text-neutral-500',
+        bgColor: 'bg-neutral-50',
+        borderColor: 'border-neutral-200',
+        className: 'text-neutral-500'
       }
     }
 
@@ -155,7 +157,7 @@ export default function SessionDetail() {
   const handleShowAttendanceModal = (lecture) => {
     const attendance = getUserAttendanceForLecture(lecture.id);
     if (attendance) {
-      alert('이미 출석 처리된 강의입니다.');
+      toast.warning('이미 출석 처리된 강의입니다.');
       return;
     }
     setAttendanceModal({ isOpen: true, lecture });
@@ -170,7 +172,7 @@ export default function SessionDetail() {
   const handleAttendanceSuccess = (newAttendance) => {
     // 출석 기록 업데이트
     setAttendances(prev => [...prev, newAttendance]);
-    alert('출석이 완료되었습니다!');
+    toast.success('출석이 완료되었습니다!');
   };
 
   const formatDate = (dateString) => {
@@ -197,7 +199,7 @@ export default function SessionDetail() {
     return (
         <MobileLayout headerTitle="강의 상세" showBack={true}>
           <div className="p-5 flex justify-center items-center h-64">
-            <div className="text-slate-500">로딩 중...</div>
+            <div className="text-neutral-500">로딩 중...</div>
           </div>
         </MobileLayout>
     );
@@ -209,8 +211,8 @@ export default function SessionDetail() {
         <div className="p-5 space-y-8">
           <section className="space-y-4">
             <div className="text-center py-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">로그인이 필요합니다</h2>
-              <p className="text-sm text-slate-500 mb-6">강의 정보를 확인하려면 로그인해주세요</p>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">로그인이 필요합니다</h2>
+              <p className="text-sm text-neutral-500 mb-6">강의 정보를 확인하려면 로그인해주세요</p>
               <Link to="/login">
                 <Button className="w-full max-w-xs">
                   로그인하여 시작하기
@@ -227,17 +229,15 @@ export default function SessionDetail() {
     return (
       <MobileLayout headerTitle="강의 상세" showBack={true}>
         <div className="p-5 space-y-4">
-          <Card className="border-red-100">
-            <CardContent className="p-6 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button
-                onClick={fetchSessionData}
-                className="mt-4"
-                variant="outline"
-              >
-                다시 시도
-              </Button>
-            </CardContent>
+          <Card className="border-error/20 text-center">
+            <p className="text-error-text">{error}</p>
+            <Button
+              onClick={fetchSessionData}
+              className="mt-4"
+              variant="secondary"
+            >
+              다시 시도
+            </Button>
           </Card>
         </div>
       </MobileLayout>
@@ -253,44 +253,42 @@ export default function SessionDetail() {
 
         {/* 강의 정보 헤더 */}
         <section>
-          <Card className={`${cardBorder} ${cardBg}`}>
-            <CardContent className="p-5 space-y-4">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900 mb-2 truncate">
-                  {sessionInfo?.title || '강의명 없음'}
-                </h1>
-                {sessionInfo?.description && (
-                  <p className="text-sm text-slate-600 mb-3 whitespace-pre-wrap leading-relaxed">
-                    {renderWithLinks(sessionInfo.description)}
-                  </p>
-                )}
-              </div>
+          <Card className={`${cardBorder} ${cardBg} space-y-4`}>
+            <div>
+              <h1 className="text-xl font-bold text-neutral-900 mb-2 truncate">
+                {sessionInfo?.title || '강의명 없음'}
+              </h1>
+              {sessionInfo?.description && (
+                <p className="text-sm text-neutral-600 mb-3 whitespace-pre-wrap leading-relaxed">
+                  {renderWithLinks(sessionInfo.description)}
+                </p>
+              )}
+            </div>
 
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-slate-600">
-                  총 {stats.totalLectures}회차 강의
-                </div>
-                <Badge variant={statusVariant}>{statusLabel}</Badge>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-neutral-600">
+                총 {stats.totalLectures}회차 강의
               </div>
+              <Badge tone={statusVariant}>{statusLabel}</Badge>
+            </div>
 
-              {/* 출석률 표시 */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">출석률</span>
-                  <span className={`${accentText} font-bold`}>{stats.attendanceRate}%</span>
-                </div>
-                <Progress value={stats.attendanceRate} className="h-2" />
-                <div className="text-xs text-slate-500 text-center">
-                  {stats.presentCount}/{stats.totalLectures}회 출석
-                </div>
+            {/* 출석률 표시 */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-600">출석률</span>
+                <span className={`${accentText} font-bold`}>{stats.attendanceRate}%</span>
               </div>
-            </CardContent>
+              <Progress value={stats.attendanceRate} className="h-2" />
+              <div className="text-xs text-neutral-500 text-center">
+                {stats.presentCount}/{stats.totalLectures}회 출석
+              </div>
+            </div>
           </Card>
         </section>
 
         {/* 출석 현황 */}
         <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">출석 현황</h2>
+          <h2 className="text-lg font-bold text-neutral-900 mb-4">출석 현황</h2>
 
           {lectures.length > 0 ? (
             <div className="flex flex-col space-y-3">
@@ -306,19 +304,18 @@ export default function SessionDetail() {
                       key={lecture.id}
                       className={`border ${status?.borderColor} bg-white`}
                     >
-                      <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0 mr-3">
                             <div className="flex items-center mb-2">
-                              <span className="text-sm font-medium text-slate-500 mr-2 flex-shrink-0">
+                              <span className="text-sm font-medium text-neutral-500 mr-2 flex-shrink-0">
                                 {index + 1}회차
                               </span>
-                              <h3 className="font-semibold text-slate-900 truncate">
+                              <h3 className="font-semibold text-neutral-900 truncate">
                                 {lecture.title || `${index + 1}회차 강의`}
                               </h3>
                             </div>
 
-                            <div className="flex items-center text-sm text-slate-600 space-x-4">
+                            <div className="flex items-center text-sm text-neutral-600 space-x-4">
                               <div className="flex items-center truncate">
                                 <CalendarIcon className="h-4 w-4 mr-1" />
                                 {lecture.lecture_date ? formatDate(lecture.lecture_date) : '날짜 미정'}
@@ -333,42 +330,41 @@ export default function SessionDetail() {
                           </div>
 
                           <div className="flex items-center space-x-2 flex-shrink-0">
-                            <Badge className={`${status?.className} ${status?.bgColor} ${status?.borderColor} border flex items-center`}>
+                            {/* 출석 상태별 색상은 attendanceStatus.js의 별도 색상 체계를 그대로 사용 (v2 토큰 범위 밖) */}
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${status?.className} ${status?.bgColor} ${status?.borderColor}`}>
                               {icon}
                               <span className="ml-1">
                                 {status?.label || '미확인'}
                               </span>
-                            </Badge>
+                            </span>
 
                             {/* 출석 체크 버튼 */}
                             {canCheckAttendance(lecture) && (
-
-                              <Badge className={`text-blue-700 bg-blue-50 border-blue-200 border flex items-center`}
-                                     onClick={() => handleShowAttendanceModal(lecture)}
+                              <button
+                                type="button"
+                                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border text-accent-hover bg-accent-soft border-accent/20"
+                                onClick={() => handleShowAttendanceModal(lecture)}
                               >
                                 <span className="ml-1">
                                  출석 체크
                                 </span>
-                              </Badge>
+                              </button>
                             )}
                           </div>
                         </div>
 
                         {attendance?.created_at && (
-                          <div className="mt-2 text-xs text-slate-500 truncate">
+                          <div className="mt-2 text-xs text-neutral-500 truncate">
                             체크 시간: {formatDate(attendance.created_at)} {formatTime(attendance.created_at)}
                           </div>
                         )}
-                      </CardContent>
                     </Card>
                   );
                 })}
             </div>
           ) : (
-            <Card className="border-slate-100">
-              <CardContent className="p-6 text-center">
-                <p className="text-slate-500">등록된 강의가 없습니다.</p>
-              </CardContent>
+            <Card>
+              <p className="text-neutral-500 text-center">등록된 강의가 없습니다.</p>
             </Card>
           )}
         </section>

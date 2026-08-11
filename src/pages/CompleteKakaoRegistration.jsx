@@ -4,6 +4,7 @@ import {useAuth} from '../contexts/AuthContext'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
 import Step1UsernameCheck from '../components/auth/Step1UsernameCheck.jsx'
 import Step2UserInfo from '../components/auth/Step2UserInfo.jsx'
+import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 
 const CompleteKakaoRegistration = () => {
     const navigate = useNavigate()
@@ -13,6 +14,7 @@ const CompleteKakaoRegistration = () => {
     const [currentStep, setCurrentStep] = useState(2)
     const [username, setUsername] = useState('')
     const [selectedUser, setSelectedUser] = useState(null)
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
     // user 정보가 로드되면 초기 username 설정
     useEffect(() => {
@@ -75,16 +77,19 @@ const CompleteKakaoRegistration = () => {
         </div>
     ), [user])
 
-    const handleCancel = useCallback(async () => {
-        if (confirm('회원가입을 취소하시겠습니까? 로그아웃됩니다.')) {
-            try {
-                await logout()
-                window.location.href = '/login'
-            } catch (error) {
-                console.error('로그아웃 실패:', error)
-                localStorage.removeItem('auth_token')
-                window.location.href = '/login'
-            }
+    const handleCancel = useCallback(() => {
+        setShowCancelConfirm(true)
+    }, [])
+
+    const executeCancel = useCallback(async () => {
+        setShowCancelConfirm(false)
+        try {
+            await logout()
+            window.location.href = '/login'
+        } catch (error) {
+            console.error('로그아웃 실패:', error)
+            localStorage.removeItem('auth_token')
+            window.location.href = '/login'
         }
     }, [logout])
 
@@ -130,6 +135,17 @@ const CompleteKakaoRegistration = () => {
                     취소 (로그아웃)
                 </button>
             </div>
+
+            <ConfirmModal
+                isOpen={showCancelConfirm}
+                onClose={() => setShowCancelConfirm(false)}
+                onConfirm={executeCancel}
+                title="회원가입 취소"
+                message="회원가입을 취소하시겠습니까? 로그아웃됩니다."
+                confirmText="취소"
+                cancelText="계속하기"
+                danger
+            />
         </AuthLayout>
     )
 }

@@ -103,20 +103,20 @@ const Step1UsernameCheck = ({
 
     // 입력 필드 스타일
     const inputClassName = useMemo(() => {
-        const baseClasses = "w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:border-transparent"
+        const baseClasses = "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:border-transparent"
 
-        if (error) return `${baseClasses} border-red-500 focus:ring-red-500`
-        if (checkState.isAvailable) return `${baseClasses} border-green-500 focus:ring-green-500`
-        return `${baseClasses} border-gray-300 focus:ring-blue-500`
+        if (error) return `${baseClasses} border-error focus:ring-error`
+        if (checkState.isAvailable) return `${baseClasses} border-success focus:ring-success`
+        return `${baseClasses} border-neutral-300 focus:ring-accent`
     }, [error, checkState.isAvailable])
 
     // 상태 메시지
     const statusMessage = useMemo(() => {
-        if (checkState.isChecking) return {text: "중복 확인 중...", className: "text-gray-500"}
-        if (error) return {text: error, className: "text-red-600"}
+        if (checkState.isChecking) return {text: "중복 확인 중...", className: "text-neutral-500"}
+        if (error) return {text: error, className: "text-error-text"}
         if (checkState.checkCompleted && !checkState.isChecking) {
-            if (checkState.isAvailable) return {text: "사용 가능한 이름입니다", className: "text-green-600"}
-            if (checkState.isDuplicate) return {text: "이미 사용 중인 이름입니다", className: "text-red-600"}
+            if (checkState.isAvailable) return {text: "사용 가능한 이름입니다", className: "text-success-text"}
+            if (checkState.isDuplicate) return {text: "이미 사용 중인 이름입니다", className: "text-error-text"}
         }
         return null
     }, [checkState, error])
@@ -125,40 +125,40 @@ const Step1UsernameCheck = ({
     const UserList = ({users, onSelectUser}) => (
         <>
 
-            <div className="h-px bg-gray-200 my-5"></div>
+            <div className="h-px bg-neutral-200 my-5"></div>
 
             <div className="flex items-baseline justify-between mb-1">
-                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                <h3 className="font-semibold text-neutral-900 text-sm sm:text-base">
                     기존 등록 사용자
                 </h3>
                 <span
-                    className="px-2 sm:px-3 py-1 rounded-full text-xs border border-gray-400 bg-gray-200 text-gray-900">{users.length}명</span>
+                    className="px-2 sm:px-3 py-1 rounded-full text-xs border border-neutral-300 bg-neutral-100 text-neutral-900">{users.length}명</span>
             </div>
-            <p className="text-xs sm:text-sm text-gray-400 mb-3">
+            <p className="text-xs sm:text-sm text-neutral-400 mb-3">
                 기존 수강 이력을 유지하시려면 아래 사용자를 선택하세요<br/>
                 새로운 계정으로 시작하시려면 "신규 사용자로 등록하기"를 선택하세요
             </p>
-            <div className="border-t-gray-200 border-b-gray-200 space-y-3 max-h-60 overflow-y-auto">
+            <div className="border-t-neutral-200 border-b-neutral-200 space-y-3 max-h-60 overflow-y-auto">
                 {users.map((user, index) => (
                     <div
                         key={user.id || index}
-                        className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 cursor-pointer transition-all"
+                        className="flex items-center justify-between p-3 sm:p-4 border border-neutral-200 rounded-md hover:bg-neutral-50 hover:border-accent/40 cursor-pointer transition-all"
                         onClick={() => onSelectUser(user)}
                     >
                         <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.username}</p>
-                            <div className="mt-1 text-xs sm:text-sm text-gray-600 space-y-1">
+                            <p className="font-semibold text-neutral-900 text-sm sm:text-base truncate">{user.username}</p>
+                            <div className="mt-1 text-xs sm:text-sm text-neutral-600 space-y-1">
                                 {user.information &&
                                     <span
-                                        className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-1">{user.information}</span>}
+                                        className="inline-block text-xs bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded mr-1">{user.information}</span>}
                                 <span
-                                    className="inline-block text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">수강 {user.enrolled_session_count || 0}개</span>
+                                    className="inline-block text-xs bg-warning-soft text-warning-text px-2 py-0.5 rounded mr-1">수강 {user.enrolled_session_count || 0}개</span>
                                 {user.recent_sessions && user.recent_sessions.length > 0 && (
                                     <p className="text-xs break-words">{formatRecentSessions(user.recent_sessions)}</p>
                                 )}
                             </div>
                         </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none"
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" fill="none"
                              stroke="currentColor"
                              viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -174,21 +174,21 @@ const Step1UsernameCheck = ({
         <div>
             {/* 이름 입력 */}
             <div className="mb-6">
-                <label htmlFor="username" className="block text-xs font-medium text-gray-700 mb-2">
+                <label htmlFor="username" className="block text-xs font-medium text-neutral-700 mb-2">
                     이름
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-error ml-1">*</span>
                 </label>
                 <input
                     type="text"
                     id="username"
                     value={username}
                     onChange={handleUsernameChange}
-                    className={`w-full h-10 px-3 border rounded-md text-sm bg-[#fafafa] focus:bg-white focus:outline-none transition-all ${
+                    className={`w-full h-10 px-3 border rounded-md text-sm bg-neutral-50 focus:bg-white focus:outline-none transition-all ${
                         error || checkState.isDuplicate
-                            ? 'border-[#ef4444]'
+                            ? 'border-error'
                             : checkState.isAvailable
-                                ? 'border-[#2563eb] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
-                                : 'border-[#e5e5e5] focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'
+                                ? 'border-accent focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)]'
+                                : 'border-neutral-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)]'
                     }`}
                     placeholder="이름을 입력하세요"
                     disabled={isLoading}
@@ -214,27 +214,27 @@ const Step1UsernameCheck = ({
 
 
                     <div
-                        className={"flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg cursor-pointer transition-all"
-                            + (checkState.isAvailable ? " hover:bg-gray-50 hover:border-blue-300 " : " opacity-50 cursor-not-allowed")}
+                        className={"flex items-center justify-between p-3 sm:p-4 border border-neutral-200 rounded-md cursor-pointer transition-all"
+                            + (checkState.isAvailable ? " hover:bg-neutral-50 hover:border-accent/40 " : " opacity-50 cursor-not-allowed")}
                         onClick={checkState.isAvailable ? handleProceedAsNew : null}
                     >
                         <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">신규 사용자로 등록하기</p>
-                            <div className="mt-1 text-xs sm:text-sm text-gray-600 space-y-1">
+                            <p className="font-semibold text-neutral-900 text-sm sm:text-base truncate">신규 사용자로 등록하기</p>
+                            <div className="mt-1 text-xs sm:text-sm text-neutral-600 space-y-1">
                                 <span
-                                    className="inline-block text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded mr-1">
+                                    className="inline-block text-xs bg-warning-soft text-warning-text px-2 py-0.5 rounded mr-1">
                                         기존 수강 이력이 없는 새로운 계정으로 시작합니다.
                                 </span>
 
                                 {!checkState.isAvailable &&
                                     <span
-                                        className="inline-block text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded mr-1">
+                                        className="inline-block text-xs bg-error-soft text-error-text px-2 py-0.5 rounded mr-1">
                                     이미 사용 중인 이름입니다
                                 </span>
                                 }
                             </div>
                         </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0 ml-2" fill="none"
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" fill="none"
                              stroke="currentColor"
                              viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -248,9 +248,9 @@ const Step1UsernameCheck = ({
 
 
             {/* 안내 메시지 */}
-            <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">안내사항</h4>
-                <ul className="text-xs text-gray-600 space-y-1">
+            <div className="mt-6 p-3 sm:p-4 bg-neutral-50 rounded-md">
+                <h4 className="text-xs sm:text-sm font-medium text-neutral-900 mb-2">안내사항</h4>
+                <ul className="text-xs text-neutral-600 space-y-1">
                     <li>• 이름과 소속정보는 출석관리자가 사용자를 식별하는 데 사용됩니다.</li>
                     <li>• 교회 내 동명이인으로 인해 이름이 중복되는 경우 별명과 함께 등록해주세요</li>
                     <li className="px-3">예: 이정규(시광대담임목사) 서금옥(큐티) 등</li>

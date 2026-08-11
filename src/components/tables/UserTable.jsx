@@ -1,4 +1,6 @@
 import DataTable from '../ui/DataTable.jsx'
+import Badge from '../ui/Badge.jsx'
+import Button from '../ui/Button.jsx'
 import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 
 const UserTable = ({
@@ -17,77 +19,54 @@ const UserTable = ({
     // 인증 유형 렌더링 함수
     const renderAuthType = (value) => {
         const authTypeConfig = {
-            'kakao': { label: '카카오', className: 'bg-yellow-100 text-yellow-800' },
-            'normal': { label: '일반', className: 'bg-gray-100 text-gray-800' },
-            'manual': { label: '관리자 수기 등록', className: 'bg-blue-100 text-blue-800' },
+            'kakao': { label: '카카오', tone: 'warning' },
+            'normal': { label: '일반', tone: 'neutral' },
+            'manual': { label: '관리자 수기 등록', tone: 'info' },
         }
-        const config = authTypeConfig[value] || { label: value || '-', className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = authTypeConfig[value] || { label: value || '-', tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 사용자 상태 렌더링 함수 (is_active 기반)
     const renderUserStatus = (value) => {
         const statusConfig = {
-            true: { label: '활성', className: 'bg-green-100 text-green-800' },
-            false: { label: '비활성', className: 'bg-gray-100 text-gray-800' }
+            true: { label: '활성', tone: 'success' },
+            false: { label: '비활성', tone: 'neutral' }
         }
-        const config = statusConfig[value] || { label: value ? '활성' : '비활성', className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = statusConfig[value] || { label: value ? '활성' : '비활성', tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 권한 렌더링 함수
     const renderRole = (value, row) => {
         const role = row.authorizations?.role || ROLES.USER
         const roleConfig = {
-            [ROLES.ADMIN]: { label: getRoleDisplayName(ROLES.ADMIN), className: 'bg-purple-100 text-purple-800' },
-            [ROLES.USER]: { label: getRoleDisplayName(ROLES.USER), className: 'bg-blue-100 text-blue-800' }
+            [ROLES.ADMIN]: { label: getRoleDisplayName(ROLES.ADMIN), tone: 'info' },
+            [ROLES.USER]: { label: getRoleDisplayName(ROLES.USER), tone: 'neutral' }
         }
-        const config = roleConfig[role] || { label: getRoleDisplayName(role), className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = roleConfig[role] || { label: getRoleDisplayName(role), tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 액션 버튼 렌더링 함수
     const renderActions = (value, row, isEditing) => {
         if (isEditing) {
             return (
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => onCancelEdit && onCancelEdit()}
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium"
-                        title="취소"
-                    >
+                <div className="flex items-center space-x-3">
+                    <Button variant="link" size="sm" onClick={() => onCancelEdit && onCancelEdit()} title="취소">
                         취소
-                    </button>
-                    <button
-                        onClick={() => onSaveEdit && onSaveEdit(row.id)}
-                        className="text-green-600 hover:text-green-700 text-sm font-medium"
-                        title="저장"
-                    >
+                    </Button>
+                    <Button variant="link" size="sm" onClick={() => onSaveEdit && onSaveEdit(row.id)} title="저장">
                         저장
-                    </button>
+                    </Button>
                 </div>
             )
         }
         return (
             <div className="flex items-center space-x-2">
-                <button
-                    onClick={() => onStartEdit && onStartEdit(row)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
+                <Button variant="link" size="sm" onClick={() => onStartEdit && onStartEdit(row)}>
                     편집
-                </button>
+                </Button>
             </div>
         )
     }

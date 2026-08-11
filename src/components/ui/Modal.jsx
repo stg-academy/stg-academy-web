@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react'
+import Button from './Button.jsx'
 
 const Modal = ({
     isOpen,
@@ -69,7 +70,7 @@ const Modal = ({
         <>
             {/* 오버레이 */}
             <div
-                className={`fixed inset-0 bg-black/30 z-40 transition-opacity duration-300 ${
+                className={`fixed inset-0 bg-neutral-900/40 z-40 transition-opacity duration-300 ${
                     isAnimating ? 'opacity-100' : 'opacity-0'
                 }`}
                 onClick={handleClose}
@@ -77,19 +78,19 @@ const Modal = ({
 
             {/* 모달 */}
             <div
-                className={`fixed right-0 top-0 h-full w-full ${width} bg-white shadow-xl z-50 transition-transform duration-300 ease-in-out ${
+                className={`fixed right-0 top-0 h-full w-full ${width} bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${
                     isAnimating ? 'translate-x-0' : 'translate-x-full'
                 }`}>
                 <div className="h-full flex flex-col">
                     {/* 헤더 */}
-                    <div className="px-6 py-4 border-b border-gray-200">
+                    <div className="px-6 py-4 border-b border-neutral-200">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900">
+                            <h2 className="text-xl font-bold text-neutral-900">
                                 {title}
                             </h2>
                             <button
                                 onClick={handleClose}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-neutral-400 hover:text-neutral-600 transition-colors"
                                 disabled={disabled || isSubmitting}
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,20 +107,16 @@ const Modal = ({
                     </div>
 
                     {/* 푸터 */}
-                    <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <div className="px-6 py-4 border-t border-neutral-200 bg-neutral-50">
                         {footer ? footer : (
                             onSubmit && (
-                                <button
+                                <Button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting || disabled}
-                                    className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
-                                        isSubmitting || disabled
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-gray-900 hover:bg-gray-800'
-                                    }`}
+                                    className="w-full"
                                 >
                                     {isSubmitting ? loadingText : submitText}
-                                </button>
+                                </Button>
                             )
                         )}
                     </div>

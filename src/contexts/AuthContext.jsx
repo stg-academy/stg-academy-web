@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import { authAPI } from '../services/authService.js'
 import { isTemporaryToken, getUserFromToken } from '../utils/tokenUtils.js'
+import { useToast } from '../components/ui/ToastProvider.jsx'
 
 // 인증 상태
 const AuthContext = createContext()
@@ -87,6 +88,7 @@ function authReducer(state, action) {
 // AuthProvider 컴포넌트
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
+  const toast = useToast()
 
   // 인증 상태 확인 중복 실행 방지를 위한 ref
   const isCheckingAuthRef = useRef(false)
@@ -247,7 +249,7 @@ export function AuthProvider({ children }) {
       })
 
       // 회원가입 완료 알림
-      alert('회원가입이 완료되었습니다! 환영합니다.')
+      toast.success('회원가입이 완료되었습니다!', '환영합니다.')
 
       return response
     } catch (error) {
@@ -280,7 +282,7 @@ export function AuthProvider({ children }) {
       })
 
       // 카카오 회원가입 완료 알림
-      alert('카카오 회원가입이 완료되었습니다! 환영합니다.')
+      toast.success('카카오 회원가입이 완료되었습니다!', '환영합니다.')
 
       return response
     } catch (error) {

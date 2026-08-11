@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from "./ui/button";
 
 const MobileLayout = ({
   children,
@@ -63,7 +62,7 @@ const MobileLayout = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex justify-center">
+    <div className="min-h-screen bg-neutral-50 flex justify-center">
       <div className="w-full max-w-md bg-white min-h-screen shadow-xl relative flex flex-col">
 
 
@@ -74,7 +73,7 @@ const MobileLayout = ({
 
         {/* Bottom Navigation */}
         {showNav && (
-          <nav className="fixed bottom-0 w-full max-w-md bg-white border-t border-slate-100 h-16 px-6 flex items-center justify-between z-50">
+          <nav className="fixed bottom-0 w-full max-w-md bg-white border-t border-neutral-100 h-16 px-6 flex items-center justify-between z-50">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
               return (
@@ -82,7 +81,7 @@ const MobileLayout = ({
                   key={item.path}
                   to={item.path}
                   className={`flex flex-col items-center justify-center gap-1 w-16 h-full transition-colors ${
-                    isActive ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
+                    isActive ? "text-accent" : "text-neutral-400 hover:text-neutral-600"
                   }`}
                 >
                   <IconComponent icon={item.icon} className="h-6 w-6" />

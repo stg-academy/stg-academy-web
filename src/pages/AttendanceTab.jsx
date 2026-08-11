@@ -4,6 +4,8 @@ import {createOrUpdateAttendance, createAttendance, getAttendancesBySession} fro
 import AttendanceTable from '../components/tables/AttendanceTable'
 import AttendanceEditModal from '../components/modals/AttendanceEditModal'
 import BulkAttendanceEditModal from '../components/modals/BulkAttendanceEditModal'
+import ConfirmModal from '../components/ui/ConfirmModal.jsx'
+import {useToast} from '../components/ui/ToastProvider.jsx'
 
 const AttendanceTab = ({
                            session,
@@ -14,6 +16,7 @@ const AttendanceTab = ({
                            loading
                        }) => {
     const {user} = useAuth()
+    const toast = useToast()
 
     const [attendances, setAttendances] = useState([])
     const [attendancesLoading, setAttendancesLoading] = useState(false)
@@ -26,6 +29,7 @@ const AttendanceTab = ({
     const [bulkStatus, setBulkStatus] = useState('PRESENT')
     const [bulkNote, setBulkNote] = useState('')
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
+    const [showBulkAbsentConfirm, setShowBulkAbsentConfirm] = useState(false)
 
     // 수강생 목록에서 활성 상태인 수강생들만 필터링
     useEffect(() => {
@@ -108,8 +112,13 @@ const AttendanceTab = ({
     }
 
     // 일괄 결석처리 핸들러
-    const handleBulkAbsent = async () => {
-        if (!confirm('오늘보다 이전 강의들의 미입력자들의 출석을 전부 결석으로 변환합니다.\n진행하시겠습니까?')) return
+    const handleBulkAbsent = () => {
+        setShowBulkAbsentConfirm(true)
+    }
+
+    // 일괄 결석처리 확정 실행
+    const executeBulkAbsent = async () => {
+        setShowBulkAbsentConfirm(false)
 
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -131,7 +140,7 @@ const AttendanceTab = ({
         }
 
         if (targets.length === 0) {
-            alert('처리할 미입력 출석이 없습니다.')
+            toast.info('처리할 미입력 출석이 없습니다.')
             return
         }
 
@@ -211,7 +220,7 @@ const AttendanceTab = ({
         }
     }
 
-    return (<div className="bg-white rounded-lg shadow ">
+    return (<div className="bg-white rounded-lg border border-neutral-200">
 
             {/* 출석부 테이블 */}
             <AttendanceTable
@@ -252,6 +261,17 @@ const AttendanceTab = ({
                 bulkNote={bulkNote}
                 setBulkNote={setBulkNote}
                 loading={cellUpdateLoading}
+            />
+
+            {/* 일괄 결석처리 확인 모달 */}
+            <ConfirmModal
+                isOpen={showBulkAbsentConfirm}
+                onClose={() => setShowBulkAbsentConfirm(false)}
+                onConfirm={executeBulkAbsent}
+                title="일괄 결석 처리"
+                message={'오늘보다 이전 강의들의 미입력자들의 출석을 전부 결석으로 변환합니다.\n진행하시겠습니까?'}
+                confirmText="변환"
+                danger
             />
         </div>
     )

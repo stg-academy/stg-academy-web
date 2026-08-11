@@ -3,6 +3,9 @@ import {useAuth} from '../contexts/AuthContext'
 import CourseTable from '../components/tables/CourseTable'
 import CourseModal from '../components/modals/CourseModal.jsx'
 import {getCourses, createCourse, updateCourse} from '../services/courseService'
+import Button from '../components/ui/Button.jsx'
+import ErrorBanner from '../components/ui/ErrorBanner.jsx'
+import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 
 const CourseListPage = () => {
     const {user} = useAuth()
@@ -70,26 +73,20 @@ const CourseListPage = () => {
 
     return (
         <div className="min-w-[1024px]">
-            {/* 에러 메시지 */}
-            {error && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-sm text-red-600">{error}</p>
-                </div>
-            )}
+            <ErrorBanner message={error} className="mb-6" />
 
-            <div className="mb-6 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">코스 목록</h3>
-                <button
-                    onClick={handleOpenCreateModal}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center space-x-2"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M12 4v16m8-8H4"/>
-                    </svg>
-                    <span>코스 개설하기</span>
-                </button>
-            </div>
+            <PageSectionHeader
+                title="코스 목록"
+                action={
+                    <Button onClick={handleOpenCreateModal} className="flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>코스 개설하기</span>
+                    </Button>
+                }
+            />
 
             <CourseTable
                 courses={courses}

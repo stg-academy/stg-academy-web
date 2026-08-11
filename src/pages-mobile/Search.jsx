@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Badge } from '../components/mobile/ui/badge';
+import Card from '../components/ui/Card.jsx';
+import Badge from '../components/ui/Badge.jsx';
 import { getSessions } from '../services/sessionService';
 import { getCourses } from '../services/courseService';
 import { getEnrollsByUser } from '../services/enrollService';
@@ -30,18 +30,18 @@ const ChevronRightIcon = ({ className }) => (
 const getSessionBadge = (session) => {
   const { course_status, is_recruiting } = session;
   if (course_status === 'IN_PROGRESS' && is_recruiting) {
-    return { variant: 'gray', label: '모집중', className: 'bg-yellow-100 text-yellow-700 border border-yellow-200' };
+    return { tone: 'warning', label: '모집중' };
   }
   if (course_status === 'IN_PROGRESS') {
-    return { variant: 'blue', label: '진행중', className: null };
+    return { tone: 'info', label: '진행중' };
   }
   if (course_status === 'FINISHED') {
-    return { variant: 'green', label: '완료', className: null };
+    return { tone: 'success', label: '완료' };
   }
   if (course_status === 'RECRUITING') {
-    return { variant: 'gray', label: '모집예정', className: null };
+    return { tone: 'neutral', label: '모집예정' };
   }
-  return { variant: 'gray', label: '준비중', className: null };
+  return { tone: 'neutral', label: '준비중' };
 };
 
 const SORT_OPTIONS = [
@@ -135,31 +135,31 @@ export default function Search() {
         {/* 검색 및 정렬 영역 */}
         <div className="px-5 pt-5 pb-3 space-y-3 bg-white ">
           <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
             <input
               type="text"
               placeholder="강좌명으로 검색"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-9 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-9 pr-9 py-2.5 text-sm border border-neutral-200 rounded-md bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
               >
                 <XIcon className="h-4 w-4" />
               </button>
             )}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-neutral-500">
               {loading ? '불러오는 중...' : `총 ${filteredAndSorted.length}개`}
             </span>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="text-xs text-slate-600  rounded-md  py-1.5 bg-white focus:outline-none "
+              className="text-xs text-neutral-600  rounded-md  py-1.5 bg-white focus:outline-none "
             >
               {SORT_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -172,7 +172,7 @@ export default function Search() {
         <div className="flex flex-col flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {loading ? (
             <div className="flex justify-center items-center h-40">
-              <p className="text-slate-500 text-sm">로딩 중...</p>
+              <p className="text-neutral-500 text-sm">로딩 중...</p>
             </div>
           ) : filteredAndSorted.length > 0 ? (
             filteredAndSorted.map((session) => {
@@ -180,38 +180,34 @@ export default function Search() {
               const badge = getSessionBadge(session);
               return (
                 <Link to={getSessionLink(session, enrolledIds)} key={session.id}>
-                  <Card className="border-slate-100 shadow-sm hover:shadow-md transition-shadow active:scale-[0.99] transition-transform">
-                    <CardContent className="p-5 flex items-center justify-between">
-                      <div className="space-y-1 flex-1 min-w-0 mr-3">
-                        {courseMap[session.course_id] && (
-                          <p className="text-xs text-slate-400 truncate">{courseMap[session.course_id]}</p>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-800 truncate">{session.title}</h3>
-                          {isEnrolled && <Badge variant="outline" className="flex-shrink-0">수강중</Badge>}
-                        </div>
-                        <p className="text-sm text-slate-500 truncate">수강기간: {formatPeriod(session)}</p>
-                        {session.lecturer_info && (
-                          <p className="text-xs text-slate-400 truncate">{session.lecturer_info}</p>
-                        )}
+                  <Card hover className="flex items-center justify-between active:scale-[0.99] transition-transform">
+                    <div className="space-y-1 flex-1 min-w-0 mr-3">
+                      {courseMap[session.course_id] && (
+                        <p className="text-xs text-neutral-400 truncate">{courseMap[session.course_id]}</p>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-neutral-800 truncate">{session.title}</h3>
+                        {isEnrolled && <Badge tone="neutral" className="flex-shrink-0">수강중</Badge>}
                       </div>
-                      <div className="flex-shrink-0">
-                        <Badge variant={badge.variant} className={badge.className}>
-                          {badge.label}
-                        </Badge>
-                      </div>
-                    </CardContent>
+                      <p className="text-sm text-neutral-500 truncate">수강기간: {formatPeriod(session)}</p>
+                      {session.lecturer_info && (
+                        <p className="text-xs text-neutral-400 truncate">{session.lecturer_info}</p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      <Badge tone={badge.tone}>
+                        {badge.label}
+                      </Badge>
+                    </div>
                   </Card>
                 </Link>
               );
             })
           ) : (
-            <Card className="border-slate-100">
-              <CardContent className="p-8 text-center">
-                <p className="text-slate-500 text-sm">
-                  {searchQuery ? `"${searchQuery}"에 대한 결과가 없어요` : '등록된 강좌가 없어요'}
-                </p>
-              </CardContent>
+            <Card>
+              <p className="text-neutral-500 text-sm text-center">
+                {searchQuery ? `"${searchQuery}"에 대한 결과가 없어요` : '등록된 강좌가 없어요'}
+              </p>
             </Card>
           )}
         </div>

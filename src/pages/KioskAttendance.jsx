@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/mobile/ui/button';
-import { Card, CardContent } from '../components/mobile/ui/card';
+import Button from '../components/ui/Button.jsx';
+import { useToast } from '../components/ui/ToastProvider.jsx';
 import { getSession } from '../services/sessionService';
 import { getEnrollsBySession } from '../services/enrollService';
 import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
@@ -37,6 +37,7 @@ const ChevronLeftIcon = ({ className }) => (
 const KioskAttendance = () => {
   const { session_id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const [sessionInfo, setSessionInfo] = useState(null);
   const [todaysLecture, setTodaysLecture] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
@@ -214,7 +215,7 @@ const KioskAttendance = () => {
   // 사용자 선택 처리
   const handleUserSelect = useCallback((user) => {
     if (user.attendance) {
-      alert('이미 출석 처리된 사용자입니다.');
+      toast.warning('이미 출석 처리된 사용자입니다.');
       return;
     }
     setSelectedUser(user);
@@ -284,20 +285,20 @@ const KioskAttendance = () => {
 
   if (loading) {
     return (
-      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
-        <div className="text-xl text-slate-600">로딩 중...</div>
+      <div className="h-screen -mt-17 bg-neutral-50 flex items-center justify-center">
+        <div className="text-xl text-neutral-600">로딩 중...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
+      <div className="h-screen -mt-17 bg-neutral-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
-          <div className="text-red-600 text-xl mb-4">{error}</div>
+          <div className="text-error-text text-xl mb-4">{error}</div>
           <button
             onClick={() => navigate(-1)}
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
           >
             돌아가기
           </button>
@@ -309,14 +310,14 @@ const KioskAttendance = () => {
   // 출석 완료 화면
   if (attendanceStatus === 'success' && selectedUser) {
     return (
-      <div className="h-screen -mt-17 bg-green-50 flex flex-col items-center justify-center p-8 overflow-hidden">
+      <div className="h-screen -mt-17 bg-success-soft flex flex-col items-center justify-center p-8 overflow-hidden">
         <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-md w-full">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckIcon className="h-12 w-12 text-green-600" />
+          <div className="w-24 h-24 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-8">
+            <CheckIcon className="h-12 w-12 text-success-text" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">출석 완료!</h1>
-          <p className="text-lg text-slate-600 mb-2">{selectedUser.username}님</p>
-          <p className="text-sm text-slate-500">출석이 성공적으로 처리되었습니다.</p>
+          <h1 className="text-3xl font-bold text-neutral-900 mb-4">출석 완료!</h1>
+          <p className="text-lg text-neutral-600 mb-2">{selectedUser.username}님</p>
+          <p className="text-sm text-neutral-500">출석이 성공적으로 처리되었습니다.</p>
         </div>
       </div>
     );
@@ -325,13 +326,13 @@ const KioskAttendance = () => {
   // 사용자 확인 화면
   if (selectedUser) {
     return (
-      <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
+      <div className="h-screen -mt-17 bg-neutral-50 flex flex-col overflow-hidden">
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
             <div className="flex items-center justify-between mb-8">
               <button
                   onClick={handleGoBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4 text-lg sm:text-base"
+                  className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors mb-4 text-lg sm:text-base"
               >
                 <svg className="w-6 h-6 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
@@ -342,30 +343,30 @@ const KioskAttendance = () => {
               <div className="w-12"></div>
             </div>
 
-            <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
-              <span className="text-4xl font-bold text-blue-600">
+            <div className="w-32 h-32 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-8">
+              <span className="text-4xl font-bold text-accent">
                 {selectedUser.username?.charAt(0) || '?'}
               </span>
             </div>
 
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
               {selectedUser.username || '이름 없음'}님
             </h2>
 
             {selectedUser.information && (
-                <div className="text-lg text-gray-600 mb-8">{selectedUser.information}</div>
+                <div className="text-lg text-neutral-600 mb-8">{selectedUser.information}</div>
             )}
 
             <Button
               onClick={handleAttendanceConfirm}
               disabled={isProcessing || !todaysLecture}
-              className="w-full h-16 text-xl font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+              className="w-full h-16 text-xl font-bold bg-accent text-white hover:bg-accent-hover disabled:bg-neutral-400"
             >
               {isProcessing ? '처리 중...' : '출석 체크'}
             </Button>
 
             {!todaysLecture && (
-              <p className="text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+              <p className="text-error text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
             )}
           </div>
         </div>
@@ -375,61 +376,61 @@ const KioskAttendance = () => {
 
   // 메인 검색 화면
   return (
-    <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
+    <div className="h-screen -mt-17 bg-neutral-50 flex flex-col overflow-hidden">
       {/* 상단 헤더 - 강의정보 영역 */}
       <div className="bg-white shadow-sm p-3 flex items-center justify-between flex-shrink-0">
         <button
           onClick={handleGoBack}
-          className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+          className="p-3 hover:bg-neutral-100 rounded-full transition-colors"
         >
-          <XIcon className="h-6 w-6 text-slate-600" />
+          <XIcon className="h-6 w-6 text-neutral-600" />
         </button>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">{sessionInfo?.title} 출석체크</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">{sessionInfo?.title} 출석체크</h1>
           {todaysLecture ? (
-            <p className=" text-slate-500 mt-1">
+            <p className=" text-neutral-500 mt-1">
               {formatDate(todaysLecture.lecture_date)} {todaysLecture.title}
             </p>
           ) : (
-            <p className="text-lg text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+            <p className="text-lg text-error text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
           )}
         </div>
         <div className="w-12"></div>
       </div>
 
       {/* 검색창 */}
-      <div className="bg-white p-3 border-b border-slate-100 flex-shrink-0">
+      <div className="bg-white p-3 border-b border-neutral-100 flex-shrink-0">
         <div className="relative max-w-2xl mx-auto">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
-            className="w-full h-12 px-6 pr-16 text-lg border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full h-12 px-6 pr-16 text-lg border border-neutral-300 rounded-2xl focus:outline-none focus:border-accent transition-colors"
           />
           {searchQuery && (
             <button
               onClick={handleClearSearch}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-slate-100 rounded-full transition-colors"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-neutral-100 rounded-full transition-colors"
             >
-              <XIcon className="h-6 w-6 text-slate-400" />
+              <XIcon className="h-6 w-6 text-neutral-400" />
             </button>
           )}
         </div>
       </div>
 
       {/* 도움말 및 신규 회원 등록 */}
-      <div className="bg-slate-100 px-4 py-2 flex-shrink-0">
+      <div className="bg-neutral-100 px-4 py-2 flex-shrink-0">
         <div className="max-w-6xl px-6  mx-auto flex items-center justify-between">
-          <div className="flex items-center text-sm text-slate-600">
-            <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex items-center text-sm text-neutral-600">
+            <svg className="w-4 h-4 mr-2 text-warning" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <span>이름이 조회되지 않으시나요?</span>
           </div>
           <button
             onClick={handleOpenRegistrationModal}
-            className="bg-gray-700 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+            className="bg-neutral-900 hover:bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -442,10 +443,10 @@ const KioskAttendance = () => {
       {/* 검색 결과 */}
       <div className="flex-1 p-3 overflow-hidden">
         <div className="max-w-6xl mx-auto h-full">
-          <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6 h-full flex flex-col">
+          <div className="bg-white rounded-lg shadow-sm border-neutral-100 p-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
-              <h2 className="font-bold text-gray-900">수강생 목록</h2>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              <h2 className="font-bold text-neutral-900">수강생 목록</h2>
+              <span className="px-3 py-1 bg-accent-soft text-accent-hover rounded-full text-sm font-medium">
                 {filteredUsers.length}명
               </span>
             </div>
@@ -456,25 +457,25 @@ const KioskAttendance = () => {
                   <div
                     key={user.id}
                     onClick={() => handleUserSelect(user)}
-                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
+                    className={`p-4 border-neutral-100 rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
                       user.attendance
-                        ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        ? 'border-success/30 bg-success-soft opacity-60 cursor-not-allowed'
+                        : 'border-neutral-200 hover:border-accent/40 hover:bg-accent-soft'
                     }`}
                   >
-                    <div className="text-lg font-bold text-gray-900 mb-1">{user.username}</div>
+                    <div className="text-lg font-bold text-neutral-900 mb-1">{user.username}</div>
                     {user.information && (
-                      <div className="text-sm text-gray-600 mb-2">{user.information}</div>
+                      <div className="text-sm text-neutral-600 mb-2">{user.information}</div>
                     )}
                     <div className={`text-sm font-medium ${
-                      user.attendance ? 'text-green-600' : 'text-gray-500'
+                      user.attendance ? 'text-success-text' : 'text-neutral-500'
                     }`}>
                       {user.attendance ? '출석완료' : '출석 대기'}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="col-span-full flex items-center justify-center h-full text-gray-500">
+                <div className="col-span-full flex items-center justify-center h-full text-neutral-500">
                   검색 결과가 없습니다
                 </div>
               )}
@@ -484,15 +485,15 @@ const KioskAttendance = () => {
       </div>
 
       {/* 하단 키패드 영역 */}
-      <div className="bg-white border-t border-slate-100 p-3 flex-shrink-0">
+      <div className="bg-white border-t border-neutral-100 p-3 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-5 gap-3 mb-4">
             {KOREAN_CONSONANTS.map((consonant) => (
               <Button
                 key={consonant}
                 onClick={() => handleKeypadInput(consonant)}
-                variant="outline"
-                className="h-14 text-xl font-bold border-none hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all shadow-sm"
+                variant="secondary"
+                className="h-14 text-xl font-bold border-none hover:bg-accent-soft hover:border-accent/40 active:scale-95 transition-all shadow-sm"
               >
                 {consonant}
               </Button>
@@ -501,8 +502,8 @@ const KioskAttendance = () => {
             {/* 백스페이스 버튼 */}
             <Button
               onClick={handleBackspace}
-              variant="outline"
-              className="h-16 px-8 hover:bg-red-50 hover:border-red-300 active:scale-95 transition-all"
+              variant="secondary"
+              className="h-16 px-8 hover:bg-error-soft hover:border-error/40 active:scale-95 transition-all"
             >
               <BackspaceIcon className="h-6 w-6" />
             </Button>

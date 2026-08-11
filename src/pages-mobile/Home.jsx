@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Button } from '../components/mobile/ui/button';
-import { Progress } from '../components/mobile/ui/progress';
-import { Badge } from '../components/mobile/ui/badge';
+import Card from '../components/ui/Card.jsx';
+import Button from '../components/ui/Button.jsx';
+import Progress from '../components/ui/Progress.jsx';
+import Badge from '../components/ui/Badge.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
@@ -24,10 +24,10 @@ const TrophyIcon = ({ className }) => (
 );
 
 const getCourseStatusBadge = (status) => {
-  if (status === 'IN_PROGRESS') return { variant: 'blue', label: '진행중' }
-  if (status === 'FINISHED') return { variant: 'green', label: '완료' }
-  if (status === 'RECRUITING') return { variant: 'gray', label: '모집중' }
-  return { variant: 'gray', label: '알 수 없음' }
+  if (status === 'IN_PROGRESS') return { tone: 'info', label: '진행중' }
+  if (status === 'FINISHED') return { tone: 'success', label: '완료' }
+  if (status === 'RECRUITING') return { tone: 'neutral', label: '모집중' }
+  return { tone: 'neutral', label: '알 수 없음' }
 }
 
 export default function Home() {
@@ -165,7 +165,7 @@ export default function Home() {
     return (
       <MobileLayout>
         <div className="p-5 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
+          <div className="text-neutral-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );
@@ -179,8 +179,8 @@ export default function Home() {
         {!user && (
             <section className="space-y-4">
               <div className="text-center py-8">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">시광 아카데미에 오신 것을 환영합니다</h2>
-                <p className="text-sm text-slate-500 mb-6">로그인/회원가입하여 출결관리를 진행해주세요</p>
+                <h2 className="text-2xl font-bold text-neutral-900 mb-2">시광 아카데미에 오신 것을 환영합니다</h2>
+                <p className="text-sm text-neutral-500 mb-6">로그인/회원가입하여 출결관리를 진행해주세요</p>
                 <Link to="/login">
                   <Button className="w-full max-w-xs">
                     로그인하여 시작하기
@@ -194,8 +194,8 @@ export default function Home() {
         {user && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">수강중인 교육</h2>
-              <Link to="/mobile/my-learning" className="text-xs text-slate-500 font-medium flex items-center">
+              <h2 className="text-lg font-bold text-neutral-900">수강중인 교육</h2>
+              <Link to="/mobile/my-learning" className="text-xs text-neutral-500 font-medium flex items-center">
                 전체보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
               </Link>
             </div>
@@ -211,43 +211,39 @@ export default function Home() {
 
                   return (
                     <Link to={`/mobile/session/${enrollment.session_id}`} key={enrollment.id}>
-                      <Card className="border-slate-100 shadow-sm active:scale-[0.99] transition-transform">
-                        <CardContent className="p-5">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1 min-w-0 mr-3">
-                              <h3 className="font-bold text-slate-800 text-lg truncate">
-                                {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
-                              </h3>
-                            </div>
-                            {(() => {
-                              const { variant, label } = getCourseStatusBadge(sessionCourseStatus[enrollment.session_id]);
-                              return <Badge variant={variant}>{label}</Badge>;
-                            })()}
+                      <Card hover className="active:scale-[0.99] transition-transform">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1 min-w-0 mr-3">
+                            <h3 className="font-bold text-neutral-800 text-lg truncate">
+                              {enrollment.session_title || enrollment.session?.title || '강의명 없음'}
+                            </h3>
                           </div>
-                          <div className="space-y-3">
-                            <div className="space-y-1.5">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-slate-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
-                                <span className="text-blue-600 font-bold">{progress}%</span>
-                              </div>
-                              <Progress value={progress} className="h-2"/>
+                          {(() => {
+                            const { tone, label } = getCourseStatusBadge(sessionCourseStatus[enrollment.session_id]);
+                            return <Badge tone={tone}>{label}</Badge>;
+                          })()}
+                        </div>
+                        <div className="space-y-3">
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-neutral-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
+                              <span className="text-accent font-bold">{progress}%</span>
                             </div>
-                            <div className="flex justify-between text-sm pt-1">
-                              <span className="text-slate-500">출석률</span>
-                              <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
-                            </div>
+                            <Progress value={progress} className="h-2"/>
                           </div>
-                        </CardContent>
+                          <div className="flex justify-between text-sm pt-1">
+                            <span className="text-neutral-500">출석률</span>
+                            <span className="text-neutral-900 font-semibold">{attendanceRate}%</span>
+                          </div>
+                        </div>
                       </Card>
                     </Link>
                   );
                 })}
               </div>
             ) : (
-              <Card className="border-slate-100 shadow-sm">
-                <CardContent className="p-6 text-center">
-                  <p className="text-slate-500">현재 수강중인 강의가 없어요</p>
-                </CardContent>
+              <Card>
+                <p className="text-neutral-500 text-center">현재 수강중인 강의가 없어요</p>
               </Card>
             )}
           </section>
@@ -256,9 +252,9 @@ export default function Home() {
         {/* Recruiting Courses Section */}
         <section className="space-y-4 flex flex-col">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">모집중인 강의</h2>
+            <h2 className="text-lg font-bold text-neutral-900">모집중인 강의</h2>
             {/*todo: /mobile/courses */}
-            <Link to="/mobile/search" className="text-xs text-slate-500 font-medium flex items-center">
+            <Link to="/mobile/search" className="text-xs text-neutral-500 font-medium flex items-center">
               더보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
             </Link>
           </div>
@@ -267,27 +263,21 @@ export default function Home() {
             <div className="grid gap-4">
               {recruitingSessions.map((session) => (
                 <Link to={`/mobile/recruit/${session.id}`} key={session.id}>
-                  <Card className="border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-5 flex items-center justify-between">
-                      <div className="space-y-1 flex-1 min-w-0 mr-3">
-                        <h3 className="font-bold text-slate-800 truncate">{session.title}</h3>
-                        <p className="text-sm text-slate-500 truncate">수강기간: {formatPeriod(session)}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <Badge variant="gray" className="bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200">
-                          모집중
-                        </Badge>
-                      </div>
-                    </CardContent>
+                  <Card hover className="flex items-center justify-between">
+                    <div className="space-y-1 flex-1 min-w-0 mr-3">
+                      <h3 className="font-bold text-neutral-800 truncate">{session.title}</h3>
+                      <p className="text-sm text-neutral-500 truncate">수강기간: {formatPeriod(session)}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      <Badge tone="warning">모집중</Badge>
+                    </div>
                   </Card>
                 </Link>
               ))}
             </div>
           ) : (
-            <Card className="border-slate-100 shadow-sm">
-              <CardContent className="p-6 text-center">
-                <p className="text-slate-500">현재 모집중인 강의가 없어요</p>
-              </CardContent>
+            <Card>
+              <p className="text-neutral-500 text-center">현재 모집중인 강의가 없어요</p>
             </Card>
           )}
         </section>

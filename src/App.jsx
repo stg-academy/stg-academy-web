@@ -1,5 +1,6 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
+import {ToastProvider} from './components/ui/ToastProvider.jsx'
 import Header from './components/Header'
 import SampleDashboard from './pages/SampleDashboard'
 import SamplePage from './pages/SamplePage'
@@ -101,14 +102,16 @@ function AppContent() {
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    <Route path="/auth/kakao/callback" element={<KakaoCallback/>}/>
-                    <Route path="/*" element={<AppContent/>}/>
-                </Routes>
-            </Router>
-        </AuthProvider>
+        <ToastProvider>
+            <AuthProvider>
+                <Router>
+                    <Routes>
+                        <Route path="/auth/kakao/callback" element={<KakaoCallback/>}/>
+                        <Route path="/*" element={<AppContent/>}/>
+                    </Routes>
+                </Router>
+            </AuthProvider>
+        </ToastProvider>
     )
 }
 

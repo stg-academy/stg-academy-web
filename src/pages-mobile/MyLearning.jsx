@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/mobile/ui/tabs';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Button } from '../components/mobile/ui/button';
-import { Progress } from '../components/mobile/ui/progress';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs.jsx';
+import Card from '../components/ui/Card.jsx';
+import Button from '../components/ui/Button.jsx';
+import Progress from '../components/ui/Progress.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
@@ -160,37 +160,35 @@ export default function MyLearning() {
     const progress = calculateProgress(enrollment.session_id);
 
     return (
-      <Card className="border-slate-100 shadow-sm">
-        <CardContent className="p-5 space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-slate-900 text-lg truncate">
-                {enrollment.session_title || '강의명 없음'}
-              </h3>
-            </div>
+      <Card className="space-y-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-neutral-900 text-lg truncate">
+              {enrollment.session_title || '강의명 없음'}
+            </h3>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
-                <span className="text-blue-600 font-bold">{progress}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
+              <span className="text-accent font-bold">{progress}%</span>
             </div>
-            <div className="flex justify-between text-sm pt-1">
-              <span className="text-slate-500">출석률</span>
-              <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
-            </div>
+            <Progress value={progress} className="h-2" />
           </div>
+          <div className="flex justify-between text-sm pt-1">
+            <span className="text-neutral-500">출석률</span>
+            <span className="text-neutral-900 font-semibold">{attendanceRate}%</span>
+          </div>
+        </div>
 
-          <Link to={`/mobile/session/${enrollment.session_id}`}>
-            <Button className="w-full mt-2" variant="outline">
-              강의실 입장
-              <ChevronRightIcon className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
-        </CardContent>
+        <Link to={`/mobile/session/${enrollment.session_id}`}>
+          <Button className="w-full mt-2">
+            강의실 입장
+            <ChevronRightIcon className="h-4 w-4 ml-2" />
+          </Button>
+        </Link>
       </Card>
     );
   };
@@ -199,7 +197,7 @@ export default function MyLearning() {
     return (
       <MobileLayout headerTitle="내 강의">
         <div className="p-4 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
+          <div className="text-neutral-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );
@@ -211,8 +209,8 @@ export default function MyLearning() {
         <div className="p-5 space-y-8">
           <section className="space-y-4">
             <div className="text-center py-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">내 강의를 확인하세요</h2>
-              <p className="text-sm text-slate-500 mb-6">로그인하여 수강 중인 강의와 진도를 확인해보세요</p>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">내 강의를 확인하세요</h2>
+              <p className="text-sm text-neutral-500 mb-6">로그인하여 수강 중인 강의와 진도를 확인해보세요</p>
               <Link to="/login">
                 <Button className="w-full max-w-xs">
                   로그인하여 시작하기
@@ -228,11 +226,10 @@ export default function MyLearning() {
   if (error) {
     return (
       <MobileLayout headerTitle="내 강의">
-        <div className="p-4 flex flex-col items-center justify-center h-64 text-slate-500">
+        <div className="p-4 flex flex-col items-center justify-center h-64 text-neutral-500">
           <p>{error}</p>
           <Button
             onClick={fetchMyLearningData}
-            variant="outline"
             className="mt-4"
           >
             다시 시도
@@ -264,9 +261,9 @@ export default function MyLearning() {
                 />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-slate-300" />
+              <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                  <BookOpenIcon className="h-8 w-8 text-neutral-300" />
                 </div>
                 <p>현재 수강 중인 강의가 없습니다.</p>
               </div>
@@ -283,9 +280,9 @@ export default function MyLearning() {
                 />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-slate-300" />
+              <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                  <BookOpenIcon className="h-8 w-8 text-neutral-300" />
                 </div>
                 <p>아직 완료한 강의가 없습니다.</p>
               </div>

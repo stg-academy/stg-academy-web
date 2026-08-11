@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Button } from '../components/mobile/ui/button';
-import { Badge } from '../components/mobile/ui/badge';
+import Card from '../components/ui/Card.jsx';
+import Button from '../components/ui/Button.jsx';
+import Badge from '../components/ui/Badge.jsx';
+import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnrollsByUser } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
@@ -31,6 +32,7 @@ const MapPinIcon = ({ className }) => (
 
 export default function Attendance() {
   const { user } = useAuth();
+  const toast = useToast();
   const [checkedIn, setCheckedIn] = useState(false);
   const [todaysLectures, setTodaysLectures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +126,7 @@ export default function Attendance() {
   const handleShowCodeInput = (lecture) => {
     // 이미 출석 기록이 있는 경우 처리 중단
     if (lectureAttendances[lecture.id]) {
-      alert('이미 출석 처리된 강의입니다.');
+      toast.warning('이미 출석 처리된 강의입니다.');
       return;
     }
     setShowCodeInput(prev => ({ ...prev, [lecture.id]: true }));
@@ -176,7 +178,7 @@ export default function Attendance() {
       setCheckedIn(true);
       setShowCodeInput(prev => ({ ...prev, [lecture.id]: false }));
       setAttendanceCodes(prev => ({ ...prev, [lecture.id]: '' }));
-      alert('출석이 완료되었습니다!');
+      toast.success('출석이 완료되었습니다!');
     } catch (error) {
       console.error('출석 처리 실패:', error);
       setCodeError(prev => ({ ...prev, [lecture.id]: error.message || '출석 처리 중 오류가 발생했습니다.' }));
@@ -216,7 +218,7 @@ export default function Attendance() {
     return (
         <MobileLayout headerTitle="출석">
           <div className="p-5 flex justify-center items-center h-64">
-            <div className="text-slate-500">로딩 중...</div>
+            <div className="text-neutral-500">로딩 중...</div>
           </div>
         </MobileLayout>
     );
@@ -228,8 +230,8 @@ export default function Attendance() {
         <div className="p-5 space-y-8">
           <section className="space-y-4">
             <div className="text-center py-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">출석 체크를 시작하세요</h2>
-              <p className="text-sm text-slate-500 mb-6">로그인하여 강의 출석을 체크하고 관리해보세요</p>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">출석 체크를 시작하세요</h2>
+              <p className="text-sm text-neutral-500 mb-6">로그인하여 강의 출석을 체크하고 관리해보세요</p>
               <Link to="/login">
                 <Button className="w-full max-w-xs">
                   로그인하여 시작하기
@@ -247,7 +249,7 @@ export default function Attendance() {
       <div className="p-5 space-y-6">
 
         <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">오늘의 강의</h2>
+          <h2 className="text-lg font-bold text-neutral-900 mb-4">오늘의 강의</h2>
 
           {todaysLectures.length > 0 ? (
             todaysLectures.map((lecture) => {
@@ -256,16 +258,16 @@ export default function Attendance() {
               const isAlreadyChecked = !!attendance;
 
               return (
-                <Card key={lecture.id} className={`mb-3 bg-white ${isAlreadyChecked ? 'border-green-100 ' : 'border-blue-100'} `}>
-                  <CardContent className="p-5 space-y-4">
+                <Card key={lecture.id} className={`mb-3 bg-white space-y-4 ${isAlreadyChecked ? 'border-success/20 ' : 'border-accent/20'} `}>
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-slate-900 text-lg flex-1 min-w-0 mr-3 truncate">{lecture.sessionTitle}</h3>
-                        <Badge className={`${attendanceStatus.className} ${attendanceStatus.bgColor} ${attendanceStatus.borderColor} border`}>
+                        <h3 className="font-bold text-neutral-900 text-lg flex-1 min-w-0 mr-3 truncate">{lecture.sessionTitle}</h3>
+                        {/* 출석 상태별 색상은 attendanceStatus.js의 별도 색상 체계를 그대로 사용 (v2 토큰 범위 밖) */}
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${attendanceStatus.className} ${attendanceStatus.bgColor} ${attendanceStatus.borderColor}`}>
                           {attendanceStatus.label}
-                        </Badge>
+                        </span>
                       </div>
-                      <p className="text-slate-600 truncate">
+                      <p className="text-neutral-600 truncate">
                         {lecture.title} - {lecture.lecture_date ? formatDate(lecture.lecture_date) : '날짜 미정'}
                       </p>
                     </div>
@@ -274,23 +276,23 @@ export default function Attendance() {
                       // 인증코드 입력 UI
                       <div className="space-y-3">
                         <div className="text-center">
-                          <p className="text-sm font-medium text-slate-700 mb-2">출석 인증코드를 입력하세요</p>
+                          <p className="text-sm font-medium text-neutral-700 mb-2">출석 인증코드를 입력하세요</p>
                           <input
                             type="text"
                             value={attendanceCodes[lecture.id] || ''}
                             onChange={(e) => handleCodeChange(lecture.id, e.target.value)}
                             placeholder="4자리 코드"
                             maxLength="4"
-                            className="w-full px-3 py-2 text-center text-lg font-bold border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 text-center text-lg font-bold border border-neutral-300 rounded-md focus:ring-2 focus:ring-accent focus:border-accent"
                           />
                           {codeError[lecture.id] && (
-                            <p className="text-xs text-red-500 mt-1">{codeError[lecture.id]}</p>
+                            <p className="text-xs text-error mt-1">{codeError[lecture.id]}</p>
                           )}
                         </div>
                         <div className="flex gap-2">
                           <Button
                             onClick={() => handleCancelCodeInput(lecture.id)}
-                            variant="outline"
+                            variant="secondary"
                             className="flex-1"
                             disabled={checkingIn}
                           >
@@ -308,34 +310,31 @@ export default function Attendance() {
                     ) : (
                       // 기본 출석 버튼
                       <Button
-                        className={`w-full h-14 text-lg font-semibold shadow-lg ${
+                        className={`w-full h-14 text-lg font-semibold ${
                           isAlreadyChecked
                             ? `${attendanceStatus.bgColor} ${attendanceStatus.className} hover:opacity-80 border ${attendanceStatus.borderColor}`
-                            : 'shadow-blue-200'
+                            : ''
                         }`}
                         onClick={() => handleShowCodeInput(lecture)}
                         disabled={checkingIn || isAlreadyChecked}
-                        variant={isAlreadyChecked ? 'outline' : 'default'}
+                        variant={isAlreadyChecked ? 'secondary' : 'primary'}
                       >
                         <MapPinIcon className="mr-2 h-5 w-5" />
                         {isAlreadyChecked ? '출석 완료' : '출석 체크하기'}
                       </Button>
                     )}
-                    <p className="text-xs text-center text-slate-400">
+                    <p className="text-xs text-center text-neutral-400">
                       {isAlreadyChecked
                         ? `* ${attendance?.created_at ? formatTime(attendance.created_at) : ''}에 출석 처리되었습니다.`
                         : '* 강의 시간에만 출석이 가능합니다.'
                       }
                     </p>
-                  </CardContent>
                 </Card>
               );
             })
           ) : (
-            <Card className="border-slate-100">
-              <CardContent className="p-6 text-center">
-                <p className="text-slate-500">오늘 예정된 강의가 없습니다.</p>
-              </CardContent>
+            <Card>
+              <p className="text-neutral-500 text-center">오늘 예정된 강의가 없습니다.</p>
             </Card>
           )}
         </section>

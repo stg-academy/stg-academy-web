@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { startKakaoLogin } from '../config/kakao'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
+import Button from '../components/ui/Button.jsx'
+import { useToast } from '../components/ui/ToastProvider.jsx'
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const { loginWithCredentials, isLoading, error, clearError, isAuthenticated, needsRegistration } = useAuth()
+  const toast = useToast()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -75,7 +78,7 @@ const LoginPage = () => {
       startKakaoLogin()
     } catch (error) {
       console.error('카카오 로그인 시작 실패:', error)
-      alert(error.message || '로그인을 시작할 수 없습니다.')
+      toast.error(error.message || '로그인을 시작할 수 없습니다.')
     }
   }
 
@@ -88,7 +91,7 @@ const LoginPage = () => {
       {/* 일반 로그인 폼 */}
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-medium text-neutral-700 mb-2">
             이름
           </label>
           <input
@@ -97,19 +100,19 @@ const LoginPage = () => {
             type="text"
             value={formData.username}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              formErrors.username ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
+              formErrors.username ? 'border-error' : 'border-neutral-300'
             }`}
             placeholder="이름을 입력하세요"
             disabled={isLoading}
           />
           {formErrors.username && (
-            <p className="mt-2 text-sm text-red-500">{formErrors.username}</p>
+            <p className="mt-2 text-sm text-error-text">{formErrors.username}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
             비밀번호
           </label>
           <input
@@ -118,25 +121,21 @@ const LoginPage = () => {
             type="password"
             value={formData.password}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              formErrors.password ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
+              formErrors.password ? 'border-error' : 'border-neutral-300'
             }`}
             placeholder="비밀번호를 입력하세요"
             disabled={isLoading}
           />
           {formErrors.password && (
-            <p className="mt-2 text-sm text-red-500">{formErrors.password}</p>
+            <p className="mt-2 text-sm text-error-text">{formErrors.password}</p>
           )}
         </div>
 
         <div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
-          >
+          <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? '로그인 중...' : '로그인'}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -144,21 +143,22 @@ const LoginPage = () => {
       <div className="mt-6">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-neutral-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">또는</span>
+            <span className="px-2 bg-white text-neutral-500">또는</span>
           </div>
         </div>
       </div>
 
-      {/* 카카오 로그인 */}
+      {/* 카카오 로그인 — 카카오 공식 브랜드 컬러(#FEE500)는 v2 토큰 체계 밖의
+          서드파티 브랜드 색상이라 그대로 유지. 중복된 style prop만 제거하고
+          포커스 링을 노란색 대비 대신 어두운 색으로 바꿔 시인성 개선. */}
       <div className="mt-6">
         <button
           onClick={handleKakaoLogin}
           disabled={isLoading}
-          className="w-full flex justify-center items-center px-4 py-3 bg-[#FEE500] text-black rounded-xl hover:bg-[#F5DC00] focus:outline-none focus:ring-2 focus:ring-[#FEE500] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-black/85"
-          style={{ backgroundColor: '#FEE500' }}
+          className="w-full flex justify-center items-center px-4 py-3 bg-[#FEE500] text-black rounded-md hover:bg-[#F5DC00] focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-black/85"
         >
           <svg
             className="w-5 h-5 mr-2"
@@ -177,10 +177,10 @@ const LoginPage = () => {
       {/* 회원가입 링크 */}
       <div className="mt-6 text-center">
         <div className="text-sm">
-          <span className="text-gray-600">계정이 없으신가요? </span>
+          <span className="text-neutral-600">계정이 없으신가요? </span>
           <Link
             to="/register"
-            className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+            className="font-medium text-accent hover:text-accent-hover transition-colors"
           >
             회원가입
           </Link>

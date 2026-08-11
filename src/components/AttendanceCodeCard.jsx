@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useToast } from './ui/ToastProvider.jsx';
 
 const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
     const [copySuccess, setCopySuccess] = useState(false);
+    const toast = useToast();
 
     // 출석 코드 복사
     const handleCopyCode = async (code) => {
@@ -23,7 +25,7 @@ const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
                 setTimeout(() => setCopySuccess(false), 2000);
             } catch (fallbackErr) {
                 console.error('Fallback 복사도 실패:', fallbackErr);
-                alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+                toast.error('복사에 실패했습니다. 수동으로 복사해주세요.');
             }
             document.body.removeChild(textArea);
         }

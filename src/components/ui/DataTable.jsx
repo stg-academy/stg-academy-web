@@ -1,4 +1,5 @@
 import {useState, useMemo} from 'react'
+import Pagination from './Pagination.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -95,10 +96,10 @@ const DataTable = ({
     const renderEditableCell = (row, column) => {
         const value = editingData[column.key] !== undefined ? editingData[column.key] : row[column.key] || ''
         const hasError = validationErrors[column.key]
-        const inputClassName = `w-full -my-2 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-sm ${
+        const inputClassName = `w-full -my-2 px-3 py-2 border rounded-md focus:ring-2 focus:border-transparent text-sm ${
             hasError
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-blue-500'
+                ? 'border-error focus:ring-error'
+                : 'border-neutral-300 focus:ring-accent'
         }`
 
         const renderInput = () => {
@@ -161,7 +162,7 @@ const DataTable = ({
             <div>
                 {renderInput()}
                 {hasError && (
-                    <div className="-mb-2 mt-2 text-xs text-red-600">
+                    <div className="-mb-2 mt-2 text-xs text-error-text">
                         {validationErrors[column.key]}
                     </div>
                 )}
@@ -186,7 +187,7 @@ const DataTable = ({
     const renderSortIcon = (columnKey) => {
         if (sortConfig.key !== columnKey) {
             return (
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                 </svg>
@@ -194,12 +195,12 @@ const DataTable = ({
         }
 
         return sortConfig.direction === 'asc' ? (
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
             </svg>
         ) : (
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
             </svg>
@@ -208,25 +209,24 @@ const DataTable = ({
 
     if (loading) {
         return (
-            <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
+            <div className={`bg-white rounded-lg border border-neutral-200 p-6 ${className}`}>
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                    <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
                 </div>
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div
-            className={`bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow ${className}`}>
+        <div className={`bg-white rounded-lg border border-neutral-200 ${className}`}>
             {/* 헤더 */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-neutral-200">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
+                    <p className="text-sm text-neutral-600 mt-1">
                         총 {data.length}개 항목 {filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
                     </p>
                 </div>
@@ -235,7 +235,7 @@ const DataTable = ({
                 {showSearch && searchableColumns.length > 0 && (
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor"
+                            <svg className="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor"
                                  viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -246,14 +246,14 @@ const DataTable = ({
                             placeholder="검색..."
                             value={searchTerm}
                             onChange={handleSearchChange}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                            className="pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent w-64"
                         />
                         {searchTerm && (
                             <button
                                 onClick={() => handleSearchChange({target: {value: ''}})}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             >
-                                <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none"
+                                <svg className="h-4 w-4 text-neutral-400 hover:text-neutral-600" fill="none"
                                      stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                           d="M6 18L18 6M6 6l12 12"/>
@@ -267,13 +267,13 @@ const DataTable = ({
             {/* 테이블 */}
             <div className="overflow-x-auto">
                 <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-neutral-50">
                     <tr>
                         {columns.map((column) => (
                             <th
                                 key={column.key}
-                                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                                    column.sortable ? 'cursor-pointer hover:bg-gray-100 select-none' : ''
+                                className={`px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider ${
+                                    column.sortable ? 'cursor-pointer hover:bg-neutral-100 select-none' : ''
                                 }`}
                                 onClick={() => column.sortable && handleSort(column.key)}
                             >
@@ -285,7 +285,7 @@ const DataTable = ({
                         ))}
                     </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-neutral-200">
                     {paginatedData.length > 0 ? (
                         paginatedData.map((row, index) => {
                             const isEditing = editingRowId === row.id
@@ -294,14 +294,14 @@ const DataTable = ({
                                     key={row.id || index}
                                     className={`transition-colors ${
                                         isEditing
-                                            ? 'bg-blue-50 border border-blue-200'
-                                            : 'hover:bg-gray-50'
+                                            ? 'bg-accent-soft border border-accent/20'
+                                            : 'hover:bg-neutral-50'
                                     }`}
                                 >
                                     {columns.map((column) => (
                                         <td
                                             key={column.key}
-                                            className={`px-6 py-4 text-sm text-gray-900 ${
+                                            className={`px-6 py-4 text-sm text-neutral-900 ${
                                                 column.editable && isEditing
                                                     ? ''
                                                     : 'whitespace-nowrap'
@@ -315,7 +315,7 @@ const DataTable = ({
                         })
                     ) : (
                         <tr>
-                            <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
+                            <td colSpan={columns.length} className="px-6 py-12 text-center text-neutral-500">
                                 {searchTerm ? '검색 결과가 없습니다.' : emptyMessage}
                             </td>
                         </tr>
@@ -326,65 +326,19 @@ const DataTable = ({
 
             {/* 페이지네이션 */}
             {showPagination && itemsPerPage && totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-                    <div className="text-sm text-gray-700">
+                <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-200">
+                    <div className="text-sm text-neutral-700">
             <span>
               {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedData.length)} / {sortedData.length}개 항목
             </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 rounded-md text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            이전
-                        </button>
-
-                        {/* 페이지 번호 */}
-                        <div className="flex items-center space-x-1">
-                            {Array.from({length: Math.min(totalPages, 5)}, (_, i) => {
-                                let pageNumber
-                                if (totalPages <= 5) {
-                                    pageNumber = i + 1
-                                } else if (currentPage <= 3) {
-                                    pageNumber = i + 1
-                                } else if (currentPage >= totalPages - 2) {
-                                    pageNumber = totalPages - 4 + i
-                                } else {
-                                    pageNumber = currentPage - 2 + i
-                                }
-
-                                return (
-                                    <button
-                                        key={pageNumber}
-                                        onClick={() => handlePageChange(pageNumber)}
-                                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                            currentPage === pageNumber
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {pageNumber}
-                                    </button>
-                                )
-                            })}
-                        </div>
-
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 rounded-md text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            다음
-                        </button>
-                    </div>
+                    <Pagination current={currentPage} total={totalPages} onChange={handlePageChange} />
                 </div>
             )}
 
             {/* 푸터 */}
             {footer &&
-                <div className="px-6 py-4 bg-gray-50 text-xs text-gray-500 space-y-1">
+                <div className="px-6 py-4 bg-neutral-50 text-xs text-neutral-500 space-y-1">
                     {footer}
                 </div>
             }

@@ -3,6 +3,9 @@ import { getUsers, updateUser } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
 import { useState, useEffect } from "react";
+import PageContainer from "../components/ui/PageContainer.jsx";
+import Button from "../components/ui/Button.jsx";
+import ErrorBanner from "../components/ui/ErrorBanner.jsx";
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([])
@@ -183,77 +186,66 @@ const UserManagementPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 min-w-[1024px]">
-            <main className="max-w-7xl mx-auto px-8 md:px-6 py-8">
-                {/* 헤더 */}
-                <div className="mb-8 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">사용자 관리</h1>
-                        <p className="mt-2 text-gray-600">
-                            시스템 사용자를 관리하고 사용자 정보를 수정할 수 있습니다.
-                        </p>
-                    </div>
+        <PageContainer>
+            {/* 헤더 */}
+            <div className="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-neutral-900">사용자 관리</h1>
+                    <p className="mt-2 text-neutral-600">
+                        시스템 사용자를 관리하고 사용자 정보를 수정할 수 있습니다.
+                    </p>
+                </div>
+                <Button onClick={handleAddUser} disabled={addingUser} className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>{addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}</span>
+                </Button>
+            </div>
+
+            <ErrorBanner message={error} className="mb-6" />
+
+            {/* 사용자 관리 테이블 */}
+            <div className="bg-white rounded-lg border border-neutral-200">
+                <UserTable
+                    users={users}
+                    loading={loading}
+                    // 인라인 편집 관련 props
+                    editingUserId={editingUserId}
+                    editingData={editingData}
+                    onStartEdit={handleStartEdit}
+                    onCancelEdit={handleCancelEdit}
+                    onSaveEdit={handleSaveEdit}
+                    onEditChange={handleEditChange}
+                    // 유효성 검사 관련 props
+                    validationErrors={validationErrors}
+                />
+
+                {/* 새 사용자 추가하기 */}
+                <div className="px-6 py-4 border-t border-neutral-200">
                     <button
                         onClick={handleAddUser}
                         disabled={addingUser}
-                        className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                   d="M12 4v16m8-8H4"/>
                         </svg>
-                        <span>{addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}</span>
+                        <span className="text-sm font-medium">
+                            {addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}
+                        </span>
                     </button>
                 </div>
 
-                {/* 에러 메시지 */}
-                {error && (
-                    <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                        {error}
-                    </div>
-                )}
-
-                {/* 사용자 관리 테이블 */}
-                <div className="bg-white rounded-lg shadow">
-                    <UserTable
-                        users={users}
-                        loading={loading}
-                        // 인라인 편집 관련 props
-                        editingUserId={editingUserId}
-                        editingData={editingData}
-                        onStartEdit={handleStartEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onEditChange={handleEditChange}
-                        // 유효성 검사 관련 props
-                        validationErrors={validationErrors}
-                    />
-
-                    {/* 새 사용자 추가하기 */}
-                    <div className="px-6 py-4 border-t border-gray-200">
-                        <button
-                            onClick={handleAddUser}
-                            disabled={addingUser}
-                            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                      d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span className="text-sm font-medium">
-                                {addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}
-                            </span>
-                        </button>
-                    </div>
-
-                    {/* 푸터 노트 */}
-                    <div className="px-6 py-4 bg-gray-50 text-xs text-gray-500 space-y-1">
-                        <p>* 사용자 정보 수정은 편집 버튼을 통해 인라인으로 진행할 수 있습니다.</p>
-                        <p>* 새 사용자 추가는 관리자 권한으로 수동 등록할 수 있습니다.</p>
-                    </div>
+                {/* 푸터 노트 */}
+                <div className="px-6 py-4 bg-neutral-50 text-xs text-neutral-500 space-y-1">
+                    <p>* 사용자 정보 수정은 편집 버튼을 통해 인라인으로 진행할 수 있습니다.</p>
+                    <p>* 새 사용자 추가는 관리자 권한으로 수동 등록할 수 있습니다.</p>
                 </div>
-            </main>
-        </div>
+            </div>
+        </PageContainer>
     )
 }
 

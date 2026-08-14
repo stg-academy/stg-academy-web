@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TextInput from '../components/forms/TextInput.jsx'
 import TextareaInput from '../components/forms/TextareaInput.jsx'
+import SelectInput from '../components/forms/SelectInput.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import Modal from '../components/ui/Modal.jsx'
 
@@ -10,7 +11,8 @@ const DesignGuidePage = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    description: ''
+    description: '',
+    status: ''
   })
   const [formErrors, setFormErrors] = useState({})
 
@@ -329,6 +331,42 @@ const DesignGuidePage = () => {
                       placeholder="이메일을 입력하세요"
                       required={true}
                       error={formErrors.email}
+                    />
+                  </div>
+                </ExampleSection>
+
+                <ExampleSection
+                  title="셀렉트박스 (SelectInput 컴포넌트)"
+                  description="커스텀 드롭다운 기반 셀렉트박스입니다. 펼침 패널에 선택 항목 강조(배지 배경 + 체크마크)가 적용됩니다."
+                  code={`import SelectInput from '../components/forms/SelectInput.jsx'
+
+<SelectInput
+  id="status"
+  name="status"
+  label="진행 상태"
+  value={formData.status}
+  onChange={handleInputChange}
+  options={[
+    { value: 'in_progress', label: '진행중' },
+    { value: 'recruiting', label: '모집중' },
+    { value: 'done', label: '완료' },
+  ]}
+  placeholder="전체 상태"
+/>`}
+                >
+                  <div className="max-w-xs">
+                    <SelectInput
+                      id="demo-status"
+                      name="status"
+                      label="진행 상태"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      options={[
+                        { value: 'in_progress', label: '진행중' },
+                        { value: 'recruiting', label: '모집중' },
+                        { value: 'done', label: '완료' },
+                      ]}
+                      placeholder="전체 상태"
                     />
                   </div>
                 </ExampleSection>

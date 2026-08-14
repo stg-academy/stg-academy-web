@@ -1,5 +1,6 @@
 import {useState, useMemo} from 'react'
 import Pagination from './Pagination.jsx'
+import Select from './Select.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -116,17 +117,13 @@ const DataTable = ({
                     )
                 case 'select':
                     return (
-                        <select
+                        <Select
                             value={value}
                             onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
-                            className={inputClassName}
-                        >
-                            {column.options && column.options.map(option => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                            options={column.options || []}
+                            error={!!hasError}
+                            className="-my-2"
+                        />
                     )
                 case 'date':
                     return (

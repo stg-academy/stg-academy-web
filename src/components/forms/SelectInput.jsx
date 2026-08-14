@@ -1,3 +1,5 @@
+import Select from '../ui/Select.jsx'
+
 const SelectInput = ({
     id,
     name,
@@ -13,34 +15,27 @@ const SelectInput = ({
 }) => {
     return (
         <div>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor={id} className="block text-sm font-medium text-neutral-700 mb-2">
                 {label}
-                {required && <span className="text-red-500 ml-1">*</span>}
+                {required && <span className="text-error ml-1">*</span>}
             </label>
-            <select
+            <Select
                 id={id}
                 name={name}
                 value={value}
                 onChange={onChange}
-                className={`w-full px-4 py-3 border ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                options={options}
+                placeholder={placeholder}
                 disabled={disabled}
-            >
-                {placeholder && <option value="">{placeholder}</option>}
-                {options.map(option => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
+                error={!!error}
+            />
             {description && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-neutral-500">
                     {description}
                 </p>
             )}
             {error && (
-                <p className="mt-1 text-sm text-red-500">{error}</p>
+                <p className="mt-1 text-sm text-error">{error}</p>
             )}
         </div>
     )

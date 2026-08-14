@@ -84,6 +84,26 @@ const EnrollTable = ({
         }
     ]
 
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => (
+        <button
+            type="button"
+            onClick={() => onEditEnrollment && onEditEnrollment(row)}
+            className="w-full flex items-center justify-between gap-3 px-5 py-3.5 text-left hover:bg-neutral-50 transition-colors"
+        >
+            <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-sm font-semibold text-neutral-900 truncate">{row.user_name || '-'}</span>
+                <div className="flex items-center gap-1.5">
+                    {renderAuthType(row.auth_type, row)}
+                    {renderStatus(row.enroll_status)}
+                </div>
+            </div>
+            <svg className="flex-none w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+    )
+
     const enrollFooter = (
         <>
             <p>* 수강생 정보 관리는 이곳에서 진행하세요. 학생명을 클릭하여 수강 정보를 수정할 수 있습니다.</p>
@@ -101,6 +121,7 @@ const EnrollTable = ({
             showSearch={true}
             emptyMessage="등록된 수강생이 없습니다."
             footer={enrollFooter}
+            renderMobileItem={renderMobileItem}
         />
     )
 }

@@ -1,6 +1,8 @@
 import {useState, useMemo} from 'react'
 import Pagination from './Pagination.jsx'
 import Select from './Select.jsx'
+import BottomSheet from './BottomSheet.jsx'
+import Button from './Button.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -23,7 +25,9 @@ const DataTable = ({
                        // 유효성 검사 관련 props
                        validationErrors = {},
                        // 푸터 관련 props
-                       footer = null
+                       footer = null,
+                       // 모바일(lg 미만) 카드 리스트 — 제공 시 lg:hidden 카드 리스트가 함께 렌더링된다
+                       renderMobileItem = null
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
@@ -167,6 +171,39 @@ const DataTable = ({
         )
     }
 
+    // 모바일 편집 시트용 필드 렌더링 (라벨 + 인풋을 세로로 쌓는 폼 레이아웃)
+    const renderMobileEditField = (row, column) => {
+        const value = editingData[column.key] !== undefined ? editingData[column.key] : row[column.key] || ''
+        const hasError = validationErrors[column.key]
+        const inputClassName = `w-full px-3 py-2.5 border rounded-md text-sm ${
+            hasError ? 'border-error' : 'border-neutral-300'
+        }`
+        const onChange = (e) => onEditChange && onEditChange(column.key, e.target.value)
+
+        let input
+        switch (column.editType) {
+            case 'select':
+                input = <Select value={value} onChange={onChange} options={column.options || []} error={!!hasError} />
+                break
+            case 'date':
+                input = <input type="date" value={value} onChange={onChange} className={inputClassName} />
+                break
+            case 'number':
+                input = <input type="number" value={value} onChange={onChange} className={inputClassName} />
+                break
+            default:
+                input = <input type="text" value={value} onChange={onChange} className={inputClassName} />
+        }
+
+        return (
+            <div key={column.key} className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-neutral-700">{column.label}</label>
+                {input}
+                {hasError && <div className="text-xs text-error-text">{validationErrors[column.key]}</div>}
+            </div>
+        )
+    }
+
     // 렌더링할 셀 값 결정
     const renderCellValue = (row, column) => {
         // 인라인 편집 모드인 경우
@@ -217,10 +254,14 @@ const DataTable = ({
         )
     }
 
+    const editableColumns = columns.filter(c => c.editable)
+    const mobileInfoColumns = columns.filter(c => c.mobileInfo && !c.editable)
+    const editingRow = editingRowId != null ? data.find(r => r.id === editingRowId) : null
+
     return (
         <div className={`bg-white rounded-lg border border-neutral-200 ${className}`}>
             {/* 헤더 */}
-            <div className="flex items-center justify-between p-6 border-b border-neutral-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-b border-neutral-200">
                 <div>
                     <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
                     <p className="text-sm text-neutral-600 mt-1">
@@ -243,7 +284,7 @@ const DataTable = ({
                             placeholder="검색..."
                             value={searchTerm}
                             onChange={handleSearchChange}
-                            className="pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent w-64"
+                            className="pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent w-full sm:w-64"
                         />
                         {searchTerm && (
                             <button
@@ -261,8 +302,8 @@ const DataTable = ({
                 )}
             </div>
 
-            {/* 테이블 */}
-            <div className="overflow-x-auto">
+            {/* 테이블 (데스크톱) */}
+            <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-neutral-50">
                     <tr>
@@ -320,6 +361,61 @@ const DataTable = ({
                     </tbody>
                 </table>
             </div>
+
+            {/* 카드 리스트 (모바일) */}
+            {renderMobileItem && (
+                <div className="lg:hidden divide-y divide-neutral-100">
+                    {paginatedData.length > 0 ? (
+                        paginatedData.map((row, index) => (
+                            <div key={row.id || index}>{renderMobileItem(row)}</div>
+                        ))
+                    ) : (
+                        <div className="px-5 py-12 text-center text-sm text-neutral-500">
+                            {searchTerm ? '검색 결과가 없습니다.' : emptyMessage}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 모바일 편집 시트 — editable 컬럼이 있는 테이블에서 행 편집 시 자동 활성화 */}
+            {editingRow && editableColumns.length > 0 && (
+                <div className="lg:hidden">
+                    <BottomSheet
+                        isOpen={!!editingRow}
+                        onClose={() => onCancelEdit && onCancelEdit()}
+                        title="편집"
+                        footer={
+                            <div className="flex gap-2">
+                                <Button variant="secondary" className="flex-1" onClick={() => onCancelEdit && onCancelEdit()}>
+                                    취소
+                                </Button>
+                                <Button className="flex-1" onClick={() => onSaveEdit && onSaveEdit(editingRow.id)}>
+                                    저장
+                                </Button>
+                            </div>
+                        }
+                    >
+                        <div className="flex flex-col gap-4">
+                            {editableColumns.map((column) => renderMobileEditField(editingRow, column))}
+                            {mobileInfoColumns.length > 0 && (
+                                <div className="border-t border-neutral-100 pt-4 flex flex-col gap-2.5">
+                                    {mobileInfoColumns.map((column) => {
+                                        const value = column.render && typeof column.render === 'function'
+                                            ? column.render(editingRow[column.key], editingRow, false)
+                                            : (editingRow[column.key] || column.default)
+                                        return (
+                                            <div key={column.key} className="flex items-center justify-between text-sm">
+                                                <span className="text-neutral-500">{column.label}</span>
+                                                <span className="text-neutral-700">{value}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </BottomSheet>
+                </div>
+            )}
 
             {/* 페이지네이션 */}
             {showPagination && itemsPerPage && totalPages > 1 && (

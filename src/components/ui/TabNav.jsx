@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom'
 // button, e.g. same-page tab-switching) — mixing both in one list is fine.
 const TabNav = ({ tabs, active, onChange, className = '' }) => (
     <div className={`border-b border-neutral-200 ${className}`} role="tablist">
-        <nav className="-mb-px flex space-x-6">
+        <nav className="-mb-px flex space-x-6 overflow-x-auto">
             {tabs.map((tab) => {
                 const isActive = tab.key === active
-                const classes = `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                const classes = `flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     isActive
                         ? 'border-accent text-accent'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'

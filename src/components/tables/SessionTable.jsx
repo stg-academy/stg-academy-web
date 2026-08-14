@@ -102,6 +102,47 @@ const SessionTable = ({
         },
     ]
 
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => {
+        const start = row.begin_date ? new Date(row.begin_date).toLocaleDateString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }) : '-'
+        const end = row.end_date ? new Date(row.end_date).toLocaleDateString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }) : '-'
+        return (
+            <div className="px-5 py-4 flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-3">
+                    <div
+                        className="text-sm font-semibold text-neutral-900 underline cursor-pointer"
+                        onClick={() => navigate(`/sessions/${row.id}`)}
+                    >
+                        {row.title || `강좌 ${row.id?.slice(0, 8)}`}
+                    </div>
+                    <div className="flex-none flex items-center gap-2">
+                        <SessionStatusBadge status={row.course_status}/>
+                        <button
+                            onClick={() => onCopySession && onCopySession(row)}
+                            title="강좌 복사"
+                            className="text-neutral-400 hover:text-accent"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div className="text-xs text-neutral-500">{row.course_name || '-'} · {row.lecturer_info || '-'}</div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-neutral-600">
+                    <div>{row.date_info || '-'}</div>
+                    <div>총 {row.lecture_count || 0}회차</div>
+                    <div className="col-span-2">{start} ~ {end}</div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <DataTable
             data={sessions}
@@ -112,6 +153,7 @@ const SessionTable = ({
             showPagination={true}
             showSearch={true}
             emptyMessage="등록된 강좌이 없습니다."
+            renderMobileItem={renderMobileItem}
         />
     )
 }

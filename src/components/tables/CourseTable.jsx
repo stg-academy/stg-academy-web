@@ -50,6 +50,34 @@ const CourseTable = ({
         }
     ]
 
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => (
+        <div className="px-5 py-4 flex flex-col gap-2">
+            <div
+                className="text-sm font-semibold text-neutral-900 underline cursor-pointer"
+                onClick={() => onEditCourse(row)}
+            >
+                {row.title}
+            </div>
+            {row.description && (
+                <div className="text-xs text-neutral-500">{row.description}</div>
+            )}
+            <div className="flex items-center justify-between text-xs text-neutral-500">
+                <span>작성자 {row.author || '-'}</span>
+                <button
+                    type="button"
+                    className="flex items-center gap-1 text-accent font-medium"
+                    onClick={() => handleLectureCountClick(row)}
+                >
+                    강좌 {row.lecture_count || 0}개
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    )
+
     const courseFooter = (
         <>
             <p>* 코스 생성 및 관리는 이곳에서 진행하세요. 코스명을 클릭하여 편집할 수 있습니다.</p>
@@ -67,6 +95,7 @@ const CourseTable = ({
             showSearch={true}
             emptyMessage="등록된 코스가 없습니다."
             footer={courseFooter}
+            renderMobileItem={renderMobileItem}
         />
     )
 }

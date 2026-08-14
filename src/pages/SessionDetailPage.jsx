@@ -176,22 +176,22 @@ const SessionDetailPage = () => {
             </button>
 
             {/* 페이지 헤더 */}
-            <div className="mb-6 flex items-start justify-between">
+            <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div>
-                    <div className="flex items-center space-x-3 mb-3">
-                        <h2 className="text-3xl font-bold text-neutral-900">{session.title}</h2>
+                    <div className="flex items-center flex-wrap gap-3 mb-3">
+                        <h2 className="text-2xl lg:text-3xl font-bold text-neutral-900">{session.title}</h2>
                         <SessionStatusBadge status={session.course_status}/>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-neutral-600">
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-600">
                         <span>{session.lecturer_info}</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>총 {session.lecture_count} 회차</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>수강생 {enrolls ? enrolls.filter(e => e.enroll_status === "ACTIVE").length : 0} 명</span>{/* todo: totalStudents 추가 */}
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center flex-wrap gap-3">
                     <AttendanceCodeCard
                         attendanceCode={session.attendance_code}
                         onRefreshCode={handleRefreshCode}

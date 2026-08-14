@@ -111,6 +111,30 @@ const AttendanceTab = ({
         }
     }
 
+    // 모바일 빠른 상태 설정 (탭 즉시 저장, 노트 없음)
+    const handleQuickSetStatus = async (cellInfo, status) => {
+        const currentStatus = cellInfo.attendance?.detail_type || 'None'
+        if (cellInfo.attendance?.id && currentStatus === status) {
+            return
+        }
+
+        setCellUpdateLoading(true)
+        try {
+            await createOrUpdateAttendance(
+                cellInfo.lectureId,
+                cellInfo.userId,
+                status,
+                cellInfo.attendance?.description || cellInfo.attendance?.note || ''
+            )
+            await loadAttendances()
+        } catch (err) {
+            console.error('출석 정보 업데이트 실패:', err)
+            onError('출석 정보 업데이트에 실패했습니다')
+        } finally {
+            setCellUpdateLoading(false)
+        }
+    }
+
     // 일괄 결석처리 핸들러
     const handleBulkAbsent = () => {
         setShowBulkAbsentConfirm(true)
@@ -228,6 +252,7 @@ const AttendanceTab = ({
                 lectures={lectures}
                 enrolls={activeEnrolls}
                 onCellClick={handleCellClick}
+                onQuickSetStatus={handleQuickSetStatus}
                 onBulkEdit={handleBulkEdit}
                 onBulkAbsent={handleBulkAbsent}
                 isMultiSelectMode={isMultiSelectMode}

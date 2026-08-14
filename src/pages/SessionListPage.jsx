@@ -139,7 +139,7 @@ const SessionListPage = () => {
     }
 
     return (
-        <div className="min-w-[1024px]">
+        <div className="lg:min-w-[1024px]">
             <ErrorBanner message={error} className="mb-6" />
 
             <PageSectionHeader

@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {ATTENDANCE_CONFIG, getAttendanceStyle, getAttendanceTooltip} from '../../utils/attendanceStatus'
 import Button from '../ui/Button.jsx'
+import AttendanceTableMobile from './AttendanceTableMobile.jsx'
 
 /**
  * 날짜를 "9/10" 형식으로 포맷팅
@@ -25,6 +26,7 @@ const AttendanceTable = ({
                              lectures = [],
                              enrolls = [],
                              onCellClick,
+                             onQuickSetStatus,
                              onBulkEdit,
                              onBulkAbsent,
                              loading = false,
@@ -260,8 +262,8 @@ const AttendanceTable = ({
 
     return (
         <div className={`bg-white rounded-lg border border-neutral-200 ${className}`}>
-            {/* 헤더 */}
-            <div className="px-6 py-4 border-b border-neutral-200">
+            {/* 헤더 (데스크톱) */}
+            <div className="hidden lg:block px-6 py-4 border-b border-neutral-200">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-neutral-900 flex items-center space-x-2">
                         <span>출석부</span>
@@ -336,8 +338,8 @@ const AttendanceTable = ({
                 </div>
             </div>
 
-            {/* 테이블 컨테이너 */}
-            <div className="overflow-x-auto">
+            {/* 테이블 컨테이너 (데스크톱) */}
+            <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-neutral-200">
                     {/* 테이블 헤더 */}
                     <thead className="bg-neutral-50">
@@ -456,6 +458,16 @@ const AttendanceTable = ({
                     </tbody>
                 </table>
             </div>
+
+            {/* 모바일 뷰 — 회차 선택 후 한 줄 입력 */}
+            <AttendanceTableMobile
+                className="lg:hidden"
+                lectures={lectures}
+                userGroups={filteredAndSortedData}
+                onQuickSetStatus={onQuickSetStatus}
+                onBulkAbsent={onBulkAbsent}
+                cellUpdateLoading={cellUpdateLoading}
+            />
         </div>
     )
 }

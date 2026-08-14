@@ -94,7 +94,8 @@ const UserTable = ({
             key: 'auth_type',
             label: '인증 유형',
             sortable: true,
-            render: renderAuthType
+            render: renderAuthType,
+            mobileInfo: true
         },
         {
             key: 'role',
@@ -133,7 +134,8 @@ const UserTable = ({
                     hour: '2-digit',
                     minute: '2-digit'
                 })
-            }
+            },
+            mobileInfo: true
         },
         {
             key: 'created_at',
@@ -146,7 +148,8 @@ const UserTable = ({
                     month: '2-digit',
                     day: '2-digit'
                 })
-            }
+            },
+            mobileInfo: true
         },
         {
             key: 'actions',
@@ -155,6 +158,36 @@ const UserTable = ({
             render: renderActions
         }
     ]
+
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => {
+        const role = row.authorizations?.role || ROLES.USER
+        const initial = (row.username || '?').charAt(0).toUpperCase()
+        return (
+            <button
+                type="button"
+                onClick={() => onStartEdit && onStartEdit(row)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-neutral-50 transition-colors"
+            >
+                <div className="flex-none w-9 h-9 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-sm font-semibold">
+                    {initial}
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-semibold text-neutral-900">{row.username}</span>
+                        {renderRole(role, row)}
+                        {renderUserStatus(row.is_active)}
+                    </div>
+                    <div className="text-xs text-neutral-500 truncate">
+                        {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'}
+                    </div>
+                </div>
+                <svg className="flex-none w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        )
+    }
 
     return (
         <DataTable
@@ -165,6 +198,7 @@ const UserTable = ({
             showPagination={false}
             showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
+            renderMobileItem={renderMobileItem}
             // 인라인 편집 관련 props
             editingRowId={editingUserId}
             editingData={editingData}

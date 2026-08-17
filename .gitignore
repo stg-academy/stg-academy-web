@@ -26,10 +26,3 @@ dist-ssr
 .env.dev
 .idea/
 .claude
-
-# design-sync: staged converter scripts, generated build output, and
-# machine/verification state — durable files (config.json, NOTES.md,
-# conventions.md, previews/, overrides/) are committed.
-.ds-sync/
-ds-bundle/
-.design-sync/

@@ -101,9 +101,9 @@ export const authAPI = {
         return await apiClient.get('/api/auth/me')
     },
 
-    // 관리자 직접 사용자 등록 (POST /auth/manual/register)
+    // 관리자 직접 사용자 등록 (POST /admin/auth/manual/register)
     async manualRegister(userData) {
-        return await apiClient.post('/api/auth/manual/register', {
+        return await apiClient.post('/api/admin/auth/manual/register', {
             username: userData.username,
             information: userData.information,
             auth: userData.auth

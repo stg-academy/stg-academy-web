@@ -6,7 +6,7 @@ import Button from '../components/ui/Button.jsx';
 import Progress from '../components/ui/Progress.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import { useAuth } from '../contexts/AuthContext';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
@@ -60,7 +60,7 @@ export default function Home() {
 
       if (user?.id) {
         // 로그인한 사용자의 수강 중인 강의
-        const enrollments = await getEnrollsByUser(user.id);
+        const enrollments = await getMyEnrolls();
         const allActiveEnrollments = Array.isArray(enrollments)
           ? enrollments.filter(e => e.enroll_status === 'ACTIVE')
           : [];

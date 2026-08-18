@@ -96,7 +96,7 @@ const SessionDetailPage = () => {
             setSession(data)
         } catch (err) {
             console.error('강좌 조회 실패:', err)
-            setError('강좌 정보를 불러오는데 실패했습니다')
+            setError(err.status === 404 ? '존재하지 않는 강좌입니다' : '강좌 정보를 불러오는데 실패했습니다')
         } finally {
             if (!silent) setLoading(false)
         }

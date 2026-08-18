@@ -5,7 +5,7 @@ import Card from '../components/ui/Card.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import { getSessions } from '../services/sessionService';
 import { getCourses } from '../services/courseService';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatPeriod } from '../utils/renderUtils';
 
@@ -74,7 +74,7 @@ export default function Search() {
     try {
       setLoading(true);
       const fetches = [getSessions(0, 200), getCourses()];
-      if (user?.id) fetches.push(getEnrollsByUser(user.id));
+      if (user?.id) fetches.push(getMyEnrolls());
       const [sessionsData, coursesData, enrollsData] = await Promise.all(fetches);
       setSessions(Array.isArray(sessionsData) ? sessionsData : []);
       const map = {};

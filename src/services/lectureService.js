@@ -52,7 +52,7 @@ export const getLecture = async (lectureId) => {
  */
 export const createLecture = async (lectureData) => {
   try {
-    return await apiClient.post('/api/lectures', lectureData)
+    return await apiClient.post('/api/admin/lectures', lectureData)
   } catch (error) {
     console.error('강의 생성 실패:', error)
     throw error
@@ -67,7 +67,7 @@ export const createLecture = async (lectureData) => {
  */
 export const updateLecture = async (lectureId, lectureData) => {
   try {
-    return await apiClient.put(`/api/lectures/${lectureId}`, lectureData)
+    return await apiClient.put(`/api/admin/lectures/${lectureId}`, lectureData)
   } catch (error) {
     console.error('강의 수정 실패:', error)
     throw error
@@ -81,7 +81,7 @@ export const updateLecture = async (lectureId, lectureData) => {
  */
 export const deleteLecture = async (lectureId) => {
   try {
-    return await apiClient.delete(`/api/lectures/${lectureId}`)
+    return await apiClient.delete(`/api/admin/lectures/${lectureId}`)
   } catch (error) {
     console.error('강의 삭제 실패:', error)
     throw error

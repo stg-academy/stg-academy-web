@@ -6,7 +6,7 @@ import Card from '../components/ui/Card.jsx';
 import Button from '../components/ui/Button.jsx';
 import Progress from '../components/ui/Progress.jsx';
 import { useAuth } from '../contexts/AuthContext';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getSessions } from '../services/sessionService';
@@ -46,7 +46,7 @@ export default function MyLearning() {
       setError(null);
 
       // 사용자의 수강 신청 목록 조회
-      const enrollmentsData = await getEnrollsByUser(user.id);
+      const enrollmentsData = await getMyEnrolls();
       setEnrollments(enrollmentsData || []);
 
       // 수강신청된 session_id 목록

@@ -6,7 +6,7 @@ import Button from '../components/ui/Button.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { getLecturesBySession } from '../services/lectureService';
 import { createOrUpdateAttendance, createAttendanceWithCode, getMyAttendanceByLecture } from '../services/attendanceService';
 import { ATTENDANCE_CONFIG, getAttendanceStyle } from '../utils/attendanceStatus';
@@ -54,7 +54,7 @@ export default function Attendance() {
       setLoading(true);
 
       // 사용자의 수강 신청 목록 조회
-      const enrollments = await getEnrollsByUser(user.id);
+      const enrollments = await getMyEnrolls();
       const activeEnrollments = Array.isArray(enrollments)
         ? enrollments.filter(e => e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE')
         : [];

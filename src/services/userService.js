@@ -8,7 +8,7 @@ import apiClient from "./apiClient.js";
  */
 export const getUsersInfo = async (skip = 0, limit = 1000) => {
   try {
-    return await apiClient.get('/api/users/info', { skip, limit })
+    return await apiClient.get('/api/admin/users/info', { skip, limit })
   } catch (error) {
     console.error('사용자 정보 목록 조회 실패:', error)
     throw error
@@ -23,7 +23,7 @@ export const getUsersInfo = async (skip = 0, limit = 1000) => {
  */
 export const getUsers = async (skip = 0, limit = 1000) => {
   try {
-    return await apiClient.get('/api/users', { skip, limit })
+    return await apiClient.get('/api/admin/users', { skip, limit })
   } catch (error) {
     console.error('사용자 목록 조회 실패:', error)
     throw error

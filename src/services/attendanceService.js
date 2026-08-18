@@ -75,7 +75,7 @@ export const getAttendance = async (attendanceId) => {
  */
 export const createAttendance = async (lectureId, attendanceData) => {
     try {
-        return await apiClient.post(`/api/attendances/lectures/${lectureId}/attendances`, attendanceData)
+        return await apiClient.post(`/api/admin/attendances/lectures/${lectureId}/attendances`, attendanceData)
     } catch (error) {
         console.error('출석 생성 실패:', error)
         throw error
@@ -90,7 +90,7 @@ export const createAttendance = async (lectureId, attendanceData) => {
  */
 export const updateAttendance = async (attendanceId, attendanceData) => {
     try {
-        return await apiClient.put(`/api/attendances/${attendanceId}`, attendanceData)
+        return await apiClient.put(`/api/admin/attendances/${attendanceId}`, attendanceData)
     } catch (error) {
         console.error('출석 수정 실패:', error)
         throw error

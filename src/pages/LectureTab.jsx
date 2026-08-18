@@ -150,7 +150,8 @@ const LectureTab = ({
             await onRefresh() // 목록 새로고침
         } catch (err) {
             console.error('강의 삭제 실패:', err)
-            onError('강의 삭제에 실패했습니다')
+            // 409: 출석 기록 등이 있어 삭제 불가 — 서버가 보내는 구체적 사유를 그대로 노출
+            onError(err.status === 409 ? err.message : '강의 삭제에 실패했습니다')
         }
     }
 

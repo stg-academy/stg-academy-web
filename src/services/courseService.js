@@ -39,7 +39,7 @@ export const getCourse = async (courseId) => {
  */
 export const createCourse = async (courseData) => {
   try {
-    return await apiClient.post('/api/courses', courseData)
+    return await apiClient.post('/api/admin/courses', courseData)
   } catch (error) {
     console.error('코스 생성 실패:', error)
     throw error
@@ -54,7 +54,7 @@ export const createCourse = async (courseData) => {
  */
 export const updateCourse = async (courseId, courseData) => {
   try {
-    return await apiClient.put(`/api/courses/${courseId}`, courseData)
+    return await apiClient.put(`/api/admin/courses/${courseId}`, courseData)
   } catch (error) {
     console.error('코스 수정 실패:', error)
     throw error
@@ -68,7 +68,7 @@ export const updateCourse = async (courseId, courseData) => {
  */
 export const deleteCourse = async (courseId) => {
   try {
-    return await apiClient.delete(`/api/courses/${courseId}`)
+    return await apiClient.delete(`/api/admin/courses/${courseId}`)
   } catch (error) {
     console.error('코스 삭제 실패:', error)
     throw error

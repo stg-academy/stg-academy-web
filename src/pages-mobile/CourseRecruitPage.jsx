@@ -10,7 +10,7 @@ import {useToast} from '../components/ui/ToastProvider.jsx';
 import {useAuth} from '../contexts/AuthContext';
 import {getSession} from '../services/sessionService';
 import {getLecturesBySession} from '../services/lectureService';
-import {getUserEnrollmentInSession, createEnroll} from '../services/enrollService';
+import {getMySessionEnrollment, createSelfEnroll} from '../services/enrollService';
 import {renderWithLinks} from '../utils/renderUtils';
 
 const CalendarIcon = ({className}) => (
@@ -76,7 +76,7 @@ export default function CourseRecruitPage() {
 
             if (user?.id) {
                 try {
-                    const enrollData = await getUserEnrollmentInSession(user.id, sessionId);
+                    const enrollData = await getMySessionEnrollment(sessionId);
                     setEnrollment(enrollData);
                 } catch {
                     setEnrollment(null);
@@ -104,7 +104,7 @@ export default function CourseRecruitPage() {
 
         setEnrolling(true);
         try {
-            const newEnroll = await createEnroll({
+            const newEnroll = await createSelfEnroll({
                 user_id: user.id,
                 session_id: sessionId,
                 enroll_status: 'ACTIVE',

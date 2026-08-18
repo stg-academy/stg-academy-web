@@ -1,76 +1,31 @@
-import {useEffect, useState} from 'react'
-import {createEnroll, updateEnroll} from '../services/enrollService'
+import {useState} from 'react'
+import {createAssistant, deleteAssistant} from '../services/assistantService'
 import {getUsersInfo} from '../services/userService'
-import {getCertifications, createCertification} from '../services/certificationService'
-import EnrollTable from '../components/tables/EnrollTable'
+import AssistantTable from '../components/tables/AssistantTable'
 import Modal from '../components/ui/Modal'
-import SelectInput from '../components/forms/SelectInput'
+import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
-import {useToast} from '../components/ui/ToastProvider.jsx'
 
-const EnrollTab = ({
+const AssistantTab = ({
     session,
-    enrolls,
-    enrollsLoading,
+    assistants,
+    assistantsLoading,
     onError,
-    onRefreshEnrolls,
+    onRefreshAssistants,
     loading
 }) => {
-    const [addStudentModal, setAddStudentModal] = useState({isOpen: false})
+    const [addModal, setAddModal] = useState({isOpen: false})
     const [selectedUser, setSelectedUser] = useState(null)
-    const [newStudentStatus, setNewStudentStatus] = useState('ACTIVE')
     const [userSearchTerm, setUserSearchTerm] = useState('')
     const [allUsers, setAllUsers] = useState([])
     const [userSearchResults, setUserSearchResults] = useState([])
     const [userSearchLoading, setUserSearchLoading] = useState(false)
     const [usersLoaded, setUsersLoaded] = useState(false)
     const [showUserDropdown, setShowUserDropdown] = useState(false)
-    const [editEnrollModal, setEditEnrollModal] = useState({isOpen: false, enrollment: null})
-    const [editStatus, setEditStatus] = useState('ACTIVE')
-    const [certifications, setCertifications] = useState([])
-    const [certificationsLoading, setCertificationsLoading] = useState(false)
+    const [removeTarget, setRemoveTarget] = useState(null)
 
-    const toast = useToast()
-
-    // 이 세션의 수료증 목록 로드
-    useEffect(() => {
-        loadCertifications()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.id])
-
-    const loadCertifications = async () => {
-        if (!session?.id) return
-        try {
-            setCertificationsLoading(true)
-            const data = await getCertifications(0, 1000)
-            setCertifications(data.filter(cert => cert.session_id === session.id))
-        } catch (err) {
-            console.error('수료증 목록 조회 실패:', err)
-            onError('수료증 목록을 불러오는데 실패했습니다')
-        } finally {
-            setCertificationsLoading(false)
-        }
-    }
-
-    // 수료증 발급
-    const handleIssueCertification = async (enrollRow) => {
-        try {
-            await createCertification(session.id, enrollRow.user_id)
-            toast.success('수료증이 발급되었습니다.')
-            await loadCertifications()
-        } catch (err) {
-            console.error('수료증 발급 실패:', err)
-            onError(err.status === 409 ? '이미 발급된 수료증입니다' : '수료증 발급에 실패했습니다')
-        }
-    }
-
-    // 수료증 조회 (추후 구현 예정 — 지금은 스텁)
-    const handleViewCertification = () => {
-        toast.info('수료증 조회 기능은 준비 중입니다.')
-    }
-
-    // 모다 열 때 사용자 목록 로드
+    // 모달 열 때 사용자 목록 로드
     const loadAllUsers = async () => {
         if (usersLoaded) return // 이미 로드되었으면 스킵
 
@@ -87,24 +42,21 @@ const EnrollTab = ({
         }
     }
 
-    // 수강생 추가 모달 열기
-    const handleAddStudent = async () => {
-        setAddStudentModal({isOpen: true})
+    // 조교 추가 모달 열기
+    const handleAddAssistant = async () => {
+        setAddModal({isOpen: true})
         setSelectedUser(null)
-        setNewStudentStatus('ACTIVE')
         setUserSearchTerm('')
         setUserSearchResults([])
         setShowUserDropdown(false)
 
-        // 모달 열 때 사용자 목록 로드
         await loadAllUsers()
     }
 
-    // 수강생 추가 모달 닫기
+    // 조교 추가 모달 닫기
     const handleCloseAddModal = () => {
-        setAddStudentModal({isOpen: false})
+        setAddModal({isOpen: false})
         setSelectedUser(null)
-        setNewStudentStatus('ACTIVE')
         setUserSearchTerm('')
         setUserSearchResults([])
         setShowUserDropdown(false)
@@ -118,7 +70,6 @@ const EnrollTab = ({
             return
         }
 
-        // 클라이언트 사이드에서 필터링
         const filteredUsers = allUsers.filter(user =>
             user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.information?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -135,121 +86,81 @@ const EnrollTab = ({
         setShowUserDropdown(false)
     }
 
-    // 수강생 추가 저장
-    const handleSaveStudent = async () => {
+    // 조교 추가 저장
+    const handleSaveAssistant = async () => {
         if (!selectedUser) {
             onError('사용자를 선택해주세요')
             return
         }
 
-        // 중복 수강 신청 확인
-        const isAlreadyEnrolled = enrolls.some(enroll =>
-            enroll.user_id === selectedUser.id ||
-            enroll.user?.id === selectedUser.id
-        )
-
-        if (isAlreadyEnrolled) {
-            onError('이미 수강 신청된 학생입니다.')
+        // 중복 등록 확인
+        const isAlreadyAssistant = assistants.some(assistant => assistant.user_id === selectedUser.id)
+        if (isAlreadyAssistant) {
+            onError('이미 조교로 등록된 사용자입니다.')
             return
         }
 
         try {
-            await createEnroll({
-                user_id: selectedUser.id,
-                session_id: session.id,
-                enroll_status: newStudentStatus
-            })
-            if (onRefreshEnrolls) {
-                await onRefreshEnrolls()
+            await createAssistant(session.id, selectedUser.id)
+            if (onRefreshAssistants) {
+                await onRefreshAssistants()
             }
             handleCloseAddModal()
         } catch (err) {
-            console.error('수강생 추가 실패:', err)
-            onError('수강생 추가에 실패했습니다')
+            console.error('조교 등록 실패:', err)
+            onError('조교 등록에 실패했습니다')
         }
     }
 
-    // 수강 상태 옵션
-    const enrollStatusOptions = [
-        {value: 'ACTIVE', label: '활성'},
-        {value: 'INACTIVE', label: '비활성'},
-        {value: 'DROPPED', label: '중도포기'}
-    ]
-
-    // 수강 정보 편집 핸들러
-    const handleEditEnrollment = (enrollment) => {
-        setEditEnrollModal({isOpen: true, enrollment})
-        setEditStatus(enrollment.enroll_status || 'ACTIVE')
+    // 조교 해제 확인 요청
+    const handleRemoveAssistant = (assistant) => {
+        setRemoveTarget(assistant)
     }
 
-    // 수강 정보 편집 모달 닫기
-    const handleCloseEditModal = () => {
-        setEditEnrollModal({isOpen: false, enrollment: null})
-        setEditStatus('ACTIVE')
-    }
-
-    // 수강 정보 수정 저장
-    const handleSaveEnrollmentEdit = async () => {
-        const {enrollment} = editEnrollModal
-        if (!enrollment) return
+    // 조교 해제 확정 실행
+    const executeRemoveAssistant = async () => {
+        const target = removeTarget
+        setRemoveTarget(null)
+        if (!target) return
 
         try {
-            // API를 사용하여 수강 정보 수정
-            await updateEnroll(enrollment.id, {
-                enroll_status: editStatus
-            })
-
-            // 수정 성공 후 목록 새로고침
-            if (onRefreshEnrolls) {
-                await onRefreshEnrolls()
+            await deleteAssistant(session.id, target.user_id)
+            if (onRefreshAssistants) {
+                await onRefreshAssistants()
             }
-            handleCloseEditModal()
         } catch (err) {
-            console.error('수강 정보 수정 실패:', err)
-            onError('수강 정보 수정에 실패했습니다')
+            console.error('조교 해제 실패:', err)
+            onError('조교 해제에 실패했습니다')
         }
-    }
-
-    // 학생 삭제 핸들러 (추후 구현)
-    const handleDeleteStudent = (enrollId) => {
-        console.log('삭제 기능 구현 예정:', enrollId)
-        // TODO: 학생 삭제 기능 구현
     }
 
     return (
         <div>
             <PageSectionHeader
-                title="수강생 목록"
+                title="조교 관리"
                 action={
-                    <Button onClick={handleAddStudent} disabled={enrollsLoading} className="flex items-center gap-2">
+                    <Button onClick={handleAddAssistant} disabled={assistantsLoading} className="flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                   d="M12 4v16m8-8H4"/>
                         </svg>
-                        <span>수강생 추가</span>
+                        <span>조교 추가</span>
                     </Button>
                 }
             />
 
-            {/* 수강생 테이블 */}
-            <div >
-                <EnrollTable
-                    enrolls={enrolls}
-                    loading={loading || enrollsLoading || certificationsLoading}
-                    onEditEnrollment={handleEditEnrollment}
-                    onDeleteStudent={handleDeleteStudent}
-                    certifications={certifications}
-                    onIssueCertification={handleIssueCertification}
-                    onViewCertification={handleViewCertification}
-                />
-            </div>
+            <AssistantTable
+                assistants={assistants}
+                loading={loading || assistantsLoading}
+                onRemoveAssistant={handleRemoveAssistant}
+            />
 
-            {/* 수강생 추가 모달 */}
+            {/* 조교 추가 모달 */}
             <Modal
-                isOpen={addStudentModal.isOpen}
+                isOpen={addModal.isOpen}
                 onClose={handleCloseAddModal}
-                title="수강생 추가"
-                onSubmit={handleSaveStudent}
+                title="조교 추가"
+                onSubmit={handleSaveAssistant}
                 submitText="추가"
                 loadingText="추가 중..."
             >
@@ -267,7 +178,7 @@ const EnrollTab = ({
                                     handleUserSearch(e.target.value)
                                 }}
                                 disabled={userSearchLoading && !usersLoaded}
-                                placeholder="사용자 이름 또는 이메일로 검색"
+                                placeholder="사용자 이름 또는 소속으로 검색"
                                 className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-accent focus:border-transparent"
                                 required
                             />
@@ -332,58 +243,25 @@ const EnrollTab = ({
                         <p className="mt-1 text-xs text-neutral-500">
                             {!usersLoaded && userSearchLoading
                                 ? '사용자 목록을 불러오는 중...'
-                                : '2글자 이상 입력하면 검색 결과가 표시됩니다 (총 {allUsers.length}명)'
+                                : `2글자 이상 입력하면 검색 결과가 표시됩니다 (총 ${allUsers.length}명)`
                             }
                         </p>
                     </div>
-
-                    <SelectInput
-                        id="student-status"
-                        name="studentStatus"
-                        label="수강 상태"
-                        value={newStudentStatus}
-                        onChange={(e) => setNewStudentStatus(e.target.value)}
-                        options={enrollStatusOptions}
-                        required
-                    />
                 </div>
             </Modal>
 
-            {/* 수강 정보 편집 모달 */}
-            <Modal
-                isOpen={editEnrollModal.isOpen}
-                onClose={handleCloseEditModal}
-                title="수강 정보 편집"
-                onSubmit={handleSaveEnrollmentEdit}
-                submitText="수정"
-                loadingText="수정 중..."
-            >
-                <div className="space-y-4">
-                    {editEnrollModal.enrollment && (
-                        <div className="mb-4 p-3 bg-neutral-50 rounded-md">
-                            <h4 className="text-sm font-medium text-neutral-900 mb-2">
-                                학생 정보
-                            </h4>
-                            <div className="text-sm text-neutral-600">
-                                <p>이름: {editEnrollModal.enrollment.user_name || '-'}</p>
-                                {/*<p>계정 상태: {(editEnrollModal.enrollment.user?.is_active ?? editEnrollModal.enrollment.user_is_active) ? '활성' : '비활성'}</p>*/}
-                            </div>
-                        </div>
-                    )}
-
-                    <SelectInput
-                        id="edit-enrollment-status"
-                        name="editEnrollmentStatus"
-                        label="수강 상태"
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value)}
-                        options={enrollStatusOptions}
-                        required
-                    />
-                </div>
-            </Modal>
+            {/* 조교 해제 확인 모달 */}
+            <ConfirmModal
+                isOpen={!!removeTarget}
+                onClose={() => setRemoveTarget(null)}
+                onConfirm={executeRemoveAssistant}
+                title="조교 해제"
+                message={`${removeTarget?.username || '해당 사용자'}를 조교에서 해제하시겠습니까?`}
+                confirmText="해제"
+                danger
+            />
         </div>
     )
 }
 
-export default EnrollTab
+export default AssistantTab

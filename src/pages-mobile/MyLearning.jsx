@@ -290,7 +290,7 @@ export default function MyLearning() {
             )}
           </TabsContent>
 
-          <TabsContent value="completed">
+          <TabsContent value="completed" className="space-y-4">
             {completedEnrollments.length > 0 ? (
               completedEnrollments.map((enrollment) => (
                 <CourseCard

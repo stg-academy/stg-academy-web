@@ -33,6 +33,19 @@ const LogoutIcon = ({ className }) => (
   </svg>
 );
 
+const AwardIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5" />
+  </svg>
+);
+
+const ChevronRightIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
 export default function Profile() {
   const { user, logout, refreshUser, isLoading: authLoading } = useAuth();
   const toast = useToast();
@@ -239,6 +252,24 @@ export default function Profile() {
                 )}
               </div>
           </Card>
+        </section>
+
+        {/* 내 수료증 진입 */}
+        <section>
+          <Link to="/mobile/certificates">
+            <Card hover className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent-soft rounded-full flex items-center justify-center flex-none">
+                  <AwardIcon className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-neutral-900">내 수료증</p>
+                  <p className="text-xs text-neutral-500">발급받은 수료증을 확인하세요</p>
+                </div>
+              </div>
+              <ChevronRightIcon className="h-4 w-4 text-neutral-400 flex-none" />
+            </Card>
+          </Link>
         </section>
 
         {/* 기본 정보 */}

@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getLecturesBySession } from '../services/lectureService';
 import { getMyAttendancesBySession, createOrUpdateAttendance, createAttendanceWithCode } from '../services/attendanceService';
 import { getSession } from '../services/sessionService';
+import { getMyCertifications, getMyCertificationPreview, getMyCertificationDownload } from '../services/certificationService';
 import { ATTENDANCE_CONFIG } from '../utils/attendanceStatus';
 import { renderWithLinks } from '../utils/renderUtils';
 import AttendanceCodeModal from '../components/mobile/AttendanceCodeModal';
@@ -38,6 +39,13 @@ const CalendarIcon = ({ className }) => (
   </svg>
 );
 
+// 다운로드 헤더 파싱에 실패했을 때 쓰는 클라이언트 생성 파일명 (백엔드 규칙과 동일)
+const buildFallbackFilename = (cert) => {
+  const safeCourse = (cert.course_title || '수료증').replace(/[\\/:*?"<>|\s]+/g, '_');
+  const yyyymmdd = cert.issued_at ? new Date(cert.issued_at).toISOString().slice(0, 10).replace(/-/g, '') : '';
+  return `certification_${safeCourse}_${yyyymmdd}.png`;
+};
+
 const getCourseStatusBadge = (status) => {
   if (status === 'IN_PROGRESS') return { tone: 'info', label: '진행중', cardBorder: 'border-accent/20', cardBg: 'bg-accent-soft/50', accentText: 'text-accent' }
   if (status === 'FINISHED') return { tone: 'success', label: '완료', cardBorder: 'border-success/20', cardBg: 'bg-success-soft/50', accentText: 'text-success-text' }
@@ -56,6 +64,10 @@ export default function SessionDetail() {
   const [error, setError] = useState(null);
   const [checkingIn, setCheckingIn] = useState(null);
   const [attendanceModal, setAttendanceModal] = useState({ isOpen: false, lecture: null });
+  const [certification, setCertification] = useState(null);
+  const [certificatePreviewUrl, setCertificatePreviewUrl] = useState(null);
+  const [certificatePreviewLoading, setCertificatePreviewLoading] = useState(false);
+  const [certificateDownloading, setCertificateDownloading] = useState(false);
 
   useEffect(() => {
     if (sessionId && user?.id) {
@@ -65,16 +77,45 @@ export default function SessionDetail() {
     }
   }, [sessionId, user?.id]);
 
+  // 이 세션의 수료증이 있으면 미리보기 이미지 로드 (페이지 본문 로딩과 분리, 실패해도 나머지는 정상 표시)
+  useEffect(() => {
+    if (!certification) return;
+
+    let cancelled = false;
+    setCertificatePreviewLoading(true);
+    getMyCertificationPreview(certification.id)
+      .then(({ blob }) => {
+        if (!cancelled) setCertificatePreviewUrl(URL.createObjectURL(blob));
+      })
+      .catch((err) => {
+        console.error('수료증 미리보기 조회 실패:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setCertificatePreviewLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [certification]);
+
+  // 언마운트 시 생성해둔 미리보기 object URL 정리
+  useEffect(() => {
+    return () => {
+      if (certificatePreviewUrl) URL.revokeObjectURL(certificatePreviewUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const fetchSessionData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // 세션 정보, 강의 목록, 출석 기록을 병렬로 조회
-      const [sessionData, lecturesData, attendancesData] = await Promise.all([
+      // 세션 정보, 강의 목록, 출석 기록, 내 수료증 목록을 병렬로 조회
+      const [sessionData, lecturesData, attendancesData, certificationsData] = await Promise.all([
         getSession(sessionId),
         getLecturesBySession(sessionId),
-        getMyAttendancesBySession(sessionId)
+        getMyAttendancesBySession(sessionId),
+        getMyCertifications()
       ]);
 
       // 세션 정보 설정
@@ -86,6 +127,10 @@ export default function SessionDetail() {
 
       setLectures(Array.isArray(lecturesData) ? lecturesData : []);
       setAttendances(Array.isArray(attendancesData) ? attendancesData : []);
+
+      const matchedCertification = (Array.isArray(certificationsData) ? certificationsData : [])
+        .find(cert => cert.session_id === sessionId);
+      setCertification(matchedCertification || null);
 
     } catch (error) {
       console.error('세션 데이터 조회 실패:', error);
@@ -173,6 +218,29 @@ export default function SessionDetail() {
     // 출석 기록 업데이트
     setAttendances(prev => [...prev, newAttendance]);
     toast.success('출석이 완료되었습니다!');
+  };
+
+  // 수료증 다운로드
+  const handleDownloadCertificate = async () => {
+    if (!certification) return;
+
+    setCertificateDownloading(true);
+    try {
+      const { blob, filename } = await getMyCertificationDownload(certification.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename || buildFallbackFilename(certification);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('수료증 다운로드 실패:', err);
+      toast.error('수료증 다운로드에 실패했습니다.');
+    } finally {
+      setCertificateDownloading(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -285,6 +353,38 @@ export default function SessionDetail() {
             </div>
           </Card>
         </section>
+
+        {/* 수료증 (발급된 경우에만 표시) */}
+        {certification && (
+          <section>
+            <h2 className="text-lg font-bold text-neutral-900 mb-4">수료증</h2>
+            <Card className="space-y-4">
+              <div className="w-full aspect-[2520/1000] bg-neutral-100 rounded-md overflow-hidden flex items-center justify-center">
+                {certificatePreviewLoading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+                ) : certificatePreviewUrl ? (
+                  <img
+                    src={certificatePreviewUrl}
+                    alt={`${certification.course_title} 수료증`}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xs text-neutral-400">미리보기를 불러올 수 없습니다</span>
+                )}
+              </div>
+              <p className="text-xs text-neutral-500 text-center">
+                발급일: {formatDate(certification.issued_at)}
+              </p>
+              <Button
+                className="w-full"
+                disabled={certificateDownloading}
+                onClick={handleDownloadCertificate}
+              >
+                {certificateDownloading ? '다운로드 중...' : '다운로드'}
+              </Button>
+            </Card>
+          </section>
+        )}
 
         {/* 출석 현황 */}
         <section>

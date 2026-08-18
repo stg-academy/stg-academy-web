@@ -1,13 +1,27 @@
 import {useEffect, useState} from 'react'
 import {createEnroll, updateEnroll} from '../services/enrollService'
 import {getUsersInfo} from '../services/userService'
-import {getCertifications, createCertification} from '../services/certificationService'
+import {getCertifications, createCertification, getCertificationPreview, getCertificationDownload} from '../services/certificationService'
 import EnrollTable from '../components/tables/EnrollTable'
 import Modal from '../components/ui/Modal'
 import SelectInput from '../components/forms/SelectInput'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 import {useToast} from '../components/ui/ToastProvider.jsx'
+
+const formatDate = (value) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleDateString('ko-KR', {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+    })
+}
+
+// 다운로드 헤더 파싱에 실패했을 때 쓰는 클라이언트 생성 파일명 (백엔드 규칙과 동일)
+const buildFallbackFilename = (cert) => {
+    const safeCourse = (cert.course_title || '수료증').replace(/[\\/:*?"<>|\s]+/g, '_')
+    const yyyymmdd = cert.issued_at ? new Date(cert.issued_at).toISOString().slice(0, 10).replace(/-/g, '') : ''
+    return `certification_${safeCourse}_${yyyymmdd}.png`
+}
 
 const EnrollTab = ({
     session,
@@ -30,6 +44,10 @@ const EnrollTab = ({
     const [editStatus, setEditStatus] = useState('ACTIVE')
     const [certifications, setCertifications] = useState([])
     const [certificationsLoading, setCertificationsLoading] = useState(false)
+    const [certificateDetailModal, setCertificateDetailModal] = useState({isOpen: false, certification: null})
+    const [certificatePreviewUrl, setCertificatePreviewUrl] = useState(null)
+    const [certificatePreviewLoading, setCertificatePreviewLoading] = useState(false)
+    const [certificateDownloading, setCertificateDownloading] = useState(false)
 
     const toast = useToast()
 
@@ -65,9 +83,49 @@ const EnrollTab = ({
         }
     }
 
-    // 수료증 조회 (추후 구현 예정 — 지금은 스텁)
-    const handleViewCertification = () => {
-        toast.info('수료증 조회 기능은 준비 중입니다.')
+    // 수료증 조회 — 상세 정보(리스트 조회 시 받은 cert 객체, 추가 호출 없음) + 실제 이미지 미리보기
+    const handleViewCertification = async (row, cert) => {
+        setCertificateDetailModal({isOpen: true, certification: cert})
+        setCertificatePreviewLoading(true)
+        try {
+            const {blob} = await getCertificationPreview(cert.id)
+            setCertificatePreviewUrl(URL.createObjectURL(blob))
+        } catch (err) {
+            console.error('수료증 미리보기 조회 실패:', err)
+            onError('수료증 미리보기를 불러오는데 실패했습니다')
+        } finally {
+            setCertificatePreviewLoading(false)
+        }
+    }
+
+    const handleCloseCertificateDetailModal = () => {
+        if (certificatePreviewUrl) URL.revokeObjectURL(certificatePreviewUrl)
+        setCertificateDetailModal({isOpen: false, certification: null})
+        setCertificatePreviewUrl(null)
+    }
+
+    // 수료증 다운로드
+    const handleDownloadCertificate = async () => {
+        const cert = certificateDetailModal.certification
+        if (!cert) return
+
+        setCertificateDownloading(true)
+        try {
+            const {blob, filename} = await getCertificationDownload(cert.id)
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = filename || buildFallbackFilename(cert)
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            URL.revokeObjectURL(url)
+        } catch (err) {
+            console.error('수료증 다운로드 실패:', err)
+            onError('수료증 다운로드에 실패했습니다')
+        } finally {
+            setCertificateDownloading(false)
+        }
     }
 
     // 모다 열 때 사용자 목록 로드
@@ -381,6 +439,70 @@ const EnrollTab = ({
                         required
                     />
                 </div>
+            </Modal>
+
+            {/* 수료증 상세 모달 */}
+            <Modal
+                isOpen={certificateDetailModal.isOpen}
+                onClose={handleCloseCertificateDetailModal}
+                title="수료증 상세"
+                footer={
+                    <div className="flex gap-2">
+                        <Button variant="secondary" className="flex-1" onClick={handleCloseCertificateDetailModal}>
+                            닫기
+                        </Button>
+                        <Button
+                            className="flex-1"
+                            disabled={certificateDownloading || !certificateDetailModal.certification}
+                            onClick={handleDownloadCertificate}
+                        >
+                            {certificateDownloading ? '다운로드 중...' : '다운로드'}
+                        </Button>
+                    </div>
+                }
+            >
+                {certificateDetailModal.certification && (
+                    <div className="space-y-4">
+                        <div className="w-full aspect-[2520/1000] bg-neutral-100 rounded-md overflow-hidden flex items-center justify-center">
+                            {certificatePreviewLoading ? (
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+                            ) : certificatePreviewUrl ? (
+                                <img
+                                    src={certificatePreviewUrl}
+                                    alt={`${certificateDetailModal.certification.course_title} 수료증`}
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <span className="text-xs text-neutral-400">미리보기를 불러올 수 없습니다</span>
+                            )}
+                        </div>
+
+                        <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">과정명</span>
+                            <span className="text-neutral-900 font-medium">{certificateDetailModal.certification.course_title || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">강좌명</span>
+                            <span className="text-neutral-900 font-medium">{certificateDetailModal.certification.session_title || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">강사</span>
+                            <span className="text-neutral-900">{certificateDetailModal.certification.lecturer_info || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">수강 기간</span>
+                            <span className="text-neutral-900">
+                                {formatDate(certificateDetailModal.certification.session_begin_date)} ~ {formatDate(certificateDetailModal.certification.session_end_date)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between border-t border-neutral-100 pt-3">
+                            <span className="text-neutral-500">발급일</span>
+                            <span className="text-neutral-900 font-medium">{formatDate(certificateDetailModal.certification.issued_at)}</span>
+                        </div>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     )

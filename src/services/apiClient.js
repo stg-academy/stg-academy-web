@@ -95,6 +95,40 @@ class ApiClient {
         })
     }
 
+    // 이미지 등 바이너리 응답 전용 요청 (request()의 JSON/text 파싱을 거치지 않음)
+    async getBlob(endpoint) {
+        const url = `${this.baseURL}${endpoint}`
+        const token = this.getAuthToken()
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+
+        let response
+        try {
+            response = await fetch(url, { headers })
+        } catch (error) {
+            if (error instanceof TypeError) {
+                throw new Error('네트워크 연결을 확인해주세요.')
+            }
+            throw error
+        }
+
+        if (response.status === 401) {
+            this.clearAuthToken()
+            throw new Error('인증이 필요합니다. 다시 로그인해주세요.')
+        }
+
+        if (!response.ok) {
+            const error = new Error(`HTTP ${response.status}`)
+            error.status = response.status
+            throw error
+        }
+
+        const blob = await response.blob()
+        const disposition = response.headers.get('content-disposition')
+        const match = disposition && disposition.match(/filename\*=UTF-8''([^;]+)/)
+
+        return { blob, filename: match ? decodeURIComponent(match[1]) : null }
+    }
+
     // 인증 토큰 관리
     setAuthToken(token) {
         localStorage.setItem('auth_token', token)

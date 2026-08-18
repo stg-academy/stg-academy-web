@@ -10,6 +10,7 @@ import { getMyEnrolls } from '../services/enrollService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getSessions } from '../services/sessionService';
+import { getMyCertifications } from '../services/certificationService';
 
 const ChevronRightIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,6 +30,7 @@ export default function MyLearning() {
   const [attendanceData, setAttendanceData] = useState({});
   const [lectureData, setLectureData] = useState({});
   const [sessionStatusMap, setSessionStatusMap] = useState({});
+  const [certifiedSessionIds, setCertifiedSessionIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -100,6 +102,16 @@ export default function MyLearning() {
       setAttendanceData(attendanceMap);
       setLectureData(lectureMap);
 
+      // 수료증 발급 여부 조회 (배지 표시용, 실패해도 나머지 페이지 로드는 막지 않음)
+      try {
+        const certificationsData = await getMyCertifications();
+        setCertifiedSessionIds(new Set(
+          (Array.isArray(certificationsData) ? certificationsData : []).map(cert => cert.session_id)
+        ));
+      } catch (certErr) {
+        console.error('수료증 목록 조회 실패:', certErr);
+      }
+
     } catch (err) {
       console.error('내 강의 데이터 조회 실패:', err);
       setError('강의 데이터를 불러오는데 실패했습니다.');
@@ -158,9 +170,17 @@ export default function MyLearning() {
     const pastLectures = getPastLectureCount(enrollment.session_id);
     const attendanceRate = calculateAttendanceRate(enrollment.session_id);
     const progress = calculateProgress(enrollment.session_id);
+    const isCertified = certifiedSessionIds.has(enrollment.session_id);
 
     return (
-      <Card className="space-y-4">
+      <Card className="relative space-y-4">
+        {isCertified && (
+          <img
+            src="/certification_badge.png"
+            alt="수료증 발급됨"
+            className="absolute top-2 right-2 w-10 h-auto drop-shadow"
+          />
+        )}
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-neutral-900 text-lg truncate">

@@ -1,6 +1,7 @@
 import { useAuth } from '../contexts/AuthContext'
 import { Navigate } from 'react-router-dom'
 import { hasRole, getRoleDisplayName } from '../utils/roleUtils'
+import PhoneLoginAdminNotice from './PhoneLoginAdminNotice.jsx'
 
 const ProtectedRoute = ({
   children,
@@ -8,7 +9,7 @@ const ProtectedRoute = ({
   requireAuth = true,
   redirectTo = '/login'
 }) => {
-  const { user, isAuthenticated, needsRegistration, isLoading } = useAuth()
+  const { user, isAuthenticated, needsRegistration, isLoading, loginMethod } = useAuth()
 
   // 로딩 중일 때는 로딩 화면 표시
   if (isLoading) {
@@ -55,6 +56,11 @@ const ProtectedRoute = ({
         </div>
       </div>
     )
+  }
+
+  // 관리자 권한은 있으나 전화번호 로그인(비밀번호 미검증)인 경우 재로그인 안내
+  if (requiredRole && loginMethod === 'phone') {
+    return <PhoneLoginAdminNotice />
   }
 
   return children

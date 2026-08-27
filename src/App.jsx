@@ -16,6 +16,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import PrivacyConsentGate from "./components/PrivacyConsentGate.jsx";
 import MyLearning from "./pages-mobile/MyLearning.jsx";
 import Home from "./pages-mobile/Home.jsx";
 import Attendance from "./pages-mobile/Attendance.jsx";
@@ -40,6 +41,7 @@ function AppContent() {
     return (
         <div className="min-h-screen bg-gray-50">
             <Header/>
+            <PrivacyConsentGate/>
             <Routes>
                 // 인증 관련 라우트
                 <Route path="/login" element={<LoginPage/>}/>

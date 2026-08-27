@@ -45,8 +45,9 @@ export const getUser = async (userId) => {
 }
 
 /**
- * 사용자 정보 수정
- * @param {string} userId - 사용자 ID (UUID)
+ * 사용자 정보 수정 (본인 전용 — user_id가 로그인 사용자와 다르면 403)
+ * 허용 필드: username, information, password, phone_number
+ * @param {string} userId - 사용자 ID (UUID, 반드시 로그인한 본인)
  * @param {Object} userData - 수정할 사용자 데이터
  * @returns {Promise<Object>} 수정된 사용자 정보
  */
@@ -55,6 +56,34 @@ export const updateUser = async (userId, userData) => {
     return await apiClient.put(`/api/users/${userId}`, userData)
   } catch (error) {
     console.error('사용자 정보 수정 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 사용자 정보 수정 (관리자용 — 소유자 무관, role/is_active 포함 전체 필드)
+ * @param {string} userId - 사용자 ID (UUID)
+ * @param {Object} userData - 수정할 사용자 데이터
+ * @returns {Promise<Object>} 수정된 사용자 정보
+ */
+export const adminUpdateUser = async (userId, userData) => {
+  try {
+    return await apiClient.put(`/api/admin/users/${userId}`, userData)
+  } catch (error) {
+    console.error('사용자 정보 수정 실패(관리자):', error)
+    throw error
+  }
+}
+
+/**
+ * 개인정보 활용동의 (본인 전용 — 호출 자체가 동의 의사 표시)
+ * @returns {Promise<Object>} 갱신된 사용자 정보 (privacy_agreed_at 포함)
+ */
+export const agreePrivacyConsent = async () => {
+  try {
+    return await apiClient.post('/api/users/me/privacy-consent')
+  } catch (error) {
+    console.error('개인정보 활용동의 실패:', error)
     throw error
   }
 }

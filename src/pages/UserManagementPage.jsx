@@ -1,5 +1,5 @@
 import UserTable from "../components/tables/UserTable.jsx";
-import { getUsers, updateUser } from "../services/userService.js";
+import { getUsers, adminUpdateUser } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
 import { useState, useEffect } from "react";
@@ -139,7 +139,7 @@ const UserManagementPage = () => {
                 updateData.authorizations = { role: editingData.role }
             }
 
-            await updateUser(userId, updateData)
+            await adminUpdateUser(userId, updateData)
             await loadUsers() // 목록 새로고침
             setEditingUserId(null)
             setEditingData({})

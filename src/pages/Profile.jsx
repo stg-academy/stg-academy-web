@@ -8,6 +8,7 @@ import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { updateUser } from '../services/userService.js';
 import { authAPI } from '../services/authService.js';
+import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js';
 
 const UserIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,9 +56,11 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     username: '',
-    information: ''
+    information: '',
+    phone_number: ''
   });
   const [saving, setSaving] = useState(false);
+  const [phoneError, setPhoneError] = useState(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -71,7 +74,8 @@ export default function Profile() {
       // user 데이터로 편집 폼 초기화
       setEditForm({
         username: user.username || '',
-        information: user.information || ''
+        information: user.information || '',
+        phone_number: user.phone_number || ''
       });
     }
   }, [user]);
@@ -82,8 +86,10 @@ export default function Profile() {
       // 취소 시 원래 데이터로 복원
       setEditForm({
         username: user.username || '',
-        information: user.information || ''
+        information: user.information || '',
+        phone_number: user.phone_number || ''
       });
+      setPhoneError(null);
     }
   };
 
@@ -94,14 +100,32 @@ export default function Profile() {
     }));
   };
 
+  const handlePhoneBlur = () => {
+    if (!editForm.phone_number.trim()) {
+      setPhoneError(null);
+      return;
+    }
+
+    const formatted = formatPhoneNumber(editForm.phone_number);
+    setEditForm(prev => ({ ...prev, phone_number: formatted }));
+    setPhoneError(isValidPhoneNumber(formatted) ? null : '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
+  };
+
   const handleSave = async () => {
+    // 전화번호 형식 검사 — 형식에 맞지 않으면 저장하지 않음
+    if (editForm.phone_number.trim() && !isValidPhoneNumber(formatPhoneNumber(editForm.phone_number))) {
+      setPhoneError('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
+      return;
+    }
+
     try {
       setSaving(true);
 
       // 업데이트할 정보 구성
       const updateData = {
         username: editForm.username,
-        information: editForm.information
+        information: editForm.information,
+        phone_number: editForm.phone_number
       };
 
       // updateUser API 사용
@@ -111,6 +135,7 @@ export default function Profile() {
       await refreshUser();
 
       setIsEditing(false);
+      setPhoneError(null);
       toast.success('정보가 성공적으로 수정되었습니다.');
 
     } catch (error) {
@@ -279,7 +304,7 @@ export default function Profile() {
             <Button
               onClick={isEditing ? handleSave : handleEditToggle}
               size="sm"
-              disabled={saving}
+              disabled={saving || (isEditing && !!phoneError)}
               className="flex items-center"
             >
               {saving ? (
@@ -331,6 +356,30 @@ export default function Profile() {
                   />
                 ) : (
                   <p className="text-neutral-900">{user?.information || '입력되지 않음'}</p>
+                )}
+              </div>
+
+              {/* 전화번호 */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">전화번호</label>
+                {isEditing ? (
+                  <>
+                    <input
+                      type="tel"
+                      value={editForm.phone_number}
+                      onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                      onBlur={handlePhoneBlur}
+                      className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-neutral-300 ${
+                        phoneError ? 'border-error' : 'border-neutral-300'
+                      }`}
+                      placeholder="010-1234-5678"
+                    />
+                    {phoneError && (
+                      <p className="mt-1 text-xs text-error-text">{phoneError}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-neutral-900">{user?.phone_number || '입력되지 않음'}</p>
                 )}
               </div>
           </Card>

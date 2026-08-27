@@ -31,12 +31,31 @@ export const authAPI = {
         return response
     },
 
+    // 전화번호 로그인 (POST /auth/phone/login) — 비밀번호 없이 이름+전화번호 일치로 로그인
+    async loginWithPhone(username, phoneNumber) {
+        const response = await apiClient.post('/api/auth/phone/login', {
+            username,
+            phone_number: phoneNumber
+        })
+
+        if (response.token) {
+            apiClient.setAuthToken(response.token)
+        }
+
+        return response
+    },
+
     // 일반 회원가입 (POST /auth/register)
     async register(userData) {
         const requestData = {
             username: userData.username,
             password: userData.password,
             information: userData.information
+        }
+
+        // 전화번호는 선택 입력
+        if (userData.phone_number) {
+            requestData.phone_number = userData.phone_number
         }
 
         // 기존 사용자 수정인 경우 existing_user_id 추가
@@ -59,6 +78,11 @@ export const authAPI = {
         const requestData = {
             username: userData.username,
             information: userData.information
+        }
+
+        // 전화번호는 선택 입력
+        if (userData.phone_number) {
+            requestData.phone_number = userData.phone_number
         }
 
         // 기존 사용자 수정인 경우 existing_user_id 추가

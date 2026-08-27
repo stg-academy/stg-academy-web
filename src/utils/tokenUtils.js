@@ -56,6 +56,16 @@ export const isTokenExpired = (token) => {
 }
 
 /**
+ * 토큰에서 로그인 방식(login_method 클레임) 추출
+ * @param {string} token - JWT 토큰
+ * @returns {string|null} 로그인 방식 ('normal', 'kakao', 'phone' 등) 또는 null
+ */
+export const getLoginMethodFromToken = (token) => {
+  const payload = decodeToken(token)
+  return payload?.login_method || null
+}
+
+/**
  * 토큰에서 사용자 정보 추출
  * @param {string} token - JWT 토큰
  * @returns {Object|null} 사용자 정보 또는 null

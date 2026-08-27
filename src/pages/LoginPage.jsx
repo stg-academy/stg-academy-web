@@ -4,15 +4,19 @@ import { useAuth } from '../contexts/AuthContext'
 import { startKakaoLogin } from '../config/kakao'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
 import Button from '../components/ui/Button.jsx'
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/Tabs.jsx'
 import { useToast } from '../components/ui/ToastProvider.jsx'
+import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { loginWithCredentials, isLoading, error, clearError, isAuthenticated, needsRegistration } = useAuth()
+  const { loginWithCredentials, loginWithPhone, isLoading, error, clearError, isAuthenticated, needsRegistration } = useAuth()
   const toast = useToast()
+  const [loginMode, setLoginMode] = useState('password') // 'password' | 'phone'
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
+    phone_number: ''
   })
   const [formErrors, setFormErrors] = useState({})
 
@@ -45,28 +49,68 @@ const LoginPage = () => {
     }
   }
 
-  const validateForm = () => {
+  const validateForm = (data = formData) => {
     const errors = {}
 
-    if (!formData.username.trim()) {
+    if (!data.username.trim()) {
       errors.username = '이름을 입력해주세요.'
     }
 
-    if (!formData.password) {
-      errors.password = '비밀번호를 입력해주세요.'
+    if (loginMode === 'password') {
+      if (!data.password) {
+        errors.password = '비밀번호를 입력해주세요.'
+      }
+    } else {
+      if (!data.phone_number.trim()) {
+        errors.phone_number = '전화번호를 입력해주세요.'
+      } else if (!isValidPhoneNumber(data.phone_number)) {
+        errors.phone_number = '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)'
+      }
     }
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
+  const handlePhoneBlur = () => {
+    if (!formData.phone_number.trim()) return
+
+    const formatted = formatPhoneNumber(formData.phone_number)
+    setFormData(prev => ({ ...prev, phone_number: formatted }))
+
+    setFormErrors(prev => {
+      const next = { ...prev }
+      if (!isValidPhoneNumber(formatted)) {
+        next.phone_number = '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)'
+      } else {
+        delete next.phone_number
+      }
+      return next
+    })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!validateForm()) return
+    // 전화번호 탭에서는 blur 없이 바로 Enter를 누를 수 있으므로,
+    // 검증 전에 먼저 하이픈 형식으로 정규화한다.
+    let submitData = formData
+    if (loginMode === 'phone' && formData.phone_number.trim()) {
+      const formatted = formatPhoneNumber(formData.phone_number)
+      if (formatted !== formData.phone_number) {
+        submitData = { ...formData, phone_number: formatted }
+        setFormData(submitData)
+      }
+    }
+
+    if (!validateForm(submitData)) return
 
     try {
-      await loginWithCredentials(formData.username, formData.password)
+      if (loginMode === 'password') {
+        await loginWithCredentials(submitData.username, submitData.password)
+      } else {
+        await loginWithPhone(submitData.username, submitData.phone_number)
+      }
       // AuthContext에서 성공 시 자동으로 홈으로 리다이렉트됨
     } catch (err) {
       // 에러는 AuthContext에서 처리됨
@@ -88,6 +132,22 @@ const LoginPage = () => {
       subtitle="계정에 로그인하세요"
       error={error}
     >
+      {/* 로그인 방식 전환 */}
+      <Tabs
+        value={loginMode}
+        onValueChange={(mode) => {
+          setLoginMode(mode)
+          setFormErrors({})
+          if (error) clearError()
+        }}
+        className="mb-6"
+      >
+        <TabsList>
+          <TabsTrigger value="password">비밀번호로 로그인</TabsTrigger>
+          <TabsTrigger value="phone">전화번호로 로그인</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* 일반 로그인 폼 */}
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
@@ -111,29 +171,57 @@ const LoginPage = () => {
           )}
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
-            비밀번호
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
-              formErrors.password ? 'border-error' : 'border-neutral-300'
-            }`}
-            placeholder="비밀번호를 입력하세요"
-            disabled={isLoading}
-          />
-          {formErrors.password && (
-            <p className="mt-2 text-sm text-error-text">{formErrors.password}</p>
-          )}
-        </div>
+        {loginMode === 'password' ? (
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
+              비밀번호
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
+                formErrors.password ? 'border-error' : 'border-neutral-300'
+              }`}
+              placeholder="비밀번호를 입력하세요"
+              disabled={isLoading}
+            />
+            {formErrors.password && (
+              <p className="mt-2 text-sm text-error-text">{formErrors.password}</p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="phone_number" className="block text-sm font-medium text-neutral-700 mb-2">
+              전화번호
+            </label>
+            <input
+              id="phone_number"
+              name="phone_number"
+              type="tel"
+              value={formData.phone_number}
+              onChange={handleInputChange}
+              onBlur={handlePhoneBlur}
+              className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
+                formErrors.phone_number ? 'border-error' : 'border-neutral-300'
+              }`}
+              placeholder="010-1234-5678"
+              disabled={isLoading}
+            />
+            {formErrors.phone_number && (
+              <p className="mt-2 text-sm text-error-text">{formErrors.phone_number}</p>
+            )}
+          </div>
+        )}
 
         <div>
-          <Button type="submit" disabled={isLoading} className="w-full">
+          <Button
+            type="submit"
+            disabled={isLoading || (loginMode === 'phone' && !!formErrors.phone_number)}
+            className="w-full"
+          >
             {isLoading ? '로그인 중...' : '로그인'}
           </Button>
         </div>

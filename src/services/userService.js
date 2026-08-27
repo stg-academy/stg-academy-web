@@ -76,6 +76,40 @@ export const adminUpdateUser = async (userId, userData) => {
 }
 
 /**
+ * 비밀번호 변경 (본인 전용 — 현재 비밀번호 확인 후 변경)
+ * kakao/manual 등 비밀번호 없는 계정이거나 현재 비밀번호가 틀리면 401
+ * @param {string} currentPassword - 현재 비밀번호
+ * @param {string} newPassword - 새 비밀번호
+ * @returns {Promise<Object>} 갱신된 사용자 정보
+ */
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    return await apiClient.put('/api/users/me/password', {
+      current_password: currentPassword,
+      new_password: newPassword
+    })
+  } catch (error) {
+    console.error('비밀번호 변경 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 비밀번호 초기화 (관리자 전용 — 대상 계정이 일반(normal) 로그인 계정일 때만 허용)
+ * kakao/manual 계정에 시도하면 400
+ * @param {string} userId - 대상 사용자 ID (UUID)
+ * @returns {Promise<Object>} 임시 비밀번호(temporary_password 등)를 포함한 응답
+ */
+export const adminResetPassword = async (userId) => {
+  try {
+    return await apiClient.post(`/api/admin/users/${userId}/reset-password`)
+  } catch (error) {
+    console.error('비밀번호 초기화 실패:', error)
+    throw error
+  }
+}
+
+/**
  * 개인정보 활용동의 (본인 전용 — 호출 자체가 동의 의사 표시)
  * @returns {Promise<Object>} 갱신된 사용자 정보 (privacy_agreed_at 포함)
  */

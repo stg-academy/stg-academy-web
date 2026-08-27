@@ -1,11 +1,14 @@
 import UserTable from "../components/tables/UserTable.jsx";
-import { getUsers, adminUpdateUser } from "../services/userService.js";
+import { getUsers, adminUpdateUser, adminResetPassword } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
 import { useState, useEffect } from "react";
 import PageContainer from "../components/ui/PageContainer.jsx";
 import Button from "../components/ui/Button.jsx";
 import ErrorBanner from "../components/ui/ErrorBanner.jsx";
+import ConfirmModal from "../components/ui/ConfirmModal.jsx";
+import Modal from "../components/ui/Modal.jsx";
+import { useToast } from "../components/ui/ToastProvider.jsx";
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([])
@@ -18,6 +21,12 @@ const UserManagementPage = () => {
     const [validationErrors, setValidationErrors] = useState({})
 
     const [addingUser, setAddingUser] = useState(false)
+
+    // 비밀번호 초기화 관련 상태
+    const [resetPasswordTarget, setResetPasswordTarget] = useState(null)
+    const [resettingPassword, setResettingPassword] = useState(false)
+    const [resetPasswordResult, setResetPasswordResult] = useState(null)
+    const toast = useToast()
 
     const handleError = (message) => {
         setError(message)
@@ -185,6 +194,47 @@ const UserManagementPage = () => {
         }
     }
 
+    // 비밀번호 초기화 확인 요청 (일반 로그인 계정만 UserTable에서 버튼이 노출됨)
+    const handleResetPasswordClick = (user) => {
+        setResetPasswordTarget(user)
+    }
+
+    // 비밀번호 초기화 실행
+    const executeResetPassword = async () => {
+        if (!resetPasswordTarget) return
+
+        try {
+            setResettingPassword(true)
+            const response = await adminResetPassword(resetPasswordTarget.id)
+            setResetPasswordResult({
+                username: resetPasswordTarget.username,
+                temporaryPassword: response.temporary_password
+            })
+        } catch (err) {
+            console.error('비밀번호 초기화 실패:', err)
+            if (err.status === 400) {
+                handleError('카카오/수기 등록 계정은 비밀번호를 초기화할 수 없습니다.')
+            } else {
+                handleError('비밀번호 초기화에 실패했습니다')
+            }
+        } finally {
+            setResettingPassword(false)
+            setResetPasswordTarget(null)
+        }
+    }
+
+    // 임시 비밀번호 복사
+    const handleCopyTemporaryPassword = async () => {
+        if (!resetPasswordResult) return
+        try {
+            await navigator.clipboard.writeText(resetPasswordResult.temporaryPassword)
+            toast.success('임시 비밀번호가 복사되었습니다.')
+        } catch (err) {
+            console.error('클립보드 복사 실패:', err)
+            toast.error('복사에 실패했습니다. 직접 선택해 복사해주세요.')
+        }
+    }
+
     return (
         <PageContainer>
             {/* 헤더 */}
@@ -220,6 +270,8 @@ const UserManagementPage = () => {
                     onEditChange={handleEditChange}
                     // 유효성 검사 관련 props
                     validationErrors={validationErrors}
+                    // 비밀번호 초기화
+                    onResetPassword={handleResetPasswordClick}
                 />
 
                 {/* 새 사용자 추가하기 */}
@@ -245,6 +297,45 @@ const UserManagementPage = () => {
                     <p>* 새 사용자 추가는 관리자 권한으로 수동 등록할 수 있습니다.</p>
                 </div>
             </div>
+
+            {/* 비밀번호 초기화 확인 */}
+            <ConfirmModal
+                isOpen={!!resetPasswordTarget}
+                onClose={() => setResetPasswordTarget(null)}
+                onConfirm={executeResetPassword}
+                title="비밀번호 초기화"
+                message={`'${resetPasswordTarget?.username}' 님의 비밀번호를 초기화하시겠습니까?\n기존 비밀번호는 더 이상 사용할 수 없습니다.`}
+                confirmText={resettingPassword ? '처리 중...' : '초기화'}
+                danger
+            />
+
+            {/* 임시 비밀번호 결과 */}
+            <Modal
+                isOpen={!!resetPasswordResult}
+                onClose={() => setResetPasswordResult(null)}
+                title="임시 비밀번호 발급"
+                width="md:w-[420px]"
+                footer={
+                    <div className="flex gap-2">
+                        <Button variant="secondary" className="flex-1" onClick={() => setResetPasswordResult(null)}>
+                            닫기
+                        </Button>
+                        <Button className="flex-1" onClick={handleCopyTemporaryPassword}>
+                            복사하기
+                        </Button>
+                    </div>
+                }
+            >
+                <p className="text-sm text-neutral-700 mb-3">
+                    <span className="font-semibold">{resetPasswordResult?.username}</span> 님의 임시 비밀번호가 발급되었습니다.
+                    이 비밀번호는 다시 확인할 수 없으니 지금 바로 사용자에게 전달해주세요.
+                </p>
+                <div className="px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-md text-center">
+                    <span className="text-lg font-mono font-semibold text-neutral-900 select-all">
+                        {resetPasswordResult?.temporaryPassword}
+                    </span>
+                </div>
+            </Modal>
         </PageContainer>
     )
 }

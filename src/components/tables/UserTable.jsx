@@ -14,7 +14,9 @@ const UserTable = ({
     onSaveEdit,
     onEditChange,
     // 유효성 검사 관련 props
-    validationErrors
+    validationErrors,
+    // 비밀번호 초기화 (일반 로그인 계정만 가능)
+    onResetPassword
 }) => {
     // 인증 유형 렌더링 함수
     const renderAuthType = (value) => {
@@ -67,6 +69,11 @@ const UserTable = ({
                 <Button variant="link" size="sm" onClick={() => onStartEdit && onStartEdit(row)}>
                     편집
                 </Button>
+                {row.auth_type === 'normal' && (
+                    <Button variant="link" size="sm" onClick={() => onResetPassword && onResetPassword(row)}>
+                        비밀번호 초기화
+                    </Button>
+                )}
             </div>
         )
     }
@@ -200,6 +207,19 @@ const UserTable = ({
             showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
             renderMobileItem={renderMobileItem}
+            // 모바일 편집 시트: 가입일 정보 아래에 비밀번호 초기화 버튼 (일반 로그인 계정만)
+            renderMobileEditExtra={(row) => row.auth_type === 'normal' ? (
+                <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                        onCancelEdit && onCancelEdit()
+                        onResetPassword && onResetPassword(row)
+                    }}
+                >
+                    비밀번호 초기화
+                </Button>
+            ) : null}
             // 인라인 편집 관련 props
             editingRowId={editingUserId}
             editingData={editingData}

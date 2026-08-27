@@ -6,8 +6,7 @@ import Button from '../components/ui/Button.jsx';
 import ConfirmModal from '../components/ui/ConfirmModal.jsx';
 import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { updateUser } from '../services/userService.js';
-import { authAPI } from '../services/authService.js';
+import { updateUser, changePassword } from '../services/userService.js';
 import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js';
 
 const UserIcon = ({ className }) => (
@@ -163,23 +162,18 @@ export default function Profile() {
     try {
       setPasswordSaving(true);
 
-      // 현재 비밀번호 검증
-      try {
-        await authAPI.loginWithCredentials(user.username, passwordForm.current);
-      } catch {
-        setPasswordError('현재 비밀번호가 올바르지 않습니다.');
-        return;
-      }
-
-      // 새 비밀번호로 업데이트
-      await updateUser(user.id, { password: passwordForm.new });
+      await changePassword(passwordForm.current, passwordForm.new);
 
       handlePasswordCancel();
       toast.success('비밀번호가 성공적으로 변경되었습니다.');
 
     } catch (error) {
       console.error('비밀번호 변경 실패:', error);
-      setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
+      if (error.status === 401) {
+        setPasswordError('현재 비밀번호가 올바르지 않습니다.');
+      } else {
+        setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
+      }
     } finally {
       setPasswordSaving(false);
     }

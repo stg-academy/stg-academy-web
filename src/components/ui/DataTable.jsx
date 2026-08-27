@@ -27,7 +27,9 @@ const DataTable = ({
                        // 푸터 관련 props
                        footer = null,
                        // 모바일(lg 미만) 카드 리스트 — 제공 시 lg:hidden 카드 리스트가 함께 렌더링된다
-                       renderMobileItem = null
+                       renderMobileItem = null,
+                       // 모바일 편집 시트 하단(정보 영역 아래)에 추가로 넣을 커스텀 영역 — (row) => ReactNode
+                       renderMobileEditExtra = null
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
@@ -410,6 +412,11 @@ const DataTable = ({
                                             </div>
                                         )
                                     })}
+                                </div>
+                            )}
+                            {renderMobileEditExtra && (
+                                <div className="pt-1">
+                                    {renderMobileEditExtra(editingRow)}
                                 </div>
                             )}
                         </div>

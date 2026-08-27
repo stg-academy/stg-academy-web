@@ -1,14 +1,24 @@
 import apiClient from "./apiClient.js";
 
 /**
- * 코스 목록 조회
+ * 코스 목록 조회 — 빈 페이지가 나올 때까지 반복 호출해 전체를 받아옴 (limit 초과로 인한 누락 방지)
  * @param {number} skip - 건너뛸 항목 수
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 코스 목록
  */
-export const getCourses = async (skip = 0, limit = 1000) => {
+export const getCourses = async (skip = 0, limit = 10000) => {
   try {
-    return await apiClient.get('/api/courses', { skip, limit })
+    const pageSize = Math.min(limit, 1000)
+    const allData = []
+    let currentSkip = skip
+    while (true) {
+      const page = await apiClient.get('/api/courses', { skip: currentSkip, limit: pageSize })
+      if (!Array.isArray(page) || page.length === 0) break
+      allData.push(...page)
+      if (page.length < pageSize) break
+      currentSkip += pageSize
+    }
+    return allData
   } catch (error) {
     console.error('코스 목록 조회 실패:', error)
     throw error

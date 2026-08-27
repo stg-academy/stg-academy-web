@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
 import SelectInput from '../forms/SelectInput';
 import TextInput from '../forms/TextInput';
-import { getUsersInfo } from '../../services/userService';
+import { searchUsers } from '../../services/userService';
 import { authAPI } from '../../services/authService';
 import { createEnroll } from '../../services/enrollService';
 
@@ -24,7 +24,6 @@ const UserRegistrationModal = ({
   const [error, setError] = useState('');
   const [nameCheckLoading, setNameCheckLoading] = useState(false);
   const [isDuplicateName, setIsDuplicateName] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
 
   // 사용자 검색
   const handleNameSearch = async (searchValue = searchTerm) => {
@@ -35,13 +34,8 @@ const UserRegistrationModal = ({
     setSearchLoading(true);
     setError('');
     try {
-      const users = await getUsersInfo(0, 1000);
-      const filteredUsers = users.filter(user =>
-        user.username?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        user.information?.toLowerCase().includes(searchValue.toLowerCase())
-      );
-
-      setSearchResults(filteredUsers);
+      const results = await searchUsers(searchValue, 20);
+      setSearchResults(results);
       setStep('register');
     } catch (err) {
       console.error('사용자 검색 실패:', err);
@@ -71,14 +65,8 @@ const UserRegistrationModal = ({
 
     setNameCheckLoading(true);
     try {
-      // 전체 사용자 목록이 없으면 로드
-      let users = allUsers;
-      if (users.length === 0) {
-        users = await getUsersInfo(0, 1000);
-        setAllUsers(users);
-      }
-
-      const duplicateUser = users.find(user =>
+      const results = await searchUsers(name, 20);
+      const duplicateUser = results.find(user =>
         user.username?.trim().toLowerCase() === name.trim().toLowerCase()
       );
 
@@ -103,7 +91,7 @@ const UserRegistrationModal = ({
     } else {
       setIsDuplicateName(false);
     }
-  }, [newUserName, selectedOption, allUsers]);
+  }, [newUserName, selectedOption]);
 
   // 옵션 선택 처리
   const handleOptionChange = (value) => {

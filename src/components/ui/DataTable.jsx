@@ -29,10 +29,17 @@ const DataTable = ({
                        // 모바일(lg 미만) 카드 리스트 — 제공 시 lg:hidden 카드 리스트가 함께 렌더링된다
                        renderMobileItem = null,
                        // 모바일 편집 시트 하단(정보 영역 아래)에 추가로 넣을 커스텀 영역 — (row) => ReactNode
-                       renderMobileEditExtra = null
+                       renderMobileEditExtra = null,
+                       // 서버사이드 페이지네이션 (옵트인) — 전달되면 내부 페이지 state/클라이언트 슬라이싱 대신
+                       // 부모가 넘긴 값을 그대로 쓴다. 이 모드에서는 data가 "이번 페이지 분량"이라고 간주한다.
+                       serverPagination = false,
+                       totalCount = 0,
+                       currentPage: currentPageProp = 1,
+                       onPageChange = null
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
-    const [currentPage, setCurrentPage] = useState(1)
+    const [internalCurrentPage, setInternalCurrentPage] = useState(1)
+    const currentPage = serverPagination ? currentPageProp : internalCurrentPage
     const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'})
 
     // 검색 필터링
@@ -74,9 +81,14 @@ const DataTable = ({
     }, [filteredData, sortConfig])
 
     // 페이지네이션 (itemsPerPage가 없으면 전체 데이터 표시)
-    const totalPages = itemsPerPage ? Math.ceil(sortedData.length / itemsPerPage) : 1
+    // 서버 모드에서는 data가 이미 "이번 페이지 분량"이므로 totalCount 기준으로 페이지 수만 계산하고,
+    // 화면에는 서버가 준 data를 그대로(추가 슬라이싱 없이) 보여준다.
+    const displayTotal = serverPagination ? totalCount : sortedData.length
+    const totalPages = itemsPerPage ? Math.max(1, Math.ceil(displayTotal / itemsPerPage)) : 1
     const startIndex = itemsPerPage ? (currentPage - 1) * itemsPerPage : 0
-    const paginatedData = itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData
+    const paginatedData = serverPagination
+        ? sortedData
+        : (itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData)
 
     // 정렬 핸들러
     const handleSort = (key) => {
@@ -90,13 +102,18 @@ const DataTable = ({
 
     // 페이지 변경 핸들러
     const handlePageChange = (page) => {
-        setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+        const clamped = Math.max(1, Math.min(page, totalPages))
+        if (serverPagination) {
+            onPageChange && onPageChange(clamped)
+        } else {
+            setInternalCurrentPage(clamped)
+        }
     }
 
-    // 검색어 변경 시 첫 페이지로 이동
+    // 검색어 변경 시 첫 페이지로 이동 (서버 모드에서는 검색을 지원하지 않음)
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value)
-        setCurrentPage(1)
+        if (!serverPagination) setInternalCurrentPage(1)
     }
 
     // 편집 가능한 셀 렌더링
@@ -267,7 +284,7 @@ const DataTable = ({
                 <div>
                     <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
                     <p className="text-sm text-neutral-600 mt-1">
-                        총 {data.length}개 항목 {filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
+                        총 {displayTotal}개 항목 {!serverPagination && filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
                     </p>
                 </div>
 
@@ -429,7 +446,7 @@ const DataTable = ({
                 <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-200">
                     <div className="text-sm text-neutral-700">
             <span>
-              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedData.length)} / {sortedData.length}개 항목
+              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayTotal)} / {displayTotal}개 항목
             </span>
                     </div>
                     <Pagination current={currentPage} total={totalPages} onChange={handlePageChange} />

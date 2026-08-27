@@ -31,6 +31,37 @@ export const getUsers = async (skip = 0, limit = 1000) => {
 }
 
 /**
+ * 관리자용 사용자 검색 (username/information 부분일치, 서버사이드) — 전체 목록을 불러와
+ * 클라이언트에서 필터링하던 기존 방식(EnrollTab/AssistantTab/UserRegistrationModal)을 대체
+ * @param {string} query - 검색어
+ * @param {number} limit - 최대 결과 수
+ * @returns {Promise<Array>} 검색된 사용자 목록
+ */
+export const searchUsers = async (query, limit = 20) => {
+  try {
+    return await apiClient.get('/api/admin/users/search', { q: query, limit })
+  } catch (error) {
+    console.error('사용자 검색 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 사용자 목록 조회 (관리용, 서버사이드 페이지네이션) — X-Total-Count 헤더 기반 총 개수 포함
+ * @param {number} skip - 건너뛸 항목 수
+ * @param {number} limit - 조회할 항목 수
+ * @returns {Promise<{data: Array, totalCount: number}>} 이번 페이지 데이터 + 전체 개수
+ */
+export const getUsersPaged = async (skip = 0, limit = 30) => {
+  try {
+    return await apiClient.getPaged('/api/admin/users', { skip, limit })
+  } catch (error) {
+    console.error('사용자 목록 조회 실패:', error)
+    throw error
+  }
+}
+
+/**
  * 특정 사용자 정보 조회
  * @param {string} userId - 사용자 ID (UUID)
  * @returns {Promise<Object>} 사용자 정보

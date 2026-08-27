@@ -6,6 +6,10 @@ import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 const UserTable = ({
     users,
     loading,
+    // 서버사이드 페이지네이션
+    totalCount,
+    currentPage,
+    onPageChange,
     // 인라인 편집 관련 props
     editingUserId,
     editingData,
@@ -204,8 +208,13 @@ const UserTable = ({
             loading={loading}
             itemsPerPage={30}
             showPagination={true}
-            showSearch={true}
+            showSearch={false}
             emptyMessage="등록된 사용자가 없습니다."
+            // 서버사이드 페이지네이션 (검색은 지원되는 페이지 안에서만 가능해 반쪽짜리가 되므로 당분간 비활성화)
+            serverPagination={true}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            onPageChange={onPageChange}
             renderMobileItem={renderMobileItem}
             // 모바일 편집 시트: 가입일 정보 아래에 비밀번호 초기화 버튼 (일반 로그인 계정만)
             renderMobileEditExtra={(row) => row.auth_type === 'normal' ? (

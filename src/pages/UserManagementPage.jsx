@@ -1,5 +1,5 @@
 import UserTable from "../components/tables/UserTable.jsx";
-import { getUsers, adminUpdateUser, adminResetPassword } from "../services/userService.js";
+import { getUsersPaged, adminUpdateUser, adminResetPassword } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
 import { useState, useEffect } from "react";
@@ -10,8 +10,13 @@ import ConfirmModal from "../components/ui/ConfirmModal.jsx";
 import Modal from "../components/ui/Modal.jsx";
 import { useToast } from "../components/ui/ToastProvider.jsx";
 
+// UserTable.jsx의 DataTable itemsPerPage(30)와 반드시 같은 값을 유지해야 함
+const USERS_PAGE_SIZE = 30
+
 const UserManagementPage = () => {
     const [users, setUsers] = useState([])
+    const [totalCount, setTotalCount] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -33,12 +38,13 @@ const UserManagementPage = () => {
         setTimeout(() => setError(''), 5000)
     }
 
-    // 사용자 목록 로드
-    const loadUsers = async () => {
+    // 사용자 목록 로드 (서버사이드 페이지네이션)
+    const loadUsersPage = async (page) => {
         try {
             setLoading(true)
-            const data = await getUsers(0, 1000) // 모든 사용자 조회
+            const { data, totalCount: total } = await getUsersPaged((page - 1) * USERS_PAGE_SIZE, USERS_PAGE_SIZE)
             setUsers(data)
+            setTotalCount(total)
         } catch (err) {
             console.error('사용자 목록 조회 실패:', err)
             handleError('사용자 목록을 불러오는데 실패했습니다')
@@ -47,10 +53,10 @@ const UserManagementPage = () => {
         }
     }
 
-    // 컴포넌트 마운트 시 사용자 목록 로드
+    // 마운트 시 및 페이지 변경 시 해당 페이지 재조회
     useEffect(() => {
-        loadUsers()
-    }, [])
+        loadUsersPage(currentPage)
+    }, [currentPage])
 
     // 인라인 편집 시작
     const handleStartEdit = (user) => {
@@ -149,7 +155,7 @@ const UserManagementPage = () => {
             }
 
             await adminUpdateUser(userId, updateData)
-            await loadUsers() // 목록 새로고침
+            await loadUsersPage(currentPage) // 현재 페이지만 재조회
             setEditingUserId(null)
             setEditingData({})
             setValidationErrors({})
@@ -164,27 +170,27 @@ const UserManagementPage = () => {
         try {
             setAddingUser(true)
             const newUserData = {
-                username: `사용자_${users.length + 1}`,
+                username: `사용자_${totalCount + 1}`,
                 information: '',
                 auth: 'user'
             }
             const createdUser = (await authAPI.manualRegister(newUserData)).user
-            await loadUsers() // 목록 새로고침
 
-            // 새로 생성된 사용자를 즉시 편집 모드로 전환
-            if (createdUser?.id || createdUser?.username) {
-                // 생성된 사용자 정보로 편집 모드 시작
-                const userId = createdUser.id || users.find(u => u.username === createdUser.username)?.id
-                if (userId) {
-                    setEditingUserId(userId)
-                    setEditingData({
-                        username: createdUser.username || `사용자_${users.length + 1}`,
-                        information: createdUser.information || '',
-                        is_active: createdUser.is_active ?? true,
-                        role: createdUser.authorizations?.role || ROLES.USER
-                    })
-                    setValidationErrors({})
-                }
+            if (createdUser?.id) {
+                // 페이지 단위 조회 중이라 새 사용자가 현재 페이지에 없을 수 있으므로,
+                // 재조회 대신 응답으로 받은 사용자 정보를 현재 목록 맨 앞에 바로 반영
+                setUsers(prev => [createdUser, ...prev])
+                setTotalCount(prev => prev + 1)
+                setEditingUserId(createdUser.id)
+                setEditingData({
+                    username: createdUser.username || '',
+                    information: createdUser.information || '',
+                    is_active: createdUser.is_active ?? true,
+                    role: createdUser.authorizations?.role || ROLES.USER
+                })
+                setValidationErrors({})
+            } else {
+                await loadUsersPage(currentPage)
             }
         } catch (err) {
             console.error('사용자 생성 실패:', err)
@@ -261,6 +267,10 @@ const UserManagementPage = () => {
                 <UserTable
                     users={users}
                     loading={loading}
+                    // 서버사이드 페이지네이션
+                    totalCount={totalCount}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
                     // 인라인 편집 관련 props
                     editingUserId={editingUserId}
                     editingData={editingData}

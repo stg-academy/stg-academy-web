@@ -1,6 +1,6 @@
-import {useState} from 'react'
+import {useRef, useState} from 'react'
 import {createAssistant, deleteAssistant} from '../services/assistantService'
-import {getUsersInfo} from '../services/userService'
+import {searchUsers} from '../services/userService'
 import AssistantTable from '../components/tables/AssistantTable'
 import Modal from '../components/ui/Modal'
 import ConfirmModal from '../components/ui/ConfirmModal.jsx'
@@ -18,43 +18,24 @@ const AssistantTab = ({
     const [addModal, setAddModal] = useState({isOpen: false})
     const [selectedUser, setSelectedUser] = useState(null)
     const [userSearchTerm, setUserSearchTerm] = useState('')
-    const [allUsers, setAllUsers] = useState([])
     const [userSearchResults, setUserSearchResults] = useState([])
     const [userSearchLoading, setUserSearchLoading] = useState(false)
-    const [usersLoaded, setUsersLoaded] = useState(false)
     const [showUserDropdown, setShowUserDropdown] = useState(false)
     const [removeTarget, setRemoveTarget] = useState(null)
-
-    // 모달 열 때 사용자 목록 로드
-    const loadAllUsers = async () => {
-        if (usersLoaded) return // 이미 로드되었으면 스킵
-
-        setUserSearchLoading(true)
-        try {
-            const users = await getUsersInfo(0, 1000) // 대용량 조회
-            setAllUsers(users)
-            setUsersLoaded(true)
-        } catch (err) {
-            console.error('사용자 목록 로드 실패:', err)
-            onError('사용자 목록을 불러오는데 실패했습니다')
-        } finally {
-            setUserSearchLoading(false)
-        }
-    }
+    const userSearchDebounceRef = useRef(null)
 
     // 조교 추가 모달 열기
-    const handleAddAssistant = async () => {
+    const handleAddAssistant = () => {
         setAddModal({isOpen: true})
         setSelectedUser(null)
         setUserSearchTerm('')
         setUserSearchResults([])
         setShowUserDropdown(false)
-
-        await loadAllUsers()
     }
 
     // 조교 추가 모달 닫기
     const handleCloseAddModal = () => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
         setAddModal({isOpen: false})
         setSelectedUser(null)
         setUserSearchTerm('')
@@ -62,21 +43,29 @@ const AssistantTab = ({
         setShowUserDropdown(false)
     }
 
-    // 사용자 검색 (클라이언트 사이드 필터링)
+    // 사용자 검색 (서버사이드, 디바운스)
     const handleUserSearch = (searchTerm) => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
+
         if (!searchTerm || searchTerm.length < 2) {
             setUserSearchResults([])
             setShowUserDropdown(false)
             return
         }
 
-        const filteredUsers = allUsers.filter(user =>
-            user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.information?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-
-        setUserSearchResults(filteredUsers)
-        setShowUserDropdown(filteredUsers.length > 0)
+        userSearchDebounceRef.current = setTimeout(async () => {
+            setUserSearchLoading(true)
+            try {
+                const results = await searchUsers(searchTerm, 20)
+                setUserSearchResults(results)
+                setShowUserDropdown(results.length > 0)
+            } catch (err) {
+                console.error('사용자 검색 실패:', err)
+                onError('사용자 검색에 실패했습니다')
+            } finally {
+                setUserSearchLoading(false)
+            }
+        }, 400)
     }
 
     // 사용자 선택
@@ -177,12 +166,11 @@ const AssistantTab = ({
                                     setUserSearchTerm(e.target.value)
                                     handleUserSearch(e.target.value)
                                 }}
-                                disabled={userSearchLoading && !usersLoaded}
                                 placeholder="사용자 이름 또는 소속으로 검색"
                                 className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-accent focus:border-transparent"
                                 required
                             />
-                            {userSearchLoading && !usersLoaded && (
+                            {userSearchLoading && (
                                 <div className="absolute right-3 top-3">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
                                 </div>
@@ -241,10 +229,7 @@ const AssistantTab = ({
                         )}
 
                         <p className="mt-1 text-xs text-neutral-500">
-                            {!usersLoaded && userSearchLoading
-                                ? '사용자 목록을 불러오는 중...'
-                                : `2글자 이상 입력하면 검색 결과가 표시됩니다 (총 ${allUsers.length}명)`
-                            }
+                            2글자 이상 입력하면 검색 결과가 표시됩니다.
                         </p>
                     </div>
                 </div>

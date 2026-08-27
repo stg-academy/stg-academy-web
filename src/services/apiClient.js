@@ -95,6 +95,40 @@ class ApiClient {
         })
     }
 
+    // 서버사이드 페이지네이션 전용 요청 — 바디와 함께 X-Total-Count 헤더도 반환
+    async getPaged(endpoint, params = {}) {
+        const queryString = new URLSearchParams(params).toString()
+        const url = `${this.baseURL}${endpoint}${queryString ? `?${queryString}` : ''}`
+        const token = this.getAuthToken()
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+
+        let response
+        try {
+            response = await fetch(url, { headers })
+        } catch (error) {
+            if (error instanceof TypeError) {
+                throw new Error('네트워크 연결을 확인해주세요.')
+            }
+            throw error
+        }
+
+        if (response.status === 401) {
+            this.clearAuthToken()
+            throw new Error('인증이 필요합니다. 다시 로그인해주세요.')
+        }
+
+        if (!response.ok) {
+            const error = new Error(`HTTP ${response.status}`)
+            error.status = response.status
+            throw error
+        }
+
+        const data = await response.json()
+        const totalCount = Number(response.headers.get('X-Total-Count')) || data.length
+
+        return { data, totalCount }
+    }
+
     // 이미지 등 바이너리 응답 전용 요청 (request()의 JSON/text 파싱을 거치지 않음)
     async getBlob(endpoint) {
         const url = `${this.baseURL}${endpoint}`

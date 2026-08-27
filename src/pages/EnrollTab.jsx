@@ -1,7 +1,7 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {createEnroll, updateEnroll} from '../services/enrollService'
-import {getUsersInfo} from '../services/userService'
-import {getCertifications, createCertification, getCertificationPreview, getCertificationDownload} from '../services/certificationService'
+import {searchUsers} from '../services/userService'
+import {getCertificationsBySession, createCertification, getCertificationPreview, getCertificationDownload} from '../services/certificationService'
 import EnrollTable from '../components/tables/EnrollTable'
 import Modal from '../components/ui/Modal'
 import SelectInput from '../components/forms/SelectInput'
@@ -35,11 +35,10 @@ const EnrollTab = ({
     const [selectedUser, setSelectedUser] = useState(null)
     const [newStudentStatus, setNewStudentStatus] = useState('ACTIVE')
     const [userSearchTerm, setUserSearchTerm] = useState('')
-    const [allUsers, setAllUsers] = useState([])
     const [userSearchResults, setUserSearchResults] = useState([])
     const [userSearchLoading, setUserSearchLoading] = useState(false)
-    const [usersLoaded, setUsersLoaded] = useState(false)
     const [showUserDropdown, setShowUserDropdown] = useState(false)
+    const userSearchDebounceRef = useRef(null)
     const [editEnrollModal, setEditEnrollModal] = useState({isOpen: false, enrollment: null})
     const [editStatus, setEditStatus] = useState('ACTIVE')
     const [certifications, setCertifications] = useState([])
@@ -61,8 +60,8 @@ const EnrollTab = ({
         if (!session?.id) return
         try {
             setCertificationsLoading(true)
-            const data = await getCertifications(0, 1000)
-            setCertifications(data.filter(cert => cert.session_id === session.id))
+            const data = await getCertificationsBySession(session.id)
+            setCertifications(data)
         } catch (err) {
             console.error('수료증 목록 조회 실패:', err)
             onError('수료증 목록을 불러오는데 실패했습니다')
@@ -128,38 +127,19 @@ const EnrollTab = ({
         }
     }
 
-    // 모다 열 때 사용자 목록 로드
-    const loadAllUsers = async () => {
-        if (usersLoaded) return // 이미 로드되었으면 스킵
-
-        setUserSearchLoading(true)
-        try {
-            const users = await getUsersInfo(0, 1000) // 대용량 조회
-            setAllUsers(users)
-            setUsersLoaded(true)
-        } catch (err) {
-            console.error('사용자 목록 로드 실패:', err)
-            onError('사용자 목록을 불러오는데 실패했습니다')
-        } finally {
-            setUserSearchLoading(false)
-        }
-    }
-
     // 수강생 추가 모달 열기
-    const handleAddStudent = async () => {
+    const handleAddStudent = () => {
         setAddStudentModal({isOpen: true})
         setSelectedUser(null)
         setNewStudentStatus('ACTIVE')
         setUserSearchTerm('')
         setUserSearchResults([])
         setShowUserDropdown(false)
-
-        // 모달 열 때 사용자 목록 로드
-        await loadAllUsers()
     }
 
     // 수강생 추가 모달 닫기
     const handleCloseAddModal = () => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
         setAddStudentModal({isOpen: false})
         setSelectedUser(null)
         setNewStudentStatus('ACTIVE')
@@ -168,22 +148,29 @@ const EnrollTab = ({
         setShowUserDropdown(false)
     }
 
-    // 사용자 검색 (클라이언트 사이드 필터링)
+    // 사용자 검색 (서버사이드, 디바운스)
     const handleUserSearch = (searchTerm) => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
+
         if (!searchTerm || searchTerm.length < 2) {
             setUserSearchResults([])
             setShowUserDropdown(false)
             return
         }
 
-        // 클라이언트 사이드에서 필터링
-        const filteredUsers = allUsers.filter(user =>
-            user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.information?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-
-        setUserSearchResults(filteredUsers)
-        setShowUserDropdown(filteredUsers.length > 0)
+        userSearchDebounceRef.current = setTimeout(async () => {
+            setUserSearchLoading(true)
+            try {
+                const results = await searchUsers(searchTerm, 20)
+                setUserSearchResults(results)
+                setShowUserDropdown(results.length > 0)
+            } catch (err) {
+                console.error('사용자 검색 실패:', err)
+                onError('사용자 검색에 실패했습니다')
+            } finally {
+                setUserSearchLoading(false)
+            }
+        }, 400)
     }
 
     // 사용자 선택
@@ -324,12 +311,11 @@ const EnrollTab = ({
                                     setUserSearchTerm(e.target.value)
                                     handleUserSearch(e.target.value)
                                 }}
-                                disabled={userSearchLoading && !usersLoaded}
                                 placeholder="사용자 이름 또는 이메일로 검색"
                                 className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-accent focus:border-transparent"
                                 required
                             />
-                            {userSearchLoading && !usersLoaded && (
+                            {userSearchLoading && (
                                 <div className="absolute right-3 top-3">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
                                 </div>
@@ -388,10 +374,7 @@ const EnrollTab = ({
                         )}
 
                         <p className="mt-1 text-xs text-neutral-500">
-                            {!usersLoaded && userSearchLoading
-                                ? '사용자 목록을 불러오는 중...'
-                                : '2글자 이상 입력하면 검색 결과가 표시됩니다 (총 {allUsers.length}명)'
-                            }
+                            2글자 이상 입력하면 검색 결과가 표시됩니다.
                         </p>
                     </div>
 

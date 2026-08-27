@@ -16,6 +16,22 @@ export const getCertifications = async (skip = 0, limit = 1000) => {
 }
 
 /**
+ * 특정 세션의 수료증 목록 조회 (세션 스코프 — 전체 조회 후 클라이언트 필터링 불필요)
+ * @param {string} sessionId - 세션 ID (UUID)
+ * @param {number} skip - 건너뛸 항목 수
+ * @param {number} limit - 조회할 항목 수
+ * @returns {Promise<Array>} 해당 세션의 수료증 목록
+ */
+export const getCertificationsBySession = async (sessionId, skip = 0, limit = 1000) => {
+  try {
+    return await apiClient.get(`/api/admin/sessions/${sessionId}/certifications`, { skip, limit })
+  } catch (error) {
+    console.error('세션별 수료증 목록 조회 실패:', error)
+    throw error
+  }
+}
+
+/**
  * 본인 수료증 목록 조회 (셀프서비스)
  * @param {number} skip - 건너뛸 항목 수
  * @param {number} limit - 조회할 항목 수

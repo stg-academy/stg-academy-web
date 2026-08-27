@@ -32,15 +32,26 @@ export const getEnrollsByUser = async (userId, skip = 0, limit = 1000) => {
 }
 
 /**
- * 특정 강좌의 수강 신청 목록 조회
+ * 특정 강좌의 수강 신청 목록 조회 — 빈 페이지가 나올 때까지 반복 호출해 전체를 받아옴
+ * (EnrollTab 중복신청 체크, AttendanceTab 일괄 결석처리 대상 계산이 전체 목록을 전제로 하므로 누락되면 안 됨)
  * @param {string} sessionId - 강좌 ID (UUID)
  * @param {number} skip - 건너뛸 항목 수
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 강좌의 수강 신청 목록
  */
-export const getEnrollsBySession = async (sessionId, skip = 0, limit = 1000) => {
+export const getEnrollsBySession = async (sessionId, skip = 0, limit = 10000) => {
   try {
-    return await apiClient.get(`/api/admin/enrolls/sessions/${sessionId}/enrolls`, { skip, limit })
+    const pageSize = Math.min(limit, 1000)
+    const allData = []
+    let currentSkip = skip
+    while (true) {
+      const page = await apiClient.get(`/api/admin/enrolls/sessions/${sessionId}/enrolls`, { skip: currentSkip, limit: pageSize })
+      if (!Array.isArray(page) || page.length === 0) break
+      allData.push(...page)
+      if (page.length < pageSize) break
+      currentSkip += pageSize
+    }
+    return allData
   } catch (error) {
     console.error('강좌별 수강 신청 목록 조회 실패:', error)
     throw error

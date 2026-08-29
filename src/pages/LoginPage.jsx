@@ -10,7 +10,7 @@ import { getNormalUsersByUsername } from '../services/userService.js'
 const LoginPage = () => {
   const navigate = useNavigate()
   const { loginWithCredentials, loginWithPhone, isLoading, error, clearError, isAuthenticated } = useAuth()
-  const [loginMode, setLoginMode] = useState('password') // 'password' | 'phone'
+  const [loginMode, setLoginMode] = useState('phone') // 'password' | 'phone'
   const [formData, setFormData] = useState({
     username: '',
     password: '',

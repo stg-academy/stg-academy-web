@@ -70,12 +70,19 @@ const UserTable = ({
             )
         }
         return (
-            <div className="flex items-center space-x-2">
-                <Button variant="link" size="sm" onClick={() => onStartEdit && onStartEdit(row)}>
-                    편집
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="!px-2"
+                    onClick={() => onStartEdit && onStartEdit(row)}
+                    title="편집"
+                    aria-label="편집"
+                >
+                    <Icon name="edit" size={16} />
                 </Button>
                 {row.auth_type === 'normal' && (
-                    <Button variant="link" size="sm" onClick={() => onResetPassword && onResetPassword(row)}>
+                    <Button variant="secondary" size="sm" onClick={() => onResetPassword && onResetPassword(row)}>
                         비밀번호 초기화
                     </Button>
                 )}

@@ -1,5 +1,6 @@
 import {useState, useEffect} from 'react'
 import Button from './Button.jsx'
+import Icon from './Icon.jsx'
 
 const Modal = ({
     isOpen,
@@ -7,7 +8,7 @@ const Modal = ({
     title,
     children,
     footer,
-    width = 'md:w-[500px]',
+    width = 'md:w-[420px]',
     disabled = false,
     onSubmit,
     submitText = '저장하기',
@@ -78,14 +79,14 @@ const Modal = ({
 
             {/* 모달 */}
             <div
-                className={`fixed right-0 top-0 h-full w-full ${width} bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${
+                className={`fixed right-0 top-0 h-full w-full ${width} bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.15)] z-50 transition-transform duration-300 ease-in-out ${
                     isAnimating ? 'translate-x-0' : 'translate-x-full'
                 }`}>
                 <div className="h-full flex flex-col">
                     {/* 헤더 */}
-                    <div className="px-6 py-4 border-b border-neutral-200">
+                    <div className="px-6 py-5 border-b border-neutral-100">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-neutral-900">
+                            <h2 className="text-base font-bold text-neutral-900">
                                 {title}
                             </h2>
                             <button
@@ -93,10 +94,7 @@ const Modal = ({
                                 className="text-neutral-400 hover:text-neutral-600 transition-colors"
                                 disabled={disabled || isSubmitting}
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                                <Icon name="x" size={24} />
                             </button>
                         </div>
                     </div>
@@ -107,7 +105,7 @@ const Modal = ({
                     </div>
 
                     {/* 푸터 */}
-                    <div className="px-6 py-4 border-t border-neutral-200 bg-neutral-50">
+                    <div className="px-6 py-5 border-t border-neutral-100">
                         {footer ? footer : (
                             onSubmit && (
                                 <Button

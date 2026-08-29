@@ -1,15 +1,16 @@
-import {useState, useEffect} from 'react'
+import {useEffect, useState} from 'react'
+import Icon from './Icon.jsx'
 
 // Modal.jsx의 우측 슬라이드 패턴과 동일한 생명주기를 하단 고정 시트로 앵커링한 버전.
 // 모바일 편집 플로우 전용 — footer는 호출부가 직접 구성한다 (ConfirmModal이 Modal을 쓰는 방식과 동일).
 const BottomSheet = ({
-    isOpen,
-    onClose,
-    title,
-    children,
-    footer,
-    disabled = false,
-}) => {
+                         isOpen,
+                         onClose,
+                         title,
+                         children,
+                         footer,
+                         disabled = false,
+                     }) => {
     const [isAnimating, setIsAnimating] = useState(false)
 
     useEffect(() => {
@@ -60,10 +61,7 @@ const BottomSheet = ({
                             className="text-neutral-400 hover:text-neutral-600 transition-colors"
                             disabled={disabled}
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                      d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
+                            <Icon name="x" size={24}/>
                         </button>
                     </div>
                 </div>

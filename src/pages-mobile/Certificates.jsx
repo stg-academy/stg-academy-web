@@ -6,18 +6,7 @@ import Button from '../components/ui/Button.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../components/ui/ToastProvider.jsx';
 import { getMyCertifications, getMyCertificationPreview, getMyCertificationDownload } from '../services/certificationService';
-
-const ChevronLeftIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
-
-const CloseIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -146,7 +135,7 @@ export default function Certificates() {
           onClick={() => navigate(-1)}
           className="flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
         >
-          <ChevronLeftIcon className="h-4 w-4" />
+          <Icon name="chevron-left" size={16} />
           돌아가기
         </button>
 
@@ -218,7 +207,7 @@ export default function Certificates() {
             className="absolute top-4 right-4 text-white"
             aria-label="닫기"
           >
-            <CloseIcon className="h-7 w-7" />
+            <Icon name="x" size={28} />
           </button>
           <img
             src={previewUrls[viewerCert.id]}

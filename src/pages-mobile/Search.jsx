@@ -8,24 +8,7 @@ import { getCourses } from '../services/courseService';
 import { getMyEnrolls } from '../services/enrollService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatPeriod } from '../utils/renderUtils';
-
-const SearchIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-  </svg>
-);
-
-const XIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-const ChevronRightIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 const getSessionBadge = (session) => {
   const { course_status, is_recruiting } = session;
@@ -58,7 +41,7 @@ const getSessionLink = (session, enrolledIds) => {
 };
 
 export default function Search() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [courseMap, setCourseMap] = useState({});
   const [enrolledIds, setEnrolledIds] = useState(new Set());
@@ -66,9 +49,12 @@ export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('default');
 
+  // 인증 확인이 끝나기 전에 조회하면 user가 null→실제값으로 바뀔 때 재조회가 한 번 더
+  // 발생해 API가 중복 호출되므로, authLoading이 끝난 뒤 확정된 user로 한 번만 조회한다.
   useEffect(() => {
+    if (authLoading) return;
     fetchData();
-  }, [user?.id]);
+  }, [authLoading, user?.id]);
 
   const fetchData = async () => {
     try {
@@ -135,7 +121,7 @@ export default function Search() {
         {/* 검색 및 정렬 영역 */}
         <div className="px-5 pt-5 pb-3 space-y-3 bg-white ">
           <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Icon name="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input
               type="text"
               placeholder="강좌명으로 검색"
@@ -148,7 +134,7 @@ export default function Search() {
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
               >
-                <XIcon className="h-4 w-4" />
+                <Icon name="x" size={16} />
               </button>
             )}
           </div>

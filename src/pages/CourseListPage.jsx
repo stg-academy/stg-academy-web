@@ -1,11 +1,12 @@
-import {useState, useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useAuth} from '../contexts/AuthContext'
 import CourseTable from '../components/tables/CourseTable'
 import CourseModal from '../components/modals/CourseModal.jsx'
-import {getCourses, createCourse, updateCourse} from '../services/courseService'
+import {createCourse, getCourses, updateCourse} from '../services/courseService'
 import Button from '../components/ui/Button.jsx'
 import ErrorBanner from '../components/ui/ErrorBanner.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
+import Icon from '../components/ui/Icon.jsx'
 
 const CourseListPage = () => {
     const {user} = useAuth()
@@ -73,16 +74,13 @@ const CourseListPage = () => {
 
     return (
         <div className="lg:min-w-[1024px]">
-            <ErrorBanner message={error} className="mb-6" />
+            <ErrorBanner message={error} className="mb-6"/>
 
             <PageSectionHeader
                 title="코스 목록"
                 action={
                     <Button onClick={handleOpenCreateModal} className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20}/>
                         <span>코스 개설하기</span>
                     </Button>
                 }

@@ -20,6 +20,7 @@ import ErrorBanner from "../components/ui/ErrorBanner.jsx";
 import LoadingState from "../components/ui/LoadingState.jsx";
 import Button from "../components/ui/Button.jsx";
 import {useToast} from "../components/ui/ToastProvider.jsx";
+import Icon from "../components/ui/Icon.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -187,9 +188,7 @@ const SessionDetailPage = () => {
                 onClick={handleGoBack}
                 className="flex items-center text-neutral-600 hover:text-neutral-900 mb-4 transition-colors"
             >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-                </svg>
+                <Icon name="chevron-left" size={20} className="mr-1" />
                 <span className="text-sm">돌아가기</span>
             </button>
 

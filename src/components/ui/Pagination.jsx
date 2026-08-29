@@ -14,21 +14,21 @@ const Pagination = ({ current, total, onChange }) => {
     }
 
     return (
-        <nav className="flex items-center space-x-4 text-sm">
+        <nav className="flex items-center space-x-7 text-sm font-medium">
             <button
                 onClick={() => onChange(current - 1)}
                 disabled={current === 1}
-                className="text-neutral-500 hover:text-neutral-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-neutral-900 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-70"
             >
                 ‹ 이전
             </button>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-5">
                 {pageNumbers.map((page) => (
                     <button
                         key={page}
                         onClick={() => onChange(page)}
                         className={`transition-colors ${
-                            current === page ? 'text-accent font-semibold' : 'text-neutral-500 hover:text-neutral-900'
+                            current === page ? 'text-neutral-900 font-bold' : 'text-neutral-400 hover:text-neutral-600'
                         }`}
                     >
                         {page}
@@ -38,7 +38,7 @@ const Pagination = ({ current, total, onChange }) => {
             <button
                 onClick={() => onChange(current + 1)}
                 disabled={current === total}
-                className="text-neutral-500 hover:text-neutral-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-neutral-900 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-70"
             >
                 다음 ›
             </button>

@@ -6,6 +6,7 @@ import Modal from '../components/ui/Modal'
 import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
+import Icon from '../components/ui/Icon.jsx'
 
 const AssistantTab = ({
     session,
@@ -129,10 +130,7 @@ const AssistantTab = ({
                 title="조교 관리"
                 action={
                     <Button onClick={handleAddAssistant} disabled={assistantsLoading} className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20} />
                         <span>조교 추가</span>
                     </Button>
                 }
@@ -219,10 +217,7 @@ const AssistantTab = ({
                                         }}
                                         className="text-accent hover:text-accent-hover"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                                  d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
+                                        <Icon name="x" size={16} />
                                     </button>
                                 </div>
                             </div>

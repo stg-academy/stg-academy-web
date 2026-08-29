@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ErrorBanner from '../ui/ErrorBanner.jsx'
+import Icon from '../ui/Icon.jsx'
 
 const AuthLayout = ({
     title = "",
@@ -42,9 +43,7 @@ const AuthLayout = ({
                                         : 'bg-white border-neutral-200 text-neutral-400'
                                 }`}>
                                     {isCompleted ? (
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
-                                        </svg>
+                                        <Icon name="check" size={16} className="text-white" />
                                     ) : (
                                         step
                                     )}

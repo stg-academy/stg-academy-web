@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
+import Icon from './Icon.jsx'
 
 const ChevronIcon = ({ open }) => (
-    <svg
-        className={`w-4 h-4 shrink-0 transition-transform ${open ? 'rotate-180 text-accent' : 'text-neutral-400'}`}
-        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-    >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
+    <Icon
+        name="chevron-down"
+        size={16}
+        className={`shrink-0 transition-transform ${open ? 'rotate-180 text-info' : 'text-neutral-400'}`}
+    />
 )
 
 const CheckIcon = () => (
-    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-    </svg>
+    <Icon name="check" size={16} className="shrink-0" />
 )
 
 // 커스텀 드롭다운 셀렉트. 네이티브 <select>와 달리 펼침 패널 스타일(선택 항목 배지, 체크마크)을
@@ -66,7 +64,7 @@ const Select = ({
                 aria-haspopup="listbox"
                 aria-expanded={open}
                 className={`w-full h-10 px-3 flex items-center justify-between gap-2 rounded-md border bg-white text-sm text-left transition-colors ${
-                    error ? 'border-error' : open ? 'border-accent shadow-[0_0_0_3px_var(--color-accent-soft)]' : 'border-neutral-300 hover:border-neutral-400'
+                    error ? 'border-error' : open ? 'border-info shadow-[0_0_0_3px_var(--color-accent-soft)]' : 'border-neutral-300 hover:border-neutral-400'
                 } ${disabled ? 'bg-neutral-50 text-neutral-400 cursor-not-allowed hover:border-neutral-300' : 'cursor-pointer'}`}
             >
                 <span className={`truncate ${selected && selected.value !== '' ? 'text-neutral-900' : 'text-neutral-400'}`}>

@@ -9,6 +9,7 @@ import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 import {getSessions, createSession, updateSession} from '../services/sessionService'
 import {getCourses, getCourse} from '../services/courseService'
 import {getLecturesBySession, createLecture} from '../services/lectureService'
+import Icon from '../components/ui/Icon.jsx'
 
 const SessionListPage = () => {
     const {user} = useAuth()
@@ -146,10 +147,7 @@ const SessionListPage = () => {
                 title={getPageTitle()}
                 action={
                     <Button onClick={handleOpenCreateModal} className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20} />
                         <span>강좌 생성하기</span>
                     </Button>
                 }

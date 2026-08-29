@@ -8,43 +8,7 @@ import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { updateUser, changePassword } from '../services/userService.js';
 import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js';
-
-const UserIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const EditIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-  </svg>
-);
-
-const SaveIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const LogoutIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-  </svg>
-);
-
-const AwardIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle cx="12" cy="8" r="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5" />
-  </svg>
-);
-
-const ChevronRightIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 export default function Profile() {
   const { user, logout, refreshUser, isLoading: authLoading } = useAuth();
@@ -249,7 +213,7 @@ export default function Profile() {
         <section>
           <Card className="border-none text-center">
               <div className="w-20 h-20 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserIcon className="h-10 w-10 text-accent" />
+                <Icon name="user" size={40} className="text-accent" />
               </div>
               <h1 className="text-xl font-bold text-neutral-900 mb-1">
                 {user?.username || '사용자명 없음'}
@@ -279,14 +243,14 @@ export default function Profile() {
             <Card hover className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-accent-soft rounded-full flex items-center justify-center flex-none">
-                  <AwardIcon className="h-5 w-5 text-accent" />
+                  <Icon name="award" size={20} className="text-accent" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-neutral-900">내 수료증</p>
                   <p className="text-xs text-neutral-500">발급받은 수료증을 확인하세요</p>
                 </div>
               </div>
-              <ChevronRightIcon className="h-4 w-4 text-neutral-400 flex-none" />
+              <Icon name="chevron-right" size={16} className="text-neutral-400 flex-none" />
             </Card>
           </Link>
         </section>
@@ -308,12 +272,12 @@ export default function Profile() {
                 </>
               ) : isEditing ? (
                 <>
-                  <SaveIcon className="h-4 w-4 mr-1" />
+                  <Icon name="check" size={16} className="mr-1" />
                   저장
                 </>
               ) : (
                 <>
-                  <EditIcon className="h-4 w-4 mr-1" />
+                  <Icon name="edit" size={16} className="mr-1" />
                   편집
                 </>
               )}
@@ -404,7 +368,7 @@ export default function Profile() {
                   size="sm"
                   className="flex items-center"
                 >
-                  <EditIcon className="h-4 w-4 mr-1" />
+                  <Icon name="edit" size={16} className="mr-1" />
                   변경
                 </Button>
               )}
@@ -458,7 +422,7 @@ export default function Profile() {
                         </>
                       ) : (
                         <>
-                          <SaveIcon className="h-4 w-4 mr-1" />
+                          <Icon name="check" size={16} className="mr-1" />
                           저장
                         </>
                       )}
@@ -488,7 +452,7 @@ export default function Profile() {
             variant="secondary"
             className="w-full flex items-center justify-center text-error border-error/30 hover:bg-error-soft"
           >
-            <LogoutIcon className="h-4 w-4 mr-2" />
+            <Icon name="log-out" size={16} className="mr-2" />
             로그아웃
           </Button>
         </section>

@@ -9,6 +9,7 @@ import ErrorBanner from "../components/ui/ErrorBanner.jsx";
 import ConfirmModal from "../components/ui/ConfirmModal.jsx";
 import Modal from "../components/ui/Modal.jsx";
 import { useToast } from "../components/ui/ToastProvider.jsx";
+import Icon from "../components/ui/Icon.jsx";
 
 // UserTable.jsx의 DataTable itemsPerPage(30)와 반드시 같은 값을 유지해야 함
 const USERS_PAGE_SIZE = 30
@@ -252,10 +253,7 @@ const UserManagementPage = () => {
                     </p>
                 </div>
                 <Button onClick={handleAddUser} disabled={addingUser} className="flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M12 4v16m8-8H4"/>
-                    </svg>
+                    <Icon name="plus" size={20} />
                     <span>{addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}</span>
                 </Button>
             </div>
@@ -291,10 +289,7 @@ const UserManagementPage = () => {
                         disabled={addingUser}
                         className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20} className="mr-2" />
                         <span className="text-sm font-medium">
                             {addingUser ? '사용자 생성 중...' : '새 사용자 추가하기'}
                         </span>

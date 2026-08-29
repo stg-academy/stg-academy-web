@@ -1,7 +1,9 @@
+import Icon from './Icon.jsx'
+
 // v2 스펙: 체크 시 accent 채움, 18x18, radius-sm
 const Checkbox = ({ id, checked = false, onChange, label, disabled = false, error = false }) => {
     const boxClasses = disabled
-        ? 'bg-neutral-100 border-neutral-300'
+        ? 'bg-neutral-100 border-neutral-200'
         : checked
             ? 'bg-accent border-accent'
             : error
@@ -23,11 +25,9 @@ const Checkbox = ({ id, checked = false, onChange, label, disabled = false, erro
                 onChange={(e) => onChange && onChange(e.target.checked)}
                 className="sr-only"
             />
-            <span className={`flex-none w-[18px] h-[18px] rounded-sm border flex items-center justify-center transition-colors ${boxClasses}`}>
+            <span className={`flex-none w-[18px] h-[18px] rounded-sm border-[1.5px] flex items-center justify-center transition-colors ${boxClasses}`}>
                 {checked && !disabled && (
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
-                    </svg>
+                    <Icon name="check" size={12} strokeWidth={3} className="text-white" />
                 )}
             </span>
             {label}

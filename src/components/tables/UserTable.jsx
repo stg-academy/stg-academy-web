@@ -1,6 +1,7 @@
 import DataTable from '../ui/DataTable.jsx'
 import Badge from '../ui/Badge.jsx'
 import Button from '../ui/Button.jsx'
+import Icon from '../ui/Icon.jsx'
 import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 
 const UserTable = ({
@@ -193,9 +194,7 @@ const UserTable = ({
                         {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'}
                     </div>
                 </div>
-                <svg className="flex-none w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-                </svg>
+                <Icon name="chevron-right" size={16} className="flex-none text-neutral-400" />
             </button>
         )
     }

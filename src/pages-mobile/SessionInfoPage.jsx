@@ -8,27 +8,7 @@ import CurriculumList from '../components/ui/CurriculumList.jsx';
 import { getSession } from '../services/sessionService';
 import { getLecturesBySession } from '../services/lectureService';
 import { renderWithLinks } from '../utils/renderUtils';
-
-const CalendarIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-  </svg>
-);
-
-const UserIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-  </svg>
-);
-
-const ClockIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-  </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 export default function SessionInfoPage() {
   const { sessionId } = useParams();
@@ -111,17 +91,17 @@ export default function SessionInfoPage() {
             <div className="space-y-2 text-sm text-neutral-600">
               {session.lecturer_info && (
                 <div className="flex items-center gap-2">
-                  <UserIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                  <Icon name="user" size={16} className="flex-shrink-0 text-neutral-400" />
                   <span>{session.lecturer_info}</span>
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                <Icon name="calendar" size={16} className="flex-shrink-0 text-neutral-400" />
                 <span>{formatPeriod()}</span>
               </div>
               {session.date_info && (
                 <div className="flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                  <Icon name="clock" size={16} className="flex-shrink-0 text-neutral-400" />
                   <span>{session.date_info}</span>
                 </div>
               )}

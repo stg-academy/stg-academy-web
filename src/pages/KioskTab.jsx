@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from '../components/ui/Icon.jsx';
 
 const KioskTab = ({ sessionId, todaysLecture }) => {
     const navigate = useNavigate();
@@ -17,9 +18,7 @@ const KioskTab = ({ sessionId, todaysLecture }) => {
                 {todaysLecture ? (
                     <div className="mb-6">
                         <div className="inline-flex items-center px-3 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium mb-4">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <Icon name="check" size={16} className="mr-2" />
                             오늘 진행 강의 있음
                         </div>
                         <p className="text-gray-600 mb-2">
@@ -37,18 +36,14 @@ const KioskTab = ({ sessionId, todaysLecture }) => {
                             onClick={handleKioskAttendance}
                             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <Icon name="check-circle" size={20} className="mr-2" />
                             현장 출석체크 시작
                         </button>
                     </div>
                 ) : (
                     <div className="mb-6">
                         <div className="inline-flex items-center px-3 py-2 rounded-full bg-gray-100 text-gray-600 text-sm font-medium mb-4">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <Icon name="info" size={16} className="mr-2" />
                             오늘 진행 강의 없음
                         </div>
                         <p className="text-gray-500 mb-6">오늘 예정된 강의가 없어 현장 출석체크를 사용할 수 없습니다.</p>
@@ -56,9 +51,7 @@ const KioskTab = ({ sessionId, todaysLecture }) => {
                             disabled
                             className="inline-flex items-center px-6 py-3 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed"
                         >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <Icon name="check-circle" size={20} className="mr-2" />
                             현장 출석체크 시작
                         </button>
                     </div>

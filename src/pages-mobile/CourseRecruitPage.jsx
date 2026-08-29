@@ -12,35 +12,7 @@ import {getSession} from '../services/sessionService';
 import {getLecturesBySession} from '../services/lectureService';
 import {getMySessionEnrollment, createSelfEnroll} from '../services/enrollService';
 import {renderWithLinks} from '../utils/renderUtils';
-
-const CalendarIcon = ({className}) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-    </svg>
-);
-
-const UserIcon = ({className}) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-    </svg>
-);
-
-const ClockIcon = ({className}) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-);
-
-const CheckCircleIcon = ({className}) => (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-        <path fillRule="evenodd"
-              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-              clipRule="evenodd"/>
-    </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 export default function CourseRecruitPage() {
     const {sessionId} = useParams();
@@ -176,17 +148,17 @@ export default function CourseRecruitPage() {
                         <div className="space-y-2 text-sm text-neutral-600">
                             {session.lecturer_info && (
                                 <div className="flex items-center gap-2">
-                                    <UserIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                                    <Icon name="user" size={16} className="flex-shrink-0 text-neutral-400" />
                                     <span>{session.lecturer_info}</span>
                                 </div>
                             )}
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                                <Icon name="calendar" size={16} className="flex-shrink-0 text-neutral-400" />
                                 <span>{formatPeriod()}</span>
                             </div>
                             {session.date_info && (
                                 <div className="flex items-center gap-2">
-                                    <ClockIcon className="h-4 w-4 flex-shrink-0 text-neutral-400"/>
+                                    <Icon name="clock" size={16} className="flex-shrink-0 text-neutral-400" />
                                     <span>{session.date_info}</span>
                                 </div>
                             )}
@@ -218,13 +190,13 @@ export default function CourseRecruitPage() {
                 {/* 하단 고정 수강신청 버튼 */}
                 {enrollSuccess ? (
                     <div className="flex items-center justify-center gap-2 py-3 text-success-text font-semibold">
-                        <CheckCircleIcon className="h-5 w-5"/>
+                        <Icon name="check-circle" size={20} />
                         <span>수강신청이 완료되었습니다!</span>
                     </div>
                 ) : isAlreadyEnrolled ? (
                     <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2 text-sm text-neutral-500">
-                            <CheckCircleIcon className="h-4 w-4 text-success"/>
+                            <Icon name="check-circle" size={16} className="text-success" />
                             <span>이미 수강 신청된 강좌입니다</span>
                         </div>
                         <Link to={`/mobile/session/${sessionId}`}>

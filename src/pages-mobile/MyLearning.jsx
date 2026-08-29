@@ -11,21 +11,10 @@ import { getMyAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getSessions } from '../services/sessionService';
 import { getMyCertifications } from '../services/certificationService';
-
-const ChevronRightIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-const BookOpenIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-);
+import Icon from '../components/ui/Icon.jsx';
 
 export default function MyLearning() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [enrollments, setEnrollments] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [lectureData, setLectureData] = useState({});
@@ -34,13 +23,16 @@ export default function MyLearning() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 인증 확인이 끝나기 전에 user?.id로 분기하면 아직 확정 안 된 null 상태를
+  // "로그인 안 함"으로 잘못 판단해버리므로, authLoading이 끝난 뒤에만 분기한다.
   useEffect(() => {
+    if (authLoading) return;
     if (user?.id) {
       fetchMyLearningData();
     } else {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [authLoading, user?.id]);
 
   const fetchMyLearningData = async () => {
     try {
@@ -206,14 +198,14 @@ export default function MyLearning() {
         <Link to={`/mobile/session/${enrollment.session_id}`}>
           <Button className="w-full mt-2">
             강의실 입장
-            <ChevronRightIcon className="h-4 w-4 ml-2" />
+            <Icon name="chevron-right" className="h-4 w-4 ml-2" />
           </Button>
         </Link>
       </Card>
     );
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <MobileLayout headerTitle="내 강의">
         <div className="p-4 flex justify-center items-center h-64">
@@ -283,7 +275,7 @@ export default function MyLearning() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
                 <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-neutral-300" />
+                  <Icon name="book-open" size={32} className="text-neutral-300" />
                 </div>
                 <p>현재 수강 중인 강의가 없습니다.</p>
               </div>
@@ -302,7 +294,7 @@ export default function MyLearning() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
                 <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-neutral-300" />
+                  <Icon name="book-open" size={32} className="text-neutral-300" />
                 </div>
                 <p>아직 완료한 강의가 없습니다.</p>
               </div>

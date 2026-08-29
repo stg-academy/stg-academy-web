@@ -8,6 +8,7 @@ import SelectInput from '../components/forms/SelectInput'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 import {useToast} from '../components/ui/ToastProvider.jsx'
+import Icon from '../components/ui/Icon.jsx'
 
 const formatDate = (value) => {
     if (!value) return '-'
@@ -267,10 +268,7 @@ const EnrollTab = ({
                 title="수강생 목록"
                 action={
                     <Button onClick={handleAddStudent} disabled={enrollsLoading} className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20} />
                         <span>수강생 추가</span>
                     </Button>
                 }
@@ -364,10 +362,7 @@ const EnrollTab = ({
                                         }}
                                         className="text-accent hover:text-accent-hover"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                                  d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
+                                        <Icon name="x" size={16} />
                                     </button>
                                 </div>
                             </div>
@@ -429,6 +424,7 @@ const EnrollTab = ({
                 isOpen={certificateDetailModal.isOpen}
                 onClose={handleCloseCertificateDetailModal}
                 title="수료증 상세"
+                width="md:w-[640px]"
                 footer={
                     <div className="flex gap-2">
                         <Button variant="secondary" className="flex-1" onClick={handleCloseCertificateDetailModal}>

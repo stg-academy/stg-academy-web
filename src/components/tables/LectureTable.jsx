@@ -136,13 +136,13 @@ const LectureTable = ({
                     <div className="flex items-center space-x-2">
                         <button
                             onClick={() => onStartEdit && onStartEdit(row)}
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                            className="text-neutral-600 hover:text-neutral-900 text-sm font-medium"
                         >
                             <Edit/>
                         </button>
                         <button
                             onClick={() => onDeleteLecture && onDeleteLecture(row.id)}
-                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                            className="text-neutral-600 hover:text-neutral-900 text-sm font-medium"
                         >
                             <Delete/>
                         </button>

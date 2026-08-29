@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import { authAPI } from '../services/authService.js'
-import { isTemporaryToken, getUserFromToken } from '../utils/tokenUtils.js'
+import { isTemporaryToken, getUserFromToken, getLoginMethodFromToken } from '../utils/tokenUtils.js'
 import { useToast } from '../components/ui/ToastProvider.jsx'
 
 // 인증 상태
@@ -12,6 +12,7 @@ const initialState = {
   isLoading: true,
   isAuthenticated: false,
   needsRegistration: false,
+  loginMethod: null,
   error: null,
 }
 
@@ -40,6 +41,7 @@ function authReducer(state, action) {
         user: action.payload,
         isAuthenticated: true,
         needsRegistration: false,
+        loginMethod: getLoginMethodFromToken(localStorage.getItem('auth_token')),
         isLoading: false,
         error: null,
       }
@@ -60,6 +62,7 @@ function authReducer(state, action) {
         user: null,
         isAuthenticated: false,
         needsRegistration: false,
+        loginMethod: null,
         isLoading: false,
         error: action.payload,
       }
@@ -70,6 +73,7 @@ function authReducer(state, action) {
         user: null,
         isAuthenticated: false,
         needsRegistration: false,
+        loginMethod: null,
         isLoading: false,
         error: null,
       }
@@ -237,6 +241,28 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // 전화번호 로그인 (비밀번호 없이 이름+전화번호)
+  const loginWithPhone = async (username, phoneNumber) => {
+    try {
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
+
+      const response = await authAPI.loginWithPhone(username, phoneNumber)
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: response.user,
+      })
+
+      return response
+    } catch (error) {
+      console.error('전화번호 로그인 실패:', error)
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_FAILURE,
+        payload: error.message || '이름 또는 전화번호가 올바르지 않습니다.',
+      })
+      throw error
+    }
+  }
+
   // 일반 회원가입
   const registerUser = async (userData) => {
     try {
@@ -350,6 +376,7 @@ export function AuthProvider({ children }) {
     ...state,
     loginWithKakao,
     loginWithCredentials,
+    loginWithPhone,
     registerUser,
     completeKakaoRegistration,
     checkUsernameAvailable,

@@ -1,4 +1,5 @@
 import DataTable from '../ui/DataTable.jsx'
+import Icon from '../ui/Icon.jsx'
 import {useNavigate} from 'react-router-dom'
 
 const CourseTable = ({
@@ -40,10 +41,7 @@ const CourseTable = ({
                         onClick={() => handleLectureCountClick(row)}
                         title="강좌 목록 보기"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
+                        <Icon name="edit" size={16} />
                     </button>
                 </div>
             )
@@ -70,9 +68,7 @@ const CourseTable = ({
                     onClick={() => handleLectureCountClick(row)}
                 >
                     강좌 {row.lecture_count || 0}개
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-                    </svg>
+                    <Icon name="chevron-right" size={14} />
                 </button>
             </div>
         </div>
@@ -91,7 +87,8 @@ const CourseTable = ({
             columns={courseColumns}
             searchableColumns={['name', 'description', 'author']}
             loading={loading}
-            showPagination={false}
+            itemsPerPage={10}
+            showPagination={true}
             showSearch={true}
             emptyMessage="등록된 코스가 없습니다."
             footer={courseFooter}

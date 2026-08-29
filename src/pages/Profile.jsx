@@ -6,32 +6,9 @@ import Button from '../components/ui/Button.jsx';
 import ConfirmModal from '../components/ui/ConfirmModal.jsx';
 import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { updateUser } from '../services/userService.js';
-import { authAPI } from '../services/authService.js';
-
-const UserIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const EditIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-  </svg>
-);
-
-const SaveIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const LogoutIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-  </svg>
-);
+import { updateUser, changePassword } from '../services/userService.js';
+import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js';
+import Icon from '../components/ui/Icon.jsx';
 
 export default function Profile() {
   const { user, logout, refreshUser, isLoading: authLoading } = useAuth();
@@ -42,9 +19,11 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     username: '',
-    information: ''
+    information: '',
+    phone_number: ''
   });
   const [saving, setSaving] = useState(false);
+  const [phoneError, setPhoneError] = useState(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -58,7 +37,8 @@ export default function Profile() {
       // user 데이터로 편집 폼 초기화
       setEditForm({
         username: user.username || '',
-        information: user.information || ''
+        information: user.information || '',
+        phone_number: user.phone_number || ''
       });
     }
   }, [user]);
@@ -69,8 +49,10 @@ export default function Profile() {
       // 취소 시 원래 데이터로 복원
       setEditForm({
         username: user.username || '',
-        information: user.information || ''
+        information: user.information || '',
+        phone_number: user.phone_number || ''
       });
+      setPhoneError(null);
     }
   };
 
@@ -81,14 +63,32 @@ export default function Profile() {
     }));
   };
 
+  const handlePhoneBlur = () => {
+    if (!editForm.phone_number.trim()) {
+      setPhoneError(null);
+      return;
+    }
+
+    const formatted = formatPhoneNumber(editForm.phone_number);
+    setEditForm(prev => ({ ...prev, phone_number: formatted }));
+    setPhoneError(isValidPhoneNumber(formatted) ? null : '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
+  };
+
   const handleSave = async () => {
+    // 전화번호 형식 검사 — 형식에 맞지 않으면 저장하지 않음
+    if (editForm.phone_number.trim() && !isValidPhoneNumber(formatPhoneNumber(editForm.phone_number))) {
+      setPhoneError('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
+      return;
+    }
+
     try {
       setSaving(true);
 
       // 업데이트할 정보 구성
       const updateData = {
         username: editForm.username,
-        information: editForm.information
+        information: editForm.information,
+        phone_number: editForm.phone_number
       };
 
       // updateUser API 사용
@@ -98,6 +98,7 @@ export default function Profile() {
       await refreshUser();
 
       setIsEditing(false);
+      setPhoneError(null);
       toast.success('정보가 성공적으로 수정되었습니다.');
 
     } catch (error) {
@@ -125,23 +126,18 @@ export default function Profile() {
     try {
       setPasswordSaving(true);
 
-      // 현재 비밀번호 검증
-      try {
-        await authAPI.loginWithCredentials(user.username, passwordForm.current);
-      } catch {
-        setPasswordError('현재 비밀번호가 올바르지 않습니다.');
-        return;
-      }
-
-      // 새 비밀번호로 업데이트
-      await updateUser(user.id, { password: passwordForm.new });
+      await changePassword(passwordForm.current, passwordForm.new);
 
       handlePasswordCancel();
       toast.success('비밀번호가 성공적으로 변경되었습니다.');
 
     } catch (error) {
       console.error('비밀번호 변경 실패:', error);
-      setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
+      if (error.status === 401) {
+        setPasswordError('현재 비밀번호가 올바르지 않습니다.');
+      } else {
+        setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
+      }
     } finally {
       setPasswordSaving(false);
     }
@@ -217,7 +213,7 @@ export default function Profile() {
         <section>
           <Card className="border-none text-center">
               <div className="w-20 h-20 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserIcon className="h-10 w-10 text-accent" />
+                <Icon name="user" size={40} className="text-accent" />
               </div>
               <h1 className="text-xl font-bold text-neutral-900 mb-1">
                 {user?.username || '사용자명 없음'}
@@ -241,6 +237,24 @@ export default function Profile() {
           </Card>
         </section>
 
+        {/* 내 수료증 진입 */}
+        <section>
+          <Link to="/mobile/certificates">
+            <Card hover className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent-soft rounded-full flex items-center justify-center flex-none">
+                  <Icon name="award" size={20} className="text-accent" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-neutral-900">내 수료증</p>
+                  <p className="text-xs text-neutral-500">발급받은 수료증을 확인하세요</p>
+                </div>
+              </div>
+              <Icon name="chevron-right" size={16} className="text-neutral-400 flex-none" />
+            </Card>
+          </Link>
+        </section>
+
         {/* 기본 정보 */}
         <section>
           <div className="flex items-center justify-between mb-4">
@@ -248,7 +262,7 @@ export default function Profile() {
             <Button
               onClick={isEditing ? handleSave : handleEditToggle}
               size="sm"
-              disabled={saving}
+              disabled={saving || (isEditing && !!phoneError)}
               className="flex items-center"
             >
               {saving ? (
@@ -258,12 +272,12 @@ export default function Profile() {
                 </>
               ) : isEditing ? (
                 <>
-                  <SaveIcon className="h-4 w-4 mr-1" />
+                  <Icon name="check" size={16} className="mr-1" />
                   저장
                 </>
               ) : (
                 <>
-                  <EditIcon className="h-4 w-4 mr-1" />
+                  <Icon name="edit" size={16} className="mr-1" />
                   편집
                 </>
               )}
@@ -302,6 +316,30 @@ export default function Profile() {
                   <p className="text-neutral-900">{user?.information || '입력되지 않음'}</p>
                 )}
               </div>
+
+              {/* 전화번호 */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">전화번호</label>
+                {isEditing ? (
+                  <>
+                    <input
+                      type="tel"
+                      value={editForm.phone_number}
+                      onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                      onBlur={handlePhoneBlur}
+                      className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-neutral-300 ${
+                        phoneError ? 'border-error' : 'border-neutral-300'
+                      }`}
+                      placeholder="010-1234-5678"
+                    />
+                    {phoneError && (
+                      <p className="mt-1 text-xs text-error-text">{phoneError}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-neutral-900">{user?.phone_number || '입력되지 않음'}</p>
+                )}
+              </div>
           </Card>
         </section>
 
@@ -330,7 +368,7 @@ export default function Profile() {
                   size="sm"
                   className="flex items-center"
                 >
-                  <EditIcon className="h-4 w-4 mr-1" />
+                  <Icon name="edit" size={16} className="mr-1" />
                   변경
                 </Button>
               )}
@@ -384,7 +422,7 @@ export default function Profile() {
                         </>
                       ) : (
                         <>
-                          <SaveIcon className="h-4 w-4 mr-1" />
+                          <Icon name="check" size={16} className="mr-1" />
                           저장
                         </>
                       )}
@@ -414,7 +452,7 @@ export default function Profile() {
             variant="secondary"
             className="w-full flex items-center justify-center text-error border-error/30 hover:bg-error-soft"
           >
-            <LogoutIcon className="h-4 w-4 mr-2" />
+            <Icon name="log-out" size={16} className="mr-2" />
             로그아웃
           </Button>
         </section>

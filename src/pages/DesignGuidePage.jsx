@@ -11,6 +11,7 @@ import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 import Pagination from '../components/ui/Pagination.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs.jsx'
+import Icon, { ICON_NAMES } from '../components/ui/Icon.jsx'
 import TextInput from '../components/forms/TextInput.jsx'
 import TextareaInput from '../components/forms/TextareaInput.jsx'
 import SelectInput from '../components/forms/SelectInput.jsx'
@@ -122,6 +123,7 @@ const GUIDE_TABS = [
     { key: 'data', label: '데이터' },
     { key: 'navigation', label: '내비게이션' },
     { key: 'feedback', label: '피드백' },
+    { key: 'media', label: '미디어' },
 ]
 
 const DesignGuidePage = () => {
@@ -700,6 +702,35 @@ toast.info('처리할 항목이 없습니다.')`}
                                     <Button variant="secondary" onClick={() => toast.error('저장에 실패했습니다.')}>Error</Button>
                                     <Button variant="secondary" onClick={() => toast.warning('이미 처리된 항목입니다.')}>Warning</Button>
                                     <Button variant="secondary" onClick={() => toast.info('처리할 항목이 없습니다.')}>Info</Button>
+                                </div>
+                            </ExampleSection>
+                        </div>
+                    )}
+
+                    {/* 미디어 탭 */}
+                    {activeTab === 'media' && (
+                        <div>
+                            <h2 className="text-page-title text-neutral-900 mb-2">미디어</h2>
+                            <p className="text-body text-neutral-500 mb-6">
+                                기존 코드에는 파일마다 <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-micro">ChevronRightIcon</code>, <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-micro">UserIcon</code> 같은 아이콘이 2~3곳에 중복 정의되어 있었습니다.
+                                v2에서 새로 추가된 컴포넌트로, 같은 스트로크 스타일(currentColor, 2px, round cap/join)의 아이콘 40종을 하나로 통합합니다.
+                            </p>
+
+                            <ExampleSection
+                                title="아이콘 (Icon 컴포넌트)"
+                                description="v1 감사 대상에는 없던 v2의 의도적 추가 컴포넌트 — 이름 기반으로 호출합니다."
+                                code={`import Icon from '../components/ui/Icon.jsx'
+
+<Icon name="calendar" />
+<Icon name="check-circle" size={24} className="text-success" />`}
+                            >
+                                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
+                                    {ICON_NAMES.map((name) => (
+                                        <div key={name} className="flex flex-col items-center gap-1.5 p-3 border border-neutral-200 rounded-md">
+                                            <Icon name={name} className="text-neutral-700" />
+                                            <span className="text-micro text-neutral-400 text-center break-all">{name}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </ExampleSection>
                         </div>

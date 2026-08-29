@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {authAPI} from '../../services/authService.js'
 import {getUsersByUsername} from '../../services/userService.js'
+import Icon from '../ui/Icon.jsx'
 
 const Step1UsernameCheck = ({
                                 initialUsername = '',
@@ -158,12 +159,7 @@ const Step1UsernameCheck = ({
                                 )}
                             </div>
                         </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M9 5l7 7-7 7"/>
-                        </svg>
+                        <Icon name="chevron-right" className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" />
                     </div>
                 ))}
             </div>
@@ -234,12 +230,7 @@ const Step1UsernameCheck = ({
                                 }
                             </div>
                         </div>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M9 5l7 7-7 7"/>
-                        </svg>
+                        <Icon name="chevron-right" className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 flex-shrink-0 ml-2" />
                     </div>
 
                 </div>

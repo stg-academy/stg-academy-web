@@ -1,8 +1,9 @@
-import {useState, useMemo} from 'react'
+import {useMemo, useState} from 'react'
 import Pagination from './Pagination.jsx'
 import Select from './Select.jsx'
 import BottomSheet from './BottomSheet.jsx'
 import Button from './Button.jsx'
+import Icon from './Icon.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -27,10 +28,19 @@ const DataTable = ({
                        // 푸터 관련 props
                        footer = null,
                        // 모바일(lg 미만) 카드 리스트 — 제공 시 lg:hidden 카드 리스트가 함께 렌더링된다
-                       renderMobileItem = null
+                       renderMobileItem = null,
+                       // 모바일 편집 시트 하단(정보 영역 아래)에 추가로 넣을 커스텀 영역 — (row) => ReactNode
+                       renderMobileEditExtra = null,
+                       // 서버사이드 페이지네이션 (옵트인) — 전달되면 내부 페이지 state/클라이언트 슬라이싱 대신
+                       // 부모가 넘긴 값을 그대로 쓴다. 이 모드에서는 data가 "이번 페이지 분량"이라고 간주한다.
+                       serverPagination = false,
+                       totalCount = 0,
+                       currentPage: currentPageProp = 1,
+                       onPageChange = null
                    }) => {
     const [searchTerm, setSearchTerm] = useState('')
-    const [currentPage, setCurrentPage] = useState(1)
+    const [internalCurrentPage, setInternalCurrentPage] = useState(1)
+    const currentPage = serverPagination ? currentPageProp : internalCurrentPage
     const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'})
 
     // 검색 필터링
@@ -72,9 +82,14 @@ const DataTable = ({
     }, [filteredData, sortConfig])
 
     // 페이지네이션 (itemsPerPage가 없으면 전체 데이터 표시)
-    const totalPages = itemsPerPage ? Math.ceil(sortedData.length / itemsPerPage) : 1
+    // 서버 모드에서는 data가 이미 "이번 페이지 분량"이므로 totalCount 기준으로 페이지 수만 계산하고,
+    // 화면에는 서버가 준 data를 그대로(추가 슬라이싱 없이) 보여준다.
+    const displayTotal = serverPagination ? totalCount : sortedData.length
+    const totalPages = itemsPerPage ? Math.max(1, Math.ceil(displayTotal / itemsPerPage)) : 1
     const startIndex = itemsPerPage ? (currentPage - 1) * itemsPerPage : 0
-    const paginatedData = itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData
+    const paginatedData = serverPagination
+        ? sortedData
+        : (itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData)
 
     // 정렬 핸들러
     const handleSort = (key) => {
@@ -88,13 +103,18 @@ const DataTable = ({
 
     // 페이지 변경 핸들러
     const handlePageChange = (page) => {
-        setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+        const clamped = Math.max(1, Math.min(page, totalPages))
+        if (serverPagination) {
+            onPageChange && onPageChange(clamped)
+        } else {
+            setInternalCurrentPage(clamped)
+        }
     }
 
-    // 검색어 변경 시 첫 페이지로 이동
+    // 검색어 변경 시 첫 페이지로 이동 (서버 모드에서는 검색을 지원하지 않음)
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value)
-        setCurrentPage(1)
+        if (!serverPagination) setInternalCurrentPage(1)
     }
 
     // 편집 가능한 셀 렌더링
@@ -183,16 +203,16 @@ const DataTable = ({
         let input
         switch (column.editType) {
             case 'select':
-                input = <Select value={value} onChange={onChange} options={column.options || []} error={!!hasError} />
+                input = <Select value={value} onChange={onChange} options={column.options || []} error={!!hasError}/>
                 break
             case 'date':
-                input = <input type="date" value={value} onChange={onChange} className={inputClassName} />
+                input = <input type="date" value={value} onChange={onChange} className={inputClassName}/>
                 break
             case 'number':
-                input = <input type="number" value={value} onChange={onChange} className={inputClassName} />
+                input = <input type="number" value={value} onChange={onChange} className={inputClassName}/>
                 break
             default:
-                input = <input type="text" value={value} onChange={onChange} className={inputClassName} />
+                input = <input type="text" value={value} onChange={onChange} className={inputClassName}/>
         }
 
         return (
@@ -220,25 +240,12 @@ const DataTable = ({
     // 정렬 아이콘 렌더링
     const renderSortIcon = (columnKey) => {
         if (sortConfig.key !== columnKey) {
-            return (
-                <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                </svg>
-            )
+            return <Icon name="sort" size={16} className="text-neutral-400"/>
         }
 
-        return sortConfig.direction === 'asc' ? (
-            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
-            </svg>
-        ) : (
-            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
-            </svg>
-        )
+        return sortConfig.direction === 'asc'
+            ? <Icon name="sort-asc" size={16} className="text-accent"/>
+            : <Icon name="sort-desc" size={16} className="text-accent"/>
     }
 
     if (loading) {
@@ -259,13 +266,15 @@ const DataTable = ({
     const editingRow = editingRowId != null ? data.find(r => r.id === editingRowId) : null
 
     return (
-        <div className={`bg-white rounded-lg border border-neutral-200 ${className}`}>
+        <div className={`bg-white rounded-lg border border-neutral-200 overflow-hidden ${className}`}>
             {/* 헤더 */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-b border-neutral-200">
+            <div
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-b border-neutral-200">
                 <div>
                     <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
                     <p className="text-sm text-neutral-600 mt-1">
-                        총 {data.length}개 항목 {filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
+                        총 {displayTotal}개
+                        항목 {!serverPagination && filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
                     </p>
                 </div>
 
@@ -273,11 +282,7 @@ const DataTable = ({
                 {showSearch && searchableColumns.length > 0 && (
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
+                            <Icon name="search" size={16} className="text-neutral-400"/>
                         </div>
                         <input
                             type="text"
@@ -291,11 +296,7 @@ const DataTable = ({
                                 onClick={() => handleSearchChange({target: {value: ''}})}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             >
-                                <svg className="h-4 w-4 text-neutral-400 hover:text-neutral-600" fill="none"
-                                     stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                                <Icon name="x" size={16} className="text-neutral-400 hover:text-neutral-600"/>
                             </button>
                         )}
                     </div>
@@ -310,7 +311,7 @@ const DataTable = ({
                         {columns.map((column) => (
                             <th
                                 key={column.key}
-                                className={`px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider ${
+                                className={`px-5 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide ${
                                     column.sortable ? 'cursor-pointer hover:bg-neutral-100 select-none' : ''
                                 }`}
                                 onClick={() => column.sortable && handleSort(column.key)}
@@ -323,7 +324,7 @@ const DataTable = ({
                         ))}
                     </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-neutral-200">
+                    <tbody className="bg-white divide-y divide-neutral-100">
                     {paginatedData.length > 0 ? (
                         paginatedData.map((row, index) => {
                             const isEditing = editingRowId === row.id
@@ -339,7 +340,7 @@ const DataTable = ({
                                     {columns.map((column) => (
                                         <td
                                             key={column.key}
-                                            className={`px-6 py-4 text-sm text-neutral-900 ${
+                                            className={`px-5 py-3.5 text-sm text-neutral-900 ${
                                                 column.editable && isEditing
                                                     ? ''
                                                     : 'whitespace-nowrap'
@@ -386,7 +387,8 @@ const DataTable = ({
                         title="편집"
                         footer={
                             <div className="flex gap-2">
-                                <Button variant="secondary" className="flex-1" onClick={() => onCancelEdit && onCancelEdit()}>
+                                <Button variant="secondary" className="flex-1"
+                                        onClick={() => onCancelEdit && onCancelEdit()}>
                                     취소
                                 </Button>
                                 <Button className="flex-1" onClick={() => onSaveEdit && onSaveEdit(editingRow.id)}>
@@ -412,6 +414,11 @@ const DataTable = ({
                                     })}
                                 </div>
                             )}
+                            {renderMobileEditExtra && (
+                                <div className="pt-1">
+                                    {renderMobileEditExtra(editingRow)}
+                                </div>
+                            )}
                         </div>
                     </BottomSheet>
                 </div>
@@ -422,10 +429,10 @@ const DataTable = ({
                 <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-200">
                     <div className="text-sm text-neutral-700">
             <span>
-              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedData.length)} / {sortedData.length}개 항목
+              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayTotal)} / {displayTotal}개 항목
             </span>
                     </div>
-                    <Pagination current={currentPage} total={totalPages} onChange={handlePageChange} />
+                    <Pagination current={currentPage} total={totalPages} onChange={handlePageChange}/>
                 </div>
             )}
 

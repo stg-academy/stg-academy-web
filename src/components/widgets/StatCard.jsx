@@ -1,3 +1,5 @@
+import Icon from '../ui/Icon.jsx'
+
 const StatCard = ({ title, value, change, changeType, icon }) => {
   const getChangeColor = () => {
     switch (changeType) {
@@ -12,17 +14,9 @@ const StatCard = ({ title, value, change, changeType, icon }) => {
 
   const getChangeIcon = () => {
     if (changeType === 'positive') {
-      return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
-        </svg>
-      )
+      return <Icon name="trending-up" size={16} />
     } else if (changeType === 'negative') {
-      return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-        </svg>
-      )
+      return <Icon name="trending-down" size={16} />
     }
     return null
   }

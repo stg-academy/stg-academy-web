@@ -1,11 +1,16 @@
 import DataTable from '../ui/DataTable.jsx'
 import Badge from '../ui/Badge.jsx'
 import Button from '../ui/Button.jsx'
+import Icon from '../ui/Icon.jsx'
 import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 
 const UserTable = ({
     users,
     loading,
+    // 서버사이드 페이지네이션
+    totalCount,
+    currentPage,
+    onPageChange,
     // 인라인 편집 관련 props
     editingUserId,
     editingData,
@@ -14,7 +19,9 @@ const UserTable = ({
     onSaveEdit,
     onEditChange,
     // 유효성 검사 관련 props
-    validationErrors
+    validationErrors,
+    // 비밀번호 초기화 (일반 로그인 계정만 가능)
+    onResetPassword
 }) => {
     // 인증 유형 렌더링 함수
     const renderAuthType = (value) => {
@@ -63,10 +70,22 @@ const UserTable = ({
             )
         }
         return (
-            <div className="flex items-center space-x-2">
-                <Button variant="link" size="sm" onClick={() => onStartEdit && onStartEdit(row)}>
-                    편집
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="!px-2"
+                    onClick={() => onStartEdit && onStartEdit(row)}
+                    title="편집"
+                    aria-label="편집"
+                >
+                    <Icon name="edit" size={16} />
                 </Button>
+                {row.auth_type === 'normal' && (
+                    <Button variant="secondary" size="sm" onClick={() => onResetPassword && onResetPassword(row)}>
+                        비밀번호 초기화
+                    </Button>
+                )}
             </div>
         )
     }
@@ -182,9 +201,7 @@ const UserTable = ({
                         {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'}
                     </div>
                 </div>
-                <svg className="flex-none w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-                </svg>
+                <Icon name="chevron-right" size={16} className="flex-none text-neutral-400" />
             </button>
         )
     }
@@ -195,10 +212,29 @@ const UserTable = ({
             columns={userColumns}
             searchableColumns={['username', 'information', 'auth_type']}
             loading={loading}
-            showPagination={false}
-            showSearch={true}
+            itemsPerPage={30}
+            showPagination={true}
+            showSearch={false}
             emptyMessage="등록된 사용자가 없습니다."
+            // 서버사이드 페이지네이션 (검색은 지원되는 페이지 안에서만 가능해 반쪽짜리가 되므로 당분간 비활성화)
+            serverPagination={true}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            onPageChange={onPageChange}
             renderMobileItem={renderMobileItem}
+            // 모바일 편집 시트: 가입일 정보 아래에 비밀번호 초기화 버튼 (일반 로그인 계정만)
+            renderMobileEditExtra={(row) => row.auth_type === 'normal' ? (
+                <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                        onCancelEdit && onCancelEdit()
+                        onResetPassword && onResetPassword(row)
+                    }}
+                >
+                    비밀번호 초기화
+                </Button>
+            ) : null}
             // 인라인 편집 관련 props
             editingRowId={editingUserId}
             editingData={editingData}

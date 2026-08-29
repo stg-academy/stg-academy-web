@@ -8,7 +8,7 @@ const toneClasses = {
 
 const Badge = ({ tone = 'neutral', className = '', children }) => (
     <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${toneClasses[tone] || toneClasses.neutral} ${className}`}
+        className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${toneClasses[tone] || toneClasses.neutral} ${className}`}
     >
         {children}
     </span>

@@ -1,11 +1,28 @@
-import {useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {createEnroll, updateEnroll} from '../services/enrollService'
-import {getUsersInfo} from '../services/userService'
+import {searchUsers} from '../services/userService'
+import {getCertificationsBySession, createCertification, getCertificationPreview, getCertificationDownload} from '../services/certificationService'
 import EnrollTable from '../components/tables/EnrollTable'
 import Modal from '../components/ui/Modal'
 import SelectInput from '../components/forms/SelectInput'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
+import {useToast} from '../components/ui/ToastProvider.jsx'
+import Icon from '../components/ui/Icon.jsx'
+
+const formatDate = (value) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleDateString('ko-KR', {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+    })
+}
+
+// 다운로드 헤더 파싱에 실패했을 때 쓰는 클라이언트 생성 파일명 (백엔드 규칙과 동일)
+const buildFallbackFilename = (cert) => {
+    const safeCourse = (cert.course_title || '수료증').replace(/[\\/:*?"<>|\s]+/g, '_')
+    const yyyymmdd = cert.issued_at ? new Date(cert.issued_at).toISOString().slice(0, 10).replace(/-/g, '') : ''
+    return `certification_${safeCourse}_${yyyymmdd}.png`
+}
 
 const EnrollTab = ({
     session,
@@ -19,47 +36,111 @@ const EnrollTab = ({
     const [selectedUser, setSelectedUser] = useState(null)
     const [newStudentStatus, setNewStudentStatus] = useState('ACTIVE')
     const [userSearchTerm, setUserSearchTerm] = useState('')
-    const [allUsers, setAllUsers] = useState([])
     const [userSearchResults, setUserSearchResults] = useState([])
     const [userSearchLoading, setUserSearchLoading] = useState(false)
-    const [usersLoaded, setUsersLoaded] = useState(false)
     const [showUserDropdown, setShowUserDropdown] = useState(false)
+    const userSearchDebounceRef = useRef(null)
     const [editEnrollModal, setEditEnrollModal] = useState({isOpen: false, enrollment: null})
     const [editStatus, setEditStatus] = useState('ACTIVE')
+    const [certifications, setCertifications] = useState([])
+    const [certificationsLoading, setCertificationsLoading] = useState(false)
+    const [certificateDetailModal, setCertificateDetailModal] = useState({isOpen: false, certification: null})
+    const [certificatePreviewUrl, setCertificatePreviewUrl] = useState(null)
+    const [certificatePreviewLoading, setCertificatePreviewLoading] = useState(false)
+    const [certificateDownloading, setCertificateDownloading] = useState(false)
 
+    const toast = useToast()
 
-    // 모다 열 때 사용자 목록 로드
-    const loadAllUsers = async () => {
-        if (usersLoaded) return // 이미 로드되었으면 스킵
+    // 이 세션의 수료증 목록 로드
+    useEffect(() => {
+        loadCertifications()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.id])
 
-        setUserSearchLoading(true)
+    const loadCertifications = async () => {
+        if (!session?.id) return
         try {
-            const users = await getUsersInfo(0, 1000) // 대용량 조회
-            setAllUsers(users)
-            setUsersLoaded(true)
+            setCertificationsLoading(true)
+            const data = await getCertificationsBySession(session.id)
+            setCertifications(data)
         } catch (err) {
-            console.error('사용자 목록 로드 실패:', err)
-            onError('사용자 목록을 불러오는데 실패했습니다')
+            console.error('수료증 목록 조회 실패:', err)
+            onError('수료증 목록을 불러오는데 실패했습니다')
         } finally {
-            setUserSearchLoading(false)
+            setCertificationsLoading(false)
+        }
+    }
+
+    // 수료증 발급
+    const handleIssueCertification = async (enrollRow) => {
+        try {
+            await createCertification(session.id, enrollRow.user_id)
+            toast.success('수료증이 발급되었습니다.')
+            await loadCertifications()
+        } catch (err) {
+            console.error('수료증 발급 실패:', err)
+            onError(err.status === 409 ? '이미 발급된 수료증입니다' : '수료증 발급에 실패했습니다')
+        }
+    }
+
+    // 수료증 조회 — 상세 정보(리스트 조회 시 받은 cert 객체, 추가 호출 없음) + 실제 이미지 미리보기
+    const handleViewCertification = async (row, cert) => {
+        setCertificateDetailModal({isOpen: true, certification: cert})
+        setCertificatePreviewLoading(true)
+        try {
+            const {blob} = await getCertificationPreview(cert.id)
+            setCertificatePreviewUrl(URL.createObjectURL(blob))
+        } catch (err) {
+            console.error('수료증 미리보기 조회 실패:', err)
+            onError('수료증 미리보기를 불러오는데 실패했습니다')
+        } finally {
+            setCertificatePreviewLoading(false)
+        }
+    }
+
+    const handleCloseCertificateDetailModal = () => {
+        if (certificatePreviewUrl) URL.revokeObjectURL(certificatePreviewUrl)
+        setCertificateDetailModal({isOpen: false, certification: null})
+        setCertificatePreviewUrl(null)
+    }
+
+    // 수료증 다운로드
+    const handleDownloadCertificate = async () => {
+        const cert = certificateDetailModal.certification
+        if (!cert) return
+
+        setCertificateDownloading(true)
+        try {
+            const {blob, filename} = await getCertificationDownload(cert.id)
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = filename || buildFallbackFilename(cert)
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            URL.revokeObjectURL(url)
+        } catch (err) {
+            console.error('수료증 다운로드 실패:', err)
+            onError('수료증 다운로드에 실패했습니다')
+        } finally {
+            setCertificateDownloading(false)
         }
     }
 
     // 수강생 추가 모달 열기
-    const handleAddStudent = async () => {
+    const handleAddStudent = () => {
         setAddStudentModal({isOpen: true})
         setSelectedUser(null)
         setNewStudentStatus('ACTIVE')
         setUserSearchTerm('')
         setUserSearchResults([])
         setShowUserDropdown(false)
-
-        // 모달 열 때 사용자 목록 로드
-        await loadAllUsers()
     }
 
     // 수강생 추가 모달 닫기
     const handleCloseAddModal = () => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
         setAddStudentModal({isOpen: false})
         setSelectedUser(null)
         setNewStudentStatus('ACTIVE')
@@ -68,22 +149,29 @@ const EnrollTab = ({
         setShowUserDropdown(false)
     }
 
-    // 사용자 검색 (클라이언트 사이드 필터링)
+    // 사용자 검색 (서버사이드, 디바운스)
     const handleUserSearch = (searchTerm) => {
+        if (userSearchDebounceRef.current) clearTimeout(userSearchDebounceRef.current)
+
         if (!searchTerm || searchTerm.length < 2) {
             setUserSearchResults([])
             setShowUserDropdown(false)
             return
         }
 
-        // 클라이언트 사이드에서 필터링
-        const filteredUsers = allUsers.filter(user =>
-            user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.information?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-
-        setUserSearchResults(filteredUsers)
-        setShowUserDropdown(filteredUsers.length > 0)
+        userSearchDebounceRef.current = setTimeout(async () => {
+            setUserSearchLoading(true)
+            try {
+                const results = await searchUsers(searchTerm, 20)
+                setUserSearchResults(results)
+                setShowUserDropdown(results.length > 0)
+            } catch (err) {
+                console.error('사용자 검색 실패:', err)
+                onError('사용자 검색에 실패했습니다')
+            } finally {
+                setUserSearchLoading(false)
+            }
+        }, 400)
     }
 
     // 사용자 선택
@@ -180,10 +268,7 @@ const EnrollTab = ({
                 title="수강생 목록"
                 action={
                     <Button onClick={handleAddStudent} disabled={enrollsLoading} className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={20} />
                         <span>수강생 추가</span>
                     </Button>
                 }
@@ -193,9 +278,12 @@ const EnrollTab = ({
             <div >
                 <EnrollTable
                     enrolls={enrolls}
-                    loading={loading || enrollsLoading}
+                    loading={loading || enrollsLoading || certificationsLoading}
                     onEditEnrollment={handleEditEnrollment}
                     onDeleteStudent={handleDeleteStudent}
+                    certifications={certifications}
+                    onIssueCertification={handleIssueCertification}
+                    onViewCertification={handleViewCertification}
                 />
             </div>
 
@@ -221,12 +309,11 @@ const EnrollTab = ({
                                     setUserSearchTerm(e.target.value)
                                     handleUserSearch(e.target.value)
                                 }}
-                                disabled={userSearchLoading && !usersLoaded}
                                 placeholder="사용자 이름 또는 이메일로 검색"
                                 className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-accent focus:border-transparent"
                                 required
                             />
-                            {userSearchLoading && !usersLoaded && (
+                            {userSearchLoading && (
                                 <div className="absolute right-3 top-3">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
                                 </div>
@@ -275,20 +362,14 @@ const EnrollTab = ({
                                         }}
                                         className="text-accent hover:text-accent-hover"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                                  d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
+                                        <Icon name="x" size={16} />
                                     </button>
                                 </div>
                             </div>
                         )}
 
                         <p className="mt-1 text-xs text-neutral-500">
-                            {!usersLoaded && userSearchLoading
-                                ? '사용자 목록을 불러오는 중...'
-                                : '2글자 이상 입력하면 검색 결과가 표시됩니다 (총 {allUsers.length}명)'
-                            }
+                            2글자 이상 입력하면 검색 결과가 표시됩니다.
                         </p>
                     </div>
 
@@ -336,6 +417,71 @@ const EnrollTab = ({
                         required
                     />
                 </div>
+            </Modal>
+
+            {/* 수료증 상세 모달 */}
+            <Modal
+                isOpen={certificateDetailModal.isOpen}
+                onClose={handleCloseCertificateDetailModal}
+                title="수료증 상세"
+                width="md:w-[640px]"
+                footer={
+                    <div className="flex gap-2">
+                        <Button variant="secondary" className="flex-1" onClick={handleCloseCertificateDetailModal}>
+                            닫기
+                        </Button>
+                        <Button
+                            className="flex-1"
+                            disabled={certificateDownloading || !certificateDetailModal.certification}
+                            onClick={handleDownloadCertificate}
+                        >
+                            {certificateDownloading ? '다운로드 중...' : '다운로드'}
+                        </Button>
+                    </div>
+                }
+            >
+                {certificateDetailModal.certification && (
+                    <div className="space-y-4">
+                        <div className="w-full aspect-[2520/1000] bg-neutral-100 rounded-md overflow-hidden flex items-center justify-center">
+                            {certificatePreviewLoading ? (
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+                            ) : certificatePreviewUrl ? (
+                                <img
+                                    src={certificatePreviewUrl}
+                                    alt={`${certificateDetailModal.certification.course_title} 수료증`}
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <span className="text-xs text-neutral-400">미리보기를 불러올 수 없습니다</span>
+                            )}
+                        </div>
+
+                        <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">과정명</span>
+                            <span className="text-neutral-900 font-medium">{certificateDetailModal.certification.course_title || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">강좌명</span>
+                            <span className="text-neutral-900 font-medium">{certificateDetailModal.certification.session_title || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">강사</span>
+                            <span className="text-neutral-900">{certificateDetailModal.certification.lecturer_info || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-500">수강 기간</span>
+                            <span className="text-neutral-900">
+                                {formatDate(certificateDetailModal.certification.session_begin_date)} ~ {formatDate(certificateDetailModal.certification.session_end_date)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between border-t border-neutral-100 pt-3">
+                            <span className="text-neutral-500">발급일</span>
+                            <span className="text-neutral-900 font-medium">{formatDate(certificateDetailModal.certification.issued_at)}</span>
+                        </div>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     )

@@ -4,6 +4,7 @@ import {useAuth} from '../contexts/AuthContext'
 import {getSession, updateSession, updateSessionCode} from '../services/sessionService'
 import {getLecturesBySession} from '../services/lectureService'
 import {getEnrollsBySession} from '../services/enrollService'
+import {getAssistantsBySession} from '../services/assistantService'
 import {getCourses} from '../services/courseService'
 import SessionStatusBadge from "../components/SessionStatusBadge.jsx";
 import SessionModal from "../components/modals/SessionModal.jsx";
@@ -11,6 +12,7 @@ import AttendanceTab from "./AttendanceTab.jsx";
 import LectureTab from "./LectureTab.jsx";
 import EnrollTab from "./EnrollTab.jsx";
 import KioskTab from "./KioskTab.jsx";
+import AssistantTab from "./AssistantTab.jsx";
 import AttendanceCodeCard from "../components/AttendanceCodeCard.jsx";
 import PageContainer from "../components/ui/PageContainer.jsx";
 import TabNav from "../components/ui/TabNav.jsx";
@@ -18,6 +20,7 @@ import ErrorBanner from "../components/ui/ErrorBanner.jsx";
 import LoadingState from "../components/ui/LoadingState.jsx";
 import Button from "../components/ui/Button.jsx";
 import {useToast} from "../components/ui/ToastProvider.jsx";
+import Icon from "../components/ui/Icon.jsx";
 
 const SessionDetailPage = () => {
     const {sessionId} = useParams()
@@ -32,6 +35,8 @@ const SessionDetailPage = () => {
     const [lecturesLoading, setLecturesLoading] = useState(false)
     const [enrolls, setEnrolls] = useState([])
     const [enrollsLoading, setEnrollsLoading] = useState(false)
+    const [assistants, setAssistants] = useState([])
+    const [assistantsLoading, setAssistantsLoading] = useState(false)
     const [error, setError] = useState(null)
     const [todaysLecture, setTodaysLecture] = useState(null)
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -48,6 +53,7 @@ const SessionDetailPage = () => {
         if (sessionId) {
             loadLectures()
             loadEnrolls()
+            loadAssistants()
         }
     }, [sessionId])
 
@@ -88,6 +94,19 @@ const SessionDetailPage = () => {
         }
     }
 
+    const loadAssistants = async () => {
+        try {
+            setAssistantsLoading(true)
+            const data = await getAssistantsBySession(sessionId)
+            setAssistants(data)
+        } catch (err) {
+            console.error('조교 목록 조회 실패:', err)
+            setError('조교 목록을 불러오는데 실패했습니다')
+        } finally {
+            setAssistantsLoading(false)
+        }
+    }
+
     const loadSession = async (silent = false) => {
         try {
             if (!silent) setLoading(true)
@@ -96,7 +115,7 @@ const SessionDetailPage = () => {
             setSession(data)
         } catch (err) {
             console.error('강좌 조회 실패:', err)
-            setError('강좌 정보를 불러오는데 실패했습니다')
+            setError(err.status === 404 ? '존재하지 않는 강좌입니다' : '강좌 정보를 불러오는데 실패했습니다')
         } finally {
             if (!silent) setLoading(false)
         }
@@ -158,7 +177,7 @@ const SessionDetailPage = () => {
         {key: 'students', label: '수강생'},
         {key: 'attendances', label: '출석부'},
         {key: 'kiosk', label: '현장 출석체크'},
-        {key: 'instructors', label: '강사/관리자'},
+        {key: 'assistants', label: '조교 관리'},
         {key: 'googleSheet', label: '구글시트 관리'},
     ]
 
@@ -169,9 +188,7 @@ const SessionDetailPage = () => {
                 onClick={handleGoBack}
                 className="flex items-center text-neutral-600 hover:text-neutral-900 mb-4 transition-colors"
             >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-                </svg>
+                <Icon name="chevron-left" size={20} className="mr-1" />
                 <span className="text-sm">돌아가기</span>
             </button>
 
@@ -256,11 +273,16 @@ const SessionDetailPage = () => {
                     />
                 )}
 
-                {/* 강사/관리자 탭 */}
-                {activeTab === 'instructors' && (
-                    <div className="bg-white rounded-lg border border-neutral-200 p-8 text-center">
-                        <p className="text-neutral-500">강사/관리자 목록이 여기에 표시됩니다.</p>
-                    </div>
+                {/* 조교 관리 탭 */}
+                {activeTab === 'assistants' && (
+                    <AssistantTab
+                        session={session}
+                        assistants={assistants}
+                        assistantsLoading={assistantsLoading}
+                        onError={setError}
+                        onRefreshAssistants={loadAssistants}
+                        loading={loading}
+                    />
                 )}
 
                 {/* 구글시트 관리 탭 */}

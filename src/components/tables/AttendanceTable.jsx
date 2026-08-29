@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react'
 import {ATTENDANCE_CONFIG, getAttendanceStyle, getAttendanceTooltip} from '../../utils/attendanceStatus'
 import Button from '../ui/Button.jsx'
 import AttendanceTableMobile from './AttendanceTableMobile.jsx'
+import Icon from '../ui/Icon.jsx'
 
 /**
  * 날짜를 "9/10" 형식으로 포맷팅
@@ -127,27 +128,14 @@ const AttendanceTable = ({
         }))
     }
 
-    // 정렬 아이콘 (DataTable 스타일 SVG)
+    // 정렬 아이콘
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) {
-            return (
-                <svg className="w-3 h-3 text-neutral-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                </svg>
-            )
+            return <Icon name="sort" size={12} className="text-neutral-400 ml-1 flex-shrink-0" />
         }
-        return sortConfig.direction === 'asc' ? (
-            <svg className="w-3 h-3 text-accent ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
-            </svg>
-        ) : (
-            <svg className="w-3 h-3 text-accent ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
-            </svg>
-        )
+        return sortConfig.direction === 'asc'
+            ? <Icon name="sort-asc" size={12} className="text-accent ml-1 flex-shrink-0" />
+            : <Icon name="sort-desc" size={12} className="text-accent ml-1 flex-shrink-0" />
     }
 
     // 셀 클릭 핸들러
@@ -315,11 +303,7 @@ const AttendanceTable = ({
                                 disabled={cellUpdateLoading}
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
+                                <Icon name="search" size={16} className="text-neutral-400" />
                             </div>
                         </div>
 

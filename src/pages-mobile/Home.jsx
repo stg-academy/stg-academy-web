@@ -5,23 +5,12 @@ import Card from '../components/ui/Card.jsx';
 import Button from '../components/ui/Button.jsx';
 import Progress from '../components/ui/Progress.jsx';
 import Badge from '../components/ui/Badge.jsx';
+import Icon from '../components/ui/Icon.jsx';
 import { useAuth } from '../contexts/AuthContext';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
-
-const ChevronRightIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-const TrophyIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-  </svg>
-);
 
 const getCourseStatusBadge = (status) => {
   if (status === 'IN_PROGRESS') return { tone: 'info', label: '진행중' }
@@ -31,16 +20,19 @@ const getCourseStatusBadge = (status) => {
 }
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [activeCourses, setActiveCourses] = useState([]);
   const [recruitingSessions, setRecruitingSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [courseProgress, setCourseProgress] = useState({});
   const [sessionCourseStatus, setSessionCourseStatus] = useState({});
 
+  // 인증 확인이 끝나기 전에 조회하면 user가 null→실제값으로 바뀔 때 재조회가 한 번 더
+  // 발생해 API가 중복 호출되므로, authLoading이 끝난 뒤 확정된 user로 한 번만 조회한다.
   useEffect(() => {
+    if (authLoading) return;
     fetchHomeData();
-  }, [user?.id]);
+  }, [authLoading, user?.id]);
 
   const fetchHomeData = async () => {
     try {
@@ -60,7 +52,7 @@ export default function Home() {
 
       if (user?.id) {
         // 로그인한 사용자의 수강 중인 강의
-        const enrollments = await getEnrollsByUser(user.id);
+        const enrollments = await getMyEnrolls();
         const allActiveEnrollments = Array.isArray(enrollments)
           ? enrollments.filter(e => e.enroll_status === 'ACTIVE')
           : [];
@@ -161,7 +153,7 @@ export default function Home() {
     return "기간 미정";
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <MobileLayout>
         <div className="p-5 flex justify-center items-center h-64">
@@ -196,7 +188,7 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-neutral-900">수강중인 교육</h2>
               <Link to="/mobile/my-learning" className="text-xs text-neutral-500 font-medium flex items-center">
-                전체보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
+                전체보기 <Icon name="chevron-right" className="h-3 w-3 ml-0.5" />
               </Link>
             </div>
 
@@ -255,7 +247,7 @@ export default function Home() {
             <h2 className="text-lg font-bold text-neutral-900">모집중인 강의</h2>
             {/*todo: /mobile/courses */}
             <Link to="/mobile/search" className="text-xs text-neutral-500 font-medium flex items-center">
-              더보기 <ChevronRightIcon className="h-3 w-3 ml-0.5" />
+              더보기 <Icon name="chevron-right" className="h-3 w-3 ml-0.5" />
             </Link>
           </div>
 

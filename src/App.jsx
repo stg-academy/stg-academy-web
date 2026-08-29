@@ -16,6 +16,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import PrivacyConsentGate from "./components/PrivacyConsentGate.jsx";
 import MyLearning from "./pages-mobile/MyLearning.jsx";
 import Home from "./pages-mobile/Home.jsx";
 import Attendance from "./pages-mobile/Attendance.jsx";
@@ -24,6 +25,7 @@ import Profile from "./pages/Profile.jsx";
 import Search from "./pages-mobile/Search.jsx";
 import CourseRecruitPage from "./pages-mobile/CourseRecruitPage.jsx";
 import SessionInfoPage from "./pages-mobile/SessionInfoPage.jsx";
+import Certificates from "./pages-mobile/Certificates.jsx";
 import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
@@ -39,6 +41,7 @@ function AppContent() {
     return (
         <div className="min-h-screen bg-gray-50">
             <Header/>
+            <PrivacyConsentGate/>
             <Routes>
                 // 인증 관련 라우트
                 <Route path="/login" element={<LoginPage/>}/>
@@ -59,6 +62,7 @@ function AppContent() {
                 <Route path="mobile/search" element={<Search />}/>
                 <Route path="mobile/recruit/:sessionId" element={<CourseRecruitPage />}/>
                 <Route path="mobile/info/:sessionId" element={<SessionInfoPage />}/>
+                <Route path="mobile/certificates" element={<Certificates />}/>
 
                 // 키오스크
                 <Route path="/sessions/:session_id/attendance/kiosk" element={<KioskAttendance />}/>

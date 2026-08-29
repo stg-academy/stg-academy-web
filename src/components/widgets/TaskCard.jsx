@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from '../ui/Icon.jsx'
 
 const TaskCard = ({ title, tasks, loading = false }) => {
   const [newTask, setNewTask] = useState('')
@@ -72,9 +73,7 @@ const TaskCard = ({ title, tasks, loading = false }) => {
               }`}
             >
               {task.completed && (
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+                <Icon name="check" size={12} strokeWidth={3} className="text-white" />
               )}
             </button>
             <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`}></div>

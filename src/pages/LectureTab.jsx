@@ -2,6 +2,7 @@ import LectureTable from "../components/tables/LectureTable.jsx";
 import {createLecture, deleteLecture, updateLecture} from "../services/lectureService.js";
 import {useState} from "react";
 import ConfirmModal from "../components/ui/ConfirmModal.jsx";
+import Icon from "../components/ui/Icon.jsx";
 
 const LectureTab = ({
                         onError,
@@ -150,7 +151,8 @@ const LectureTab = ({
             await onRefresh() // 목록 새로고침
         } catch (err) {
             console.error('강의 삭제 실패:', err)
-            onError('강의 삭제에 실패했습니다')
+            // 409: 출석 기록 등이 있어 삭제 불가 — 서버가 보내는 구체적 사유를 그대로 노출
+            onError(err.status === 409 ? err.message : '강의 삭제에 실패했습니다')
         }
     }
 
@@ -177,10 +179,7 @@ const LectureTab = ({
                 onClick={handleAddLecture}
                 className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M12 4v16m8-8H4"/>
-                </svg>
+                <Icon name="plus" size={20} className="mr-2" />
                 <span className="text-sm font-medium">새 강의 추가하기</span>
             </button>
         </div>

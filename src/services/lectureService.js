@@ -16,15 +16,25 @@ export const getLectures = async (skip = 0, limit = 1000) => {
 }
 
 /**
- * 특정 강좌의 강의 목록 조회
+ * 특정 강좌의 강의 목록 조회 — 빈 페이지가 나올 때까지 반복 호출해 전체를 받아옴 (limit 초과로 인한 누락 방지)
  * @param {string} sessionId - 강좌 ID (UUID)
  * @param {number} skip - 건너뛸 항목 수
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 강의 목록
  */
-export const getLecturesBySession = async (sessionId, skip = 0, limit = 1000) => {
+export const getLecturesBySession = async (sessionId, skip = 0, limit = 10000) => {
   try {
-    return await apiClient.get(`/api/lectures/session/${sessionId}`, { skip, limit })
+    const pageSize = Math.min(limit, 1000)
+    const allData = []
+    let currentSkip = skip
+    while (true) {
+      const page = await apiClient.get(`/api/lectures/session/${sessionId}`, { skip: currentSkip, limit: pageSize })
+      if (!Array.isArray(page) || page.length === 0) break
+      allData.push(...page)
+      if (page.length < pageSize) break
+      currentSkip += pageSize
+    }
+    return allData
   } catch (error) {
     console.error('강좌별 강의 목록 조회 실패:', error)
     throw error
@@ -52,7 +62,7 @@ export const getLecture = async (lectureId) => {
  */
 export const createLecture = async (lectureData) => {
   try {
-    return await apiClient.post('/api/lectures', lectureData)
+    return await apiClient.post('/api/admin/lectures', lectureData)
   } catch (error) {
     console.error('강의 생성 실패:', error)
     throw error
@@ -67,7 +77,7 @@ export const createLecture = async (lectureData) => {
  */
 export const updateLecture = async (lectureId, lectureData) => {
   try {
-    return await apiClient.put(`/api/lectures/${lectureId}`, lectureData)
+    return await apiClient.put(`/api/admin/lectures/${lectureId}`, lectureData)
   } catch (error) {
     console.error('강의 수정 실패:', error)
     throw error
@@ -81,7 +91,7 @@ export const updateLecture = async (lectureId, lectureData) => {
  */
 export const deleteLecture = async (lectureId) => {
   try {
-    return await apiClient.delete(`/api/lectures/${lectureId}`)
+    return await apiClient.delete(`/api/admin/lectures/${lectureId}`)
   } catch (error) {
     console.error('강의 삭제 실패:', error)
     throw error

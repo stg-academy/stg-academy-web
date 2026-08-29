@@ -4,6 +4,7 @@ import StatCard from '../components/widgets/StatCard'
 import ChartCard from '../components/widgets/ChartCard'
 import ActivityCard from '../components/widgets/ActivityCard'
 import TaskCard from '../components/widgets/TaskCard'
+import Icon from '../components/ui/Icon.jsx'
 
 const SampleDashboard = () => {
   const { user } = useAuth()
@@ -31,44 +32,28 @@ const SampleDashboard = () => {
       value: '12,345',
       change: '+12%',
       changeType: 'positive',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-        </svg>
-      )
+      icon: <Icon name="users" size={32} />
     },
     {
       title: '월간 매출',
       value: '₩45.2M',
       change: '+8.2%',
       changeType: 'positive',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-        </svg>
-      )
+      icon: <Icon name="dollar-sign" size={32} />
     },
     {
       title: '주문 수',
       value: '2,847',
       change: '-3.1%',
       changeType: 'negative',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
-        </svg>
-      )
+      icon: <Icon name="shopping-cart" size={32} />
     },
     {
       title: '전환율',
       value: '3.24%',
       change: '+0.5%',
       changeType: 'positive',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
+      icon: <Icon name="percent" size={32} />
     }
   ]
 
@@ -78,9 +63,7 @@ const SampleDashboard = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 text-center">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
+              <Icon name="alert-triangle" size={24} className="text-red-600" />
             </div>
             <h3 className="text-base sm:text-lg font-medium text-red-900 mb-2">오류 발생</h3>
             <p className="text-sm sm:text-base text-red-700">{error}</p>

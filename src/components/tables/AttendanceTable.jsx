@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {ATTENDANCE_CONFIG, getAttendanceStyle, getAttendanceTooltip} from '../../utils/attendanceStatus'
+import {formatNameWithPhone} from '../../utils/phoneUtils.js'
 import Button from '../ui/Button.jsx'
 import AttendanceTableMobile from './AttendanceTableMobile.jsx'
 import Icon from '../ui/Icon.jsx'
@@ -58,7 +59,8 @@ const AttendanceTable = ({
         // 2. 수강생 목록을 기반으로 매트릭스 구성
         const userGroups = enrolls.map(enroll => {
             const userId = enroll.user_id || enroll.id
-            const userName = enroll.user_name || `사용자_${userId?.substring(0, 4) || 'unknown'}`
+            const rawUserName = enroll.user_name || `사용자_${userId?.substring(0, 4) || 'unknown'}`
+            const userName = formatNameWithPhone(rawUserName, enroll.phone_number)
 
             // 강의별 출석 정보 매핑
             const attendanceByLecture = {}

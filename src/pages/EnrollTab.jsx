@@ -9,6 +9,7 @@ import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 import {useToast} from '../components/ui/ToastProvider.jsx'
 import Icon from '../components/ui/Icon.jsx'
+import {formatNameWithPhone} from '../utils/phoneUtils.js'
 
 const formatDate = (value) => {
     if (!value) return '-'
@@ -332,7 +333,7 @@ const EnrollTab = ({
                                         className="w-full px-4 py-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0"
                                     >
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-neutral-900">{user.username}</span>
+                                            <span className="font-medium text-neutral-900">{formatNameWithPhone(user.username, user.phone_number)}</span>
                                             {user.information && (
                                                 <span className="text-xs text-neutral-400">{user.information}</span>
                                             )}
@@ -348,7 +349,7 @@ const EnrollTab = ({
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-accent-hover">
-                                            선택된 사용자: {selectedUser.username}
+                                            선택된 사용자: {formatNameWithPhone(selectedUser.username, selectedUser.phone_number)}
                                         </p>
                                         {selectedUser.information && (
                                             <p className="text-xs text-accent">{selectedUser.information}</p>
@@ -401,7 +402,7 @@ const EnrollTab = ({
                                 학생 정보
                             </h4>
                             <div className="text-sm text-neutral-600">
-                                <p>이름: {editEnrollModal.enrollment.user_name || '-'}</p>
+                                <p>이름: {formatNameWithPhone(editEnrollModal.enrollment.user_name, editEnrollModal.enrollment.phone_number) || '-'}</p>
                                 {/*<p>계정 상태: {(editEnrollModal.enrollment.user?.is_active ?? editEnrollModal.enrollment.user_is_active) ? '활성' : '비활성'}</p>*/}
                             </div>
                         </div>

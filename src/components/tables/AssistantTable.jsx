@@ -1,5 +1,6 @@
 import DataTable from '../ui/DataTable.jsx'
 import Button from '../ui/Button.jsx'
+import {formatNameWithPhone} from '../../utils/phoneUtils.js'
 
 const formatDate = (value) => {
     if (!value) return '-'
@@ -21,7 +22,8 @@ const AssistantTable = ({
             key: 'username',
             label: '이름',
             sortable: true,
-            default: '-'
+            default: '-',
+            render: (value, row) => formatNameWithPhone(value, row.phone_number)
         },
         {
             key: 'created_at',
@@ -48,7 +50,7 @@ const AssistantTable = ({
                 {(row.username || '?').charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                <span className="text-sm font-semibold text-neutral-900 truncate">{row.username || '-'}</span>
+                <span className="text-sm font-semibold text-neutral-900 truncate">{formatNameWithPhone(row.username, row.phone_number) || '-'}</span>
                 <span className="text-xs text-neutral-500">{formatDate(row.created_at)} 등록</span>
             </div>
             <button

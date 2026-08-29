@@ -7,6 +7,7 @@ import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 import Button from '../components/ui/Button.jsx'
 import PageSectionHeader from '../components/ui/PageSectionHeader.jsx'
 import Icon from '../components/ui/Icon.jsx'
+import {formatNameWithPhone} from '../utils/phoneUtils.js'
 
 const AssistantTab = ({
     session,
@@ -187,7 +188,7 @@ const AssistantTab = ({
                                         className="w-full px-4 py-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0"
                                     >
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-neutral-900">{user.username}</span>
+                                            <span className="font-medium text-neutral-900">{formatNameWithPhone(user.username, user.phone_number)}</span>
                                             {user.information && (
                                                 <span className="text-xs text-neutral-400">{user.information}</span>
                                             )}
@@ -203,7 +204,7 @@ const AssistantTab = ({
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-accent-hover">
-                                            선택된 사용자: {selectedUser.username}
+                                            선택된 사용자: {formatNameWithPhone(selectedUser.username, selectedUser.phone_number)}
                                         </p>
                                         {selectedUser.information && (
                                             <p className="text-xs text-accent">{selectedUser.information}</p>
@@ -236,7 +237,7 @@ const AssistantTab = ({
                 onClose={() => setRemoveTarget(null)}
                 onConfirm={executeRemoveAssistant}
                 title="조교 해제"
-                message={`${removeTarget?.username || '해당 사용자'}를 조교에서 해제하시겠습니까?`}
+                message={`${formatNameWithPhone(removeTarget?.username, removeTarget?.phone_number) || '해당 사용자'}를 조교에서 해제하시겠습니까?`}
                 confirmText="해제"
                 danger
             />

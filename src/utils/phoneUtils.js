@@ -25,3 +25,16 @@ export const formatPhoneNumber = (value) => {
 export const isValidPhoneNumber = (value) => {
   return /^01[0-9]-\d{3,4}-\d{4}$/.test((value || '').trim())
 }
+
+/**
+ * "이름(전화번호 뒷4자리)" 형식으로 포맷팅 (전화번호 없으면 이름만 반환)
+ * 예: formatNameWithPhone('홍길동', '010-1234-5678') -> '홍길동(5678)'
+ * @param {string} name - 이름
+ * @param {string} phoneNumber - 전화번호
+ * @returns {string} 포맷된 문자열
+ */
+export const formatNameWithPhone = (name, phoneNumber) => {
+  if (!name) return name
+  const last4 = (phoneNumber || '').replace(/\D/g, '').slice(-4)
+  return last4 ? `${name}(${last4})` : name
+}

@@ -1,5 +1,6 @@
 import DataTable from '../ui/DataTable.jsx'
 import Button from '../ui/Button.jsx'
+import {formatNameWithPhone} from '../../utils/phoneUtils.js'
 
 // 발급일 yy.mm.dd 포맷 (앱의 다른 곳에서 쓰는 4자리 연도 포맷과는 별개)
 const formatShortDate = (value) => {
@@ -105,7 +106,7 @@ const EnrollTable = ({
                         onClick={() => onEditEnrollment && onEditEnrollment(row)}
                         className="font-medium text-gray-900 hover:text-blue-600 underline cursor-pointer"
                     >
-                        {value}
+                        {formatNameWithPhone(value, row.phone_number)}
                     </button>
                 )
             }
@@ -139,7 +140,7 @@ const EnrollTable = ({
                 onClick={() => onEditEnrollment && onEditEnrollment(row)}
                 className="flex-1 min-w-0 flex flex-col gap-1 text-left"
             >
-                <span className="text-sm font-semibold text-neutral-900 truncate">{row.user_name || '-'}</span>
+                <span className="text-sm font-semibold text-neutral-900 truncate">{formatNameWithPhone(row.user_name, row.phone_number) || '-'}</span>
                 <div className="flex items-center gap-1.5">
                     {renderAuthType(row.auth_type, row)}
                     {renderStatus(row.enroll_status)}

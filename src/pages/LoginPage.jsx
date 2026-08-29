@@ -166,8 +166,8 @@ const LoginPage = () => {
         className="mb-6"
       >
         <TabsList>
-          <TabsTrigger value="password">비밀번호로 로그인</TabsTrigger>
           <TabsTrigger value="phone">전화번호로 로그인</TabsTrigger>
+          <TabsTrigger value="password">비밀번호로 로그인</TabsTrigger>
         </TabsList>
       </Tabs>
 

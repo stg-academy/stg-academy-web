@@ -59,12 +59,26 @@ const UserTable = ({
     const renderActions = (value, row, isEditing) => {
         if (isEditing) {
             return (
-                <div className="flex items-center space-x-3">
-                    <Button variant="link" size="sm" onClick={() => onCancelEdit && onCancelEdit()} title="취소">
-                        취소
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="!px-2"
+                        onClick={() => onCancelEdit && onCancelEdit()}
+                        title="취소"
+                        aria-label="취소"
+                    >
+                        <Icon name="x" size={16} />
                     </Button>
-                    <Button variant="link" size="sm" onClick={() => onSaveEdit && onSaveEdit(row.id)} title="저장">
-                        저장
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="!px-2"
+                        onClick={() => onSaveEdit && onSaveEdit(row.id)}
+                        title="저장"
+                        aria-label="저장"
+                    >
+                        <Icon name="check" size={16} />
                     </Button>
                 </div>
             )
@@ -104,6 +118,14 @@ const UserTable = ({
         {
             key: 'information',
             label: '소속정보',
+            sortable: true,
+            editable: true,
+            editType: 'text',
+            default: '-'
+        },
+        {
+            key: 'phone_number',
+            label: '전화번호',
             sortable: true,
             editable: true,
             editType: 'text',

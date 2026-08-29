@@ -43,7 +43,7 @@ const Header = () => {
     const renderIcon = (iconType) => {
         switch (iconType) {
             case 'home':
-                return <Icon name="grid" size={16}/>
+                return <Icon name="home" size={16}/>
             case 'users':
                 return <Icon name="users" size={16}/>
             case 'search':

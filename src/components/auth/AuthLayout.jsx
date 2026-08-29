@@ -10,8 +10,7 @@ const AuthLayout = ({
     stepNames = [], // 새로 추가된 stepNames prop
     error,
     children,
-    showLoginLink = false,
-    extraContent = null
+    showLoginLink = false
 }) => {
     // 단계 표시 컴포넌트
     const StepIndicator = () => {
@@ -72,10 +71,6 @@ const AuthLayout = ({
                         )}
                         <h1 className="mt-2 text-2xl sm:text-3xl font-semibold text-neutral-900">{title}</h1>
 
-                        {/*todo: extraContent 삭제(카카오회원가입시 발생*/}
-                        {extraContent}
-
-                        {/* todo: 카카오회원가입 시 StepIndicator 이상함*/}
                         <StepIndicator />
                     </div>
 

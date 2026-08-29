@@ -2,20 +2,6 @@ import apiClient from "./apiClient.js";
 
 // 인증 관련 API (서버 스펙에 맞게 수정)
 export const authAPI = {
-    // 카카오 로그인 (POST /auth/kakao/login)
-    async loginWithKakao(authCode) {
-        const response = await apiClient.post('/api/auth/kakao/login', {
-            code: authCode,
-        })
-
-        // 백엔드에서 JWT 토큰 반환 시 저장
-        if (response.token) {
-            apiClient.setAuthToken(response.token)
-        }
-
-        return response
-    },
-
     // 일반 로그인 (POST /auth/login)
     async loginWithCredentials(username, password) {
         const response = await apiClient.post('/api/auth/login', {
@@ -50,12 +36,8 @@ export const authAPI = {
         const requestData = {
             username: userData.username,
             password: userData.password,
-            information: userData.information
-        }
-
-        // 전화번호는 선택 입력
-        if (userData.phone_number) {
-            requestData.phone_number = userData.phone_number
+            information: userData.information,
+            phone_number: userData.phone_number
         }
 
         // 기존 사용자 수정인 경우 existing_user_id 추가
@@ -73,36 +55,18 @@ export const authAPI = {
         return response
     },
 
-    // 카카오 회원가입 완료 (POST /auth/kakao/register)
-    async completeKakaoRegistration(userData) {
-        const requestData = {
-            username: userData.username,
-            information: userData.information
-        }
-
-        // 전화번호는 선택 입력
-        if (userData.phone_number) {
-            requestData.phone_number = userData.phone_number
-        }
-
-        // 기존 사용자 수정인 경우 existing_user_id 추가
-        if (userData.existing_user_id) {
-            requestData.existing_user_id = userData.existing_user_id
-        }
-
-        const response = await apiClient.post('/api/auth/kakao/register', requestData)
-
-        // 정식 JWT 토큰으로 교체
-        if (response.token) {
-            apiClient.setAuthToken(response.token)
-        }
-
-        return response
-    },
-
     // 아이디 중복 확인 (GET /auth/username?username=user_id)
     async checkUsernameAvailable(username) {
         return await apiClient.get('/api/auth/username', { username })
+    },
+
+    // 이름+전화번호 조합 가입 가능 여부 확인 (POST /auth/registration-check)
+    // 백엔드 신규 API 필요 — 응답: { available: boolean, existing_user_id?, information? }
+    async checkRegistration(username, phoneNumber) {
+        return await apiClient.post('/api/auth/registration-check', {
+            username,
+            phone_number: phoneNumber
+        })
     },
 
     // 로그아웃 (POST /auth/logout)

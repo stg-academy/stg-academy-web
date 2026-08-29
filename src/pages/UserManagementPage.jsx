@@ -2,6 +2,7 @@ import UserTable from "../components/tables/UserTable.jsx";
 import { getUsersPaged, adminUpdateUser, adminResetPassword } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
+import { formatPhoneNumber, isValidPhoneNumber } from "../utils/phoneUtils.js";
 import { useState, useEffect } from "react";
 import PageContainer from "../components/ui/PageContainer.jsx";
 import Button from "../components/ui/Button.jsx";
@@ -65,6 +66,7 @@ const UserManagementPage = () => {
         setEditingData({
             username: user.username || '',
             information: user.information || '',
+            phone_number: user.phone_number || '',
             is_active: user.is_active ?? true,
             role: user.authorizations?.role || ROLES.USER
         })
@@ -103,15 +105,19 @@ const UserManagementPage = () => {
             errors.username = '사용자명은 필수 입력 항목입니다.'
         }
 
+        if (data.phone_number && data.phone_number.trim() !== '' && !isValidPhoneNumber(formatPhoneNumber(data.phone_number))) {
+            errors.phone_number = '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)'
+        }
+
         return errors
     }
 
     // 변경 사항이 있는지 확인
     const hasChanges = (original, edited) => {
         // 기본 필드 비교
-        const basicFields = ['username', 'information', 'is_active']
+        const basicFields = ['username', 'information', 'phone_number', 'is_active']
         for (const key of basicFields) {
-            if (edited[key] !== original[key] && !(edited[key] == null && original[key] === '')) {
+            if ((edited[key] ?? '') !== (original[key] ?? '')) {
                 return true
             }
         }
@@ -147,6 +153,7 @@ const UserManagementPage = () => {
             const updateData = {
                 username: editingData.username,
                 information: editingData.information,
+                phone_number: editingData.phone_number ? formatPhoneNumber(editingData.phone_number) : '',
                 is_active: editingData.is_active
             }
 
@@ -178,16 +185,20 @@ const UserManagementPage = () => {
             const createdUser = (await authAPI.manualRegister(newUserData)).user
 
             if (createdUser?.id) {
+                // 생성 응답에는 is_active가 빠져있을 수 있어(백엔드 기본값은 true) 보정해서 사용
+                const normalizedUser = { ...createdUser, is_active: createdUser.is_active ?? true }
+
                 // 페이지 단위 조회 중이라 새 사용자가 현재 페이지에 없을 수 있으므로,
                 // 재조회 대신 응답으로 받은 사용자 정보를 현재 목록 맨 앞에 바로 반영
-                setUsers(prev => [createdUser, ...prev])
+                setUsers(prev => [normalizedUser, ...prev])
                 setTotalCount(prev => prev + 1)
-                setEditingUserId(createdUser.id)
+                setEditingUserId(normalizedUser.id)
                 setEditingData({
-                    username: createdUser.username || '',
-                    information: createdUser.information || '',
-                    is_active: createdUser.is_active ?? true,
-                    role: createdUser.authorizations?.role || ROLES.USER
+                    username: normalizedUser.username || '',
+                    information: normalizedUser.information || '',
+                    phone_number: normalizedUser.phone_number || '',
+                    is_active: normalizedUser.is_active,
+                    role: normalizedUser.authorizations?.role || ROLES.USER
                 })
                 setValidationErrors({})
             } else {

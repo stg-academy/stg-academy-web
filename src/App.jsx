@@ -4,7 +4,6 @@ import {ToastProvider} from './components/ui/ToastProvider.jsx'
 import Header from './components/Header'
 import SampleDashboard from './pages/SampleDashboard'
 import SamplePage from './pages/SamplePage'
-import KakaoCallback from './components/KakaoCallback'
 import CourseManagementPage from "./pages/CourseManagementPage.jsx"
 import CourseListPage from './pages/CourseListPage'
 import SessionListPage from './pages/SessionListPage.jsx'
@@ -13,7 +12,6 @@ import AttendanceTab from "./pages/AttendanceTab.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PrivacyConsentGate from "./components/PrivacyConsentGate.jsx";
@@ -29,15 +27,6 @@ import Certificates from "./pages-mobile/Certificates.jsx";
 import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
-    // 현재 URL이 카카오 콜백인지 확인
-    const isKakaoCallback = window.location.pathname === '/auth/kakao/callback'
-
-    // 카카오 콜백 페이지인 경우 헤더 없이 렌더링
-    if (isKakaoCallback) {
-        return <KakaoCallback/>
-    }
-
-    // 일반 앱 콘텐츠
     return (
         <div className="min-h-screen bg-gray-50">
             <Header/>
@@ -46,7 +35,6 @@ function AppContent() {
                 // 인증 관련 라우트
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/register" element={<RegisterPage/>}/>
-                <Route path="/auth/complete-registration" element={<CompleteKakaoRegistration/>}/>
 
                 // 모든 사용자에게 공개된 라우트
                 <Route path="/" element={<Home/>}/>
@@ -109,10 +97,7 @@ function App() {
         <ToastProvider>
             <AuthProvider>
                 <Router>
-                    <Routes>
-                        <Route path="/auth/kakao/callback" element={<KakaoCallback/>}/>
-                        <Route path="/*" element={<AppContent/>}/>
-                    </Routes>
+                    <AppContent/>
                 </Router>
             </AuthProvider>
         </ToastProvider>

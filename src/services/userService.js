@@ -164,15 +164,15 @@ export const createUser = async (userData) => {
 }
 
 /**
- * 유사한 수동 등록 사용자 목록 조회
+ * 정식 가입자 이름 검색 (공개 API, 로그인 페이지 동명이인 식별용)
  * @param {string} username - 검색할 사용자명
- * @returns {Promise<Array>} 유사한 사용자 목록 (수강 이력 포함)
+ * @returns {Promise<Array>} 검색된 사용자 목록
  */
-export const getUsersByUsername = async (username) => {
+export const getNormalUsersByUsername = async (username) => {
   try {
-    return await apiClient.get('/api/users/manual', { username })
+    return await apiClient.get('/api/users/normal', { username })
   } catch (error) {
-    console.error('유사 사용자 조회 실패:', error)
+    console.error('사용자 검색 실패:', error)
     throw error
   }
 }

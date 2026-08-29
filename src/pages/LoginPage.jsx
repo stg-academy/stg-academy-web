@@ -1,17 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { startKakaoLogin } from '../config/kakao'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
 import Button from '../components/ui/Button.jsx'
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/Tabs.jsx'
-import { useToast } from '../components/ui/ToastProvider.jsx'
 import { formatPhoneNumber, isValidPhoneNumber } from '../utils/phoneUtils.js'
+import { getNormalUsersByUsername } from '../services/userService.js'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { loginWithCredentials, loginWithPhone, isLoading, error, clearError, isAuthenticated, needsRegistration } = useAuth()
-  const toast = useToast()
+  const { loginWithCredentials, loginWithPhone, isLoading, error, clearError, isAuthenticated } = useAuth()
   const [loginMode, setLoginMode] = useState('password') // 'password' | 'phone'
   const [formData, setFormData] = useState({
     username: '',
@@ -20,12 +18,42 @@ const LoginPage = () => {
   })
   const [formErrors, setFormErrors] = useState({})
 
+  // 이름 검색 드롭다운 (동명이인 식별용)
+  const [usernameSearchResults, setUsernameSearchResults] = useState([])
+  const [showUsernameDropdown, setShowUsernameDropdown] = useState(false)
+  const usernameSearchDebounceRef = useRef(null)
+
   // 로그인 성공 시 홈으로 리다이렉트
   useEffect(() => {
-    if (isAuthenticated && !needsRegistration) {
+    if (isAuthenticated) {
       navigate('/', { replace: true })
     }
-  }, [isAuthenticated, needsRegistration, navigate])
+  }, [isAuthenticated, navigate])
+
+  const handleUsernameSearch = useCallback((searchTerm) => {
+    if (usernameSearchDebounceRef.current) clearTimeout(usernameSearchDebounceRef.current)
+
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      setUsernameSearchResults([])
+      setShowUsernameDropdown(false)
+      return
+    }
+
+    usernameSearchDebounceRef.current = setTimeout(async () => {
+      try {
+        const results = await getNormalUsersByUsername(searchTerm.trim())
+        setUsernameSearchResults(results || [])
+        setShowUsernameDropdown((results || []).length > 0)
+      } catch (err) {
+        console.error('이름 검색 실패:', err)
+      }
+    }, 400)
+  }, [])
+
+  const handleSelectUsername = useCallback((user) => {
+    setFormData(prev => ({ ...prev, username: user.username }))
+    setShowUsernameDropdown(false)
+  }, [])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -33,6 +61,10 @@ const LoginPage = () => {
       ...prev,
       [name]: value
     }))
+
+    if (name === 'username') {
+      handleUsernameSearch(value)
+    }
 
     // 입력 시 에러 클리어
     if (formErrors[name]) {
@@ -112,17 +144,8 @@ const LoginPage = () => {
         await loginWithPhone(submitData.username, submitData.phone_number)
       }
       // AuthContext에서 성공 시 자동으로 홈으로 리다이렉트됨
-    } catch (err) {
+    } catch {
       // 에러는 AuthContext에서 처리됨
-    }
-  }
-
-  const handleKakaoLogin = () => {
-    try {
-      startKakaoLogin()
-    } catch (error) {
-      console.error('카카오 로그인 시작 실패:', error)
-      toast.error(error.message || '로그인을 시작할 수 없습니다.')
     }
   }
 
@@ -150,7 +173,7 @@ const LoginPage = () => {
 
       {/* 일반 로그인 폼 */}
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <div>
+        <div className="relative">
           <label htmlFor="username" className="block text-sm font-medium text-neutral-700 mb-2">
             이름
           </label>
@@ -158,16 +181,40 @@ const LoginPage = () => {
             id="username"
             name="username"
             type="text"
+            autoComplete="off"
             value={formData.username}
             onChange={handleInputChange}
+            onFocus={() => usernameSearchResults.length > 0 && setShowUsernameDropdown(true)}
+            onBlur={() => setTimeout(() => setShowUsernameDropdown(false), 150)}
             className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
               formErrors.username ? 'border-error' : 'border-neutral-300'
             }`}
-            placeholder="이름을 입력하세요"
+            placeholder="이름을 입력하세요 (2글자 이상 입력 시 검색)"
             disabled={isLoading}
           />
           {formErrors.username && (
             <p className="mt-2 text-sm text-error-text">{formErrors.username}</p>
+          )}
+
+          {showUsernameDropdown && usernameSearchResults.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {usernameSearchResults.map((user, index) => (
+                <button
+                  key={user.id || index}
+                  type="button"
+                  onMouseDown={() => handleSelectUsername(user)}
+                  className="w-full px-4 py-2.5 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0"
+                >
+                  <p className="font-medium text-neutral-900 text-sm">{user.username}</p>
+                  <div className="mt-0.5 text-xs text-neutral-500 space-x-1">
+                    {user.information && <span>{user.information}</span>}
+                    {user.phone_number && (
+                      <span>· {user.phone_number.slice(-4)}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
@@ -226,41 +273,6 @@ const LoginPage = () => {
           </Button>
         </div>
       </form>
-
-      {/* 구분선 */}
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-neutral-500">또는</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 카카오 로그인 — 카카오 공식 브랜드 컬러(#FEE500)는 v2 토큰 체계 밖의
-          서드파티 브랜드 색상이라 그대로 유지. 중복된 style prop만 제거하고
-          포커스 링을 노란색 대비 대신 어두운 색으로 바꿔 시인성 개선. */}
-      <div className="mt-6">
-        <button
-          onClick={handleKakaoLogin}
-          disabled={isLoading}
-          className="w-full flex justify-center items-center px-4 py-3 bg-[#FEE500] text-black rounded-md hover:bg-[#F5DC00] focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-black/85"
-        >
-          <svg
-            className="w-5 h-5 mr-2"
-            viewBox="0 0 18 17"
-            fill="none"
-          >
-            <path
-              d="M9 1.5c4.687 0 8.5 3.077 8.5 6.875S13.687 15.25 9 15.25c-.875 0-1.719-.125-2.531-.344L3.5 16.75v-3.531c-1.344-1.031-2.25-2.594-2.25-4.344C1.25 4.577 5.063 1.5 9 1.5z"
-              fill="#000000"
-            />
-          </svg>
-          카카오 로그인
-        </button>
-      </div>
 
       {/* 회원가입 링크 */}
       <div className="mt-6 text-center">

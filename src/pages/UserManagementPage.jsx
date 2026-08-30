@@ -1,9 +1,9 @@
 import UserTable from "../components/tables/UserTable.jsx";
-import { getUsersPaged, adminUpdateUser, adminResetPassword } from "../services/userService.js";
+import { getUsersPaged, searchUsers, adminUpdateUser, adminResetPassword } from "../services/userService.js";
 import { authAPI } from "../services/authService.js";
 import { ROLES } from "../utils/roleUtils.js";
 import { formatPhoneNumber, isValidPhoneNumber } from "../utils/phoneUtils.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageContainer from "../components/ui/PageContainer.jsx";
 import Button from "../components/ui/Button.jsx";
 import ErrorBanner from "../components/ui/ErrorBanner.jsx";
@@ -14,6 +14,8 @@ import Icon from "../components/ui/Icon.jsx";
 
 // UserTable.jsx의 DataTable itemsPerPage(30)와 반드시 같은 값을 유지해야 함
 const USERS_PAGE_SIZE = 30
+// 검색 결과 최대 개수 (검색은 페이지네이션 없이 전체 사용자 대상, 서버 검색 API의 limit)
+const SEARCH_RESULT_LIMIT = 100
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([])
@@ -21,6 +23,11 @@ const UserManagementPage = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // 사용자 검색 (서버사이드, 전체 사용자 대상 — 디바운스)
+    const [searchTerm, setSearchTerm] = useState('')
+    const searchDebounceRef = useRef(null)
+    const isSearchActive = searchTerm.trim().length >= 2
 
     // 인라인 편집 상태
     const [editingUserId, setEditingUserId] = useState(null)
@@ -52,6 +59,45 @@ const UserManagementPage = () => {
             handleError('사용자 목록을 불러오는데 실패했습니다')
         } finally {
             setLoading(false)
+        }
+    }
+
+    // 사용자 검색 (서버사이드, 전체 사용자 대상)
+    const performSearch = async (term) => {
+        try {
+            setLoading(true)
+            const results = await searchUsers(term, SEARCH_RESULT_LIMIT)
+            setUsers(results)
+        } catch (err) {
+            console.error('사용자 검색 실패:', err)
+            handleError('사용자 검색에 실패했습니다')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // 검색어 입력 핸들러 (디바운스, 2글자 미만이면 검색 종료하고 페이지 목록으로 복귀)
+    const handleSearchChange = (e) => {
+        const value = e.target.value
+        setSearchTerm(value)
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+
+        const trimmed = value.trim()
+        if (trimmed.length < 2) {
+            loadUsersPage(currentPage)
+            return
+        }
+
+        searchDebounceRef.current = setTimeout(() => performSearch(trimmed), 400)
+    }
+
+    // 현재 보고 있는 화면(검색 결과 또는 페이지 목록) 새로고침
+    const refreshCurrentView = async () => {
+        const trimmed = searchTerm.trim()
+        if (trimmed.length >= 2) {
+            await performSearch(trimmed)
+        } else {
+            await loadUsersPage(currentPage)
         }
     }
 
@@ -163,7 +209,7 @@ const UserManagementPage = () => {
             }
 
             await adminUpdateUser(userId, updateData)
-            await loadUsersPage(currentPage) // 현재 페이지만 재조회
+            await refreshCurrentView()
             setEditingUserId(null)
             setEditingData({})
             setValidationErrors({})
@@ -271,12 +317,29 @@ const UserManagementPage = () => {
 
             <ErrorBanner message={error} className="mb-6" />
 
+            {/* 검색 (서버사이드, 전체 사용자 대상) */}
+            <div className="mb-4">
+                <div className="relative w-full sm:w-80">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Icon name="search" size={16} className="text-neutral-400" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="이름, 소속, 전화번호로 검색 (2글자 이상)"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                    />
+                </div>
+            </div>
+
             {/* 사용자 관리 테이블 */}
             <div className="bg-white rounded-lg border border-neutral-200">
                 <UserTable
                     users={users}
                     loading={loading}
-                    // 서버사이드 페이지네이션
+                    // 서버사이드 페이지네이션 (검색 중에는 false — 검색 결과(최대 100건) 내에서 클라이언트 페이지네이션)
+                    serverPagination={!isSearchActive}
                     totalCount={totalCount}
                     currentPage={currentPage}
                     onPageChange={setCurrentPage}

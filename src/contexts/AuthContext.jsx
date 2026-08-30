@@ -165,11 +165,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   // 일반 로그인
-  const loginWithCredentials = async (username, password) => {
+  const loginWithCredentials = async (username, password, id) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
 
-      const response = await authAPI.loginWithCredentials(username, password)
+      const response = await authAPI.loginWithCredentials(username, password, id)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: response.user,
@@ -187,11 +187,11 @@ export function AuthProvider({ children }) {
   }
 
   // 전화번호 로그인 (비밀번호 없이 이름+전화번호)
-  const loginWithPhone = async (username, phoneNumber) => {
+  const loginWithPhone = async (username, phoneNumber, id) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
 
-      const response = await authAPI.loginWithPhone(username, phoneNumber)
+      const response = await authAPI.loginWithPhone(username, phoneNumber, id)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: response.user,

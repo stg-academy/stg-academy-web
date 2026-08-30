@@ -2,12 +2,12 @@ import apiClient from "./apiClient.js";
 
 // 인증 관련 API (서버 스펙에 맞게 수정)
 export const authAPI = {
-    // 일반 로그인 (POST /auth/login)
-    async loginWithCredentials(username, password) {
-        const response = await apiClient.post('/api/auth/login', {
-            username,
-            password
-        })
+    // 일반 로그인 (POST /auth/login) — id는 이름 검색 결과에서 사용자를 선택했을 때만 전달(동명이인 구분용)
+    async loginWithCredentials(username, password, id) {
+        const requestData = { username, password }
+        if (id) requestData.id = id
+
+        const response = await apiClient.post('/api/auth/login', requestData)
 
         // JWT 토큰 저장
         if (response.token) {
@@ -18,11 +18,12 @@ export const authAPI = {
     },
 
     // 전화번호 로그인 (POST /auth/phone/login) — 비밀번호 없이 이름+전화번호 일치로 로그인
-    async loginWithPhone(username, phoneNumber) {
-        const response = await apiClient.post('/api/auth/phone/login', {
-            username,
-            phone_number: phoneNumber
-        })
+    // id는 이름 검색 결과에서 사용자를 선택했을 때만 전달(동명이인 구분용)
+    async loginWithPhone(username, phoneNumber, id) {
+        const requestData = { username, phone_number: phoneNumber }
+        if (id) requestData.id = id
+
+        const response = await apiClient.post('/api/auth/phone/login', requestData)
 
         if (response.token) {
             apiClient.setAuthToken(response.token)

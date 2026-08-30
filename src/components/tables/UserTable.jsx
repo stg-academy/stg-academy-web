@@ -12,6 +12,9 @@ const UserTable = ({
     totalCount,
     currentPage,
     onPageChange,
+    // 검색 (서버사이드, 전체 사용자 대상 — UserManagementPage에서 제어)
+    searchValue,
+    onSearchChange,
     // 인라인 편집 관련 props
     editingUserId,
     editingData,
@@ -236,10 +239,13 @@ const UserTable = ({
             loading={loading}
             itemsPerPage={30}
             showPagination={true}
-            showSearch={false}
+            showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
-            // 서버사이드 페이지네이션. 검색창은 UserManagementPage에서 서버 검색 API로 직접 구현
-            // (DataTable 내장 검색은 현재 로드된 페이지 안에서만 필터링되어 전체 사용자 검색에 부적합)
+            // 검색창은 DataTable 내장 UI를 그대로 쓰되, searchValue/onSearchChange를 넘겨
+            // UserManagementPage의 서버 검색(전체 사용자 대상)으로 제어한다
+            searchValue={searchValue}
+            onSearchChange={onSearchChange}
+            // 서버사이드 페이지네이션 (검색 중에는 false — 검색 결과 내에서 클라이언트 페이지네이션)
             serverPagination={serverPagination}
             totalCount={totalCount}
             currentPage={currentPage}

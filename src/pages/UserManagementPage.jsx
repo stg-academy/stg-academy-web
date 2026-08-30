@@ -77,8 +77,7 @@ const UserManagementPage = () => {
     }
 
     // 검색어 입력 핸들러 (디바운스, 2글자 미만이면 검색 종료하고 페이지 목록으로 복귀)
-    const handleSearchChange = (e) => {
-        const value = e.target.value
+    const handleSearchChange = (value) => {
         setSearchTerm(value)
         if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
 
@@ -317,27 +316,14 @@ const UserManagementPage = () => {
 
             <ErrorBanner message={error} className="mb-6" />
 
-            {/* 검색 (서버사이드, 전체 사용자 대상) */}
-            <div className="mb-4">
-                <div className="relative w-full sm:w-80">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Icon name="search" size={16} className="text-neutral-400" />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder="이름, 소속, 전화번호로 검색 (2글자 이상)"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                    />
-                </div>
-            </div>
-
             {/* 사용자 관리 테이블 */}
             <div className="bg-white rounded-lg border border-neutral-200">
                 <UserTable
                     users={users}
                     loading={loading}
+                    // 검색 (서버사이드, 전체 사용자 대상) — DataTable 내장 검색창을 제어
+                    searchValue={searchTerm}
+                    onSearchChange={handleSearchChange}
                     // 서버사이드 페이지네이션 (검색 중에는 false — 검색 결과(최대 100건) 내에서 클라이언트 페이지네이션)
                     serverPagination={!isSearchActive}
                     totalCount={totalCount}

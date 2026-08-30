@@ -4,6 +4,7 @@ import Select from './Select.jsx'
 import BottomSheet from './BottomSheet.jsx'
 import Button from './Button.jsx'
 import Icon from './Icon.jsx'
+import Spinner from './Spinner.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -14,6 +15,12 @@ const DataTable = ({
                        itemsPerPage = null,
                        showPagination = true,
                        showSearch = true,
+                       // 검색창을 부모가 제어(서버사이드 검색 등)하고 싶을 때 사용 — 지정하면
+                       // 검색어 입력값을 이 값으로 표시하고, 내부 클라이언트 필터링은 건너뛴다
+                       // (data prop을 이미 검색 결과로 간주). 지정하지 않으면 기존처럼 내부에서
+                       // searchableColumns 기준으로 클라이언트 필터링한다.
+                       searchValue = undefined,
+                       onSearchChange = null,
                        emptyMessage = "데이터가 없습니다.",
                        className = "",
                        // 인라인 편집 관련 props
@@ -38,14 +45,16 @@ const DataTable = ({
                        currentPage: currentPageProp = 1,
                        onPageChange = null
                    }) => {
-    const [searchTerm, setSearchTerm] = useState('')
+    const isControlledSearch = typeof onSearchChange === 'function'
+    const [internalSearchTerm, setInternalSearchTerm] = useState('')
+    const searchTerm = isControlledSearch ? (searchValue || '') : internalSearchTerm
     const [internalCurrentPage, setInternalCurrentPage] = useState(1)
     const currentPage = serverPagination ? currentPageProp : internalCurrentPage
     const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'})
 
-    // 검색 필터링
+    // 검색 필터링 (제어 모드에서는 data가 이미 검색 결과이므로 내부 필터링을 건너뜀)
     const filteredData = useMemo(() => {
-        if (!searchTerm || !searchableColumns.length) return data
+        if (isControlledSearch || !searchTerm || !searchableColumns.length) return data
 
         return data.filter(row =>
             searchableColumns.some(column => {
@@ -54,7 +63,7 @@ const DataTable = ({
                 return value.toString().toLowerCase().includes(searchTerm.toLowerCase())
             })
         )
-    }, [data, searchTerm, searchableColumns])
+    }, [data, searchTerm, searchableColumns, isControlledSearch])
 
     // 정렬 기능
     const sortedData = useMemo(() => {
@@ -111,9 +120,14 @@ const DataTable = ({
         }
     }
 
-    // 검색어 변경 시 첫 페이지로 이동 (서버 모드에서는 검색을 지원하지 않음)
+    // 검색어 변경 시 첫 페이지로 이동
     const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value)
+        const value = e.target.value
+        if (isControlledSearch) {
+            onSearchChange(value)
+            return
+        }
+        setInternalSearchTerm(value)
         if (!serverPagination) setInternalCurrentPage(1)
     }
 
@@ -248,19 +262,6 @@ const DataTable = ({
             : <Icon name="sort-desc" size={16} className="text-accent"/>
     }
 
-    if (loading) {
-        return (
-            <div className={`bg-white rounded-lg border border-neutral-200 p-6 ${className}`}>
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
-                </div>
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                </div>
-            </div>
-        )
-    }
-
     const editableColumns = columns.filter(c => c.editable)
     const mobileInfoColumns = columns.filter(c => c.mobileInfo && !c.editable)
     const editingRow = editingRowId != null ? data.find(r => r.id === editingRowId) : null
@@ -279,7 +280,7 @@ const DataTable = ({
                 </div>
 
                 {/* 검색창 */}
-                {showSearch && searchableColumns.length > 0 && (
+                {showSearch && (searchableColumns.length > 0 || isControlledSearch) && (
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Icon name="search" size={16} className="text-neutral-400"/>
@@ -325,7 +326,17 @@ const DataTable = ({
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-neutral-100">
-                    {paginatedData.length > 0 ? (
+                    {loading ? (
+                        // 헤더(검색창 포함)는 그대로 두고 행 영역만 교체 — 통째로 갈아엎으면
+                        // 검색 input DOM 노드가 매번 재생성되어 포커스가 끊김
+                        <tr>
+                            <td colSpan={columns.length} className="py-12">
+                                <div className="flex justify-center items-center">
+                                    <Spinner size="lg" />
+                                </div>
+                            </td>
+                        </tr>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((row, index) => {
                             const isEditing = editingRowId === row.id
                             return (
@@ -366,7 +377,11 @@ const DataTable = ({
             {/* 카드 리스트 (모바일) */}
             {renderMobileItem && (
                 <div className="lg:hidden divide-y divide-neutral-100">
-                    {paginatedData.length > 0 ? (
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Spinner size="lg" />
+                        </div>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((row, index) => (
                             <div key={row.id || index}>{renderMobileItem(row)}</div>
                         ))

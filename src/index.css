@@ -27,6 +27,9 @@
     --color-accent-hover: #1d4ed8;
     --color-accent-soft: #eff6ff;
 
+    --border-default: var(--color-neutral-200);
+    --text-on-accent: #ffffff;
+
     --color-success: #22c55e;
     --color-success-soft: #f0fdf4;
     --color-success-text: #166534;

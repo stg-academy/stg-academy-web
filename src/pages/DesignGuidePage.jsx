@@ -10,6 +10,7 @@ import BottomSheet from '../components/ui/BottomSheet.jsx'
 import ConfirmModal from '../components/ui/ConfirmModal.jsx'
 import Pagination from '../components/ui/Pagination.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
+import Spinner from '../components/ui/Spinner.jsx'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs.jsx'
 import Icon, { ICON_NAMES } from '../components/ui/Icon.jsx'
 import TextInput from '../components/forms/TextInput.jsx'
@@ -702,6 +703,34 @@ toast.info('처리할 항목이 없습니다.')`}
                                     <Button variant="secondary" onClick={() => toast.error('저장에 실패했습니다.')}>Error</Button>
                                     <Button variant="secondary" onClick={() => toast.warning('이미 처리된 항목입니다.')}>Warning</Button>
                                     <Button variant="secondary" onClick={() => toast.info('처리할 항목이 없습니다.')}>Info</Button>
+                                </div>
+                            </ExampleSection>
+
+                            <ExampleSection
+                                title="스피너 (Spinner 컴포넌트)"
+                                description="비동기 로딩 상태를 나타내는 인디케이터. 버튼/카드/패널 전체 로딩에 사용합니다."
+                                code={`<Spinner size="md" tone="accent" />
+
+// 채워진 accent 배경 위(예: 로딩 중인 primary 버튼 안)에서는
+<Spinner tone="on-accent" />`}
+                            >
+                                <div className="flex flex-wrap items-center gap-8">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Spinner size="sm" />
+                                        <span className="text-micro text-neutral-500">sm (16px)</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Spinner size="md" />
+                                        <span className="text-micro text-neutral-500">md (24px, 기본값)</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Spinner size="lg" />
+                                        <span className="text-micro text-neutral-500">lg (32px)</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2 bg-accent px-6 py-3 rounded-md">
+                                        <Spinner tone="on-accent" />
+                                        <span className="text-micro text-white">tone="on-accent"</span>
+                                    </div>
                                 </div>
                             </ExampleSection>
                         </div>

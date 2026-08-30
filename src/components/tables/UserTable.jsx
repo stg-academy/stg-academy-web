@@ -7,10 +7,14 @@ import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 const UserTable = ({
     users,
     loading,
-    // 서버사이드 페이지네이션
+    // 서버사이드 페이지네이션 (검색 중에는 false로 전달되어 검색 결과 내에서 클라이언트 페이지네이션됨)
+    serverPagination = true,
     totalCount,
     currentPage,
     onPageChange,
+    // 검색 (서버사이드, 전체 사용자 대상 — UserManagementPage에서 제어)
+    searchValue,
+    onSearchChange,
     // 인라인 편집 관련 props
     editingUserId,
     editingData,
@@ -232,14 +236,17 @@ const UserTable = ({
         <DataTable
             data={users}
             columns={userColumns}
-            searchableColumns={['username', 'information', 'auth_type']}
             loading={loading}
             itemsPerPage={30}
             showPagination={true}
-            showSearch={false}
+            showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
-            // 서버사이드 페이지네이션 (검색은 지원되는 페이지 안에서만 가능해 반쪽짜리가 되므로 당분간 비활성화)
-            serverPagination={true}
+            // 검색창은 DataTable 내장 UI를 그대로 쓰되, searchValue/onSearchChange를 넘겨
+            // UserManagementPage의 서버 검색(전체 사용자 대상)으로 제어한다
+            searchValue={searchValue}
+            onSearchChange={onSearchChange}
+            // 서버사이드 페이지네이션 (검색 중에는 false — 검색 결과 내에서 클라이언트 페이지네이션)
+            serverPagination={serverPagination}
             totalCount={totalCount}
             currentPage={currentPage}
             onPageChange={onPageChange}

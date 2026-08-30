@@ -10,7 +10,7 @@ import { getNormalUsersByUsername } from '../services/userService.js'
 const LoginPage = () => {
   const navigate = useNavigate()
   const { loginWithCredentials, loginWithPhone, isLoading, error, clearError, isAuthenticated } = useAuth()
-  const [loginMode, setLoginMode] = useState('password') // 'password' | 'phone'
+  const [loginMode, setLoginMode] = useState('phone') // 'password' | 'phone'
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -22,6 +22,8 @@ const LoginPage = () => {
   const [usernameSearchResults, setUsernameSearchResults] = useState([])
   const [showUsernameDropdown, setShowUsernameDropdown] = useState(false)
   const usernameSearchDebounceRef = useRef(null)
+  // 검색 결과에서 선택한 사용자 — 로그인 시 id를 함께 보내 동명이인을 구분한다
+  const [selectedUser, setSelectedUser] = useState(null)
 
   // 로그인 성공 시 홈으로 리다이렉트
   useEffect(() => {
@@ -51,6 +53,7 @@ const LoginPage = () => {
   }, [])
 
   const handleSelectUsername = useCallback((user) => {
+    setSelectedUser(user)
     setFormData(prev => ({ ...prev, username: user.username }))
     setShowUsernameDropdown(false)
   }, [])
@@ -63,6 +66,10 @@ const LoginPage = () => {
     }))
 
     if (name === 'username') {
+      // 선택된 사용자와 이름이 달라지면(직접 수정) 선택 해제 — 더 이상 같은 사람이라고 보장할 수 없음
+      if (selectedUser && value !== selectedUser.username) {
+        setSelectedUser(null)
+      }
       handleUsernameSearch(value)
     }
 
@@ -139,9 +146,9 @@ const LoginPage = () => {
 
     try {
       if (loginMode === 'password') {
-        await loginWithCredentials(submitData.username, submitData.password)
+        await loginWithCredentials(submitData.username, submitData.password, selectedUser?.id)
       } else {
-        await loginWithPhone(submitData.username, submitData.phone_number)
+        await loginWithPhone(submitData.username, submitData.phone_number, selectedUser?.id)
       }
       // AuthContext에서 성공 시 자동으로 홈으로 리다이렉트됨
     } catch {
@@ -194,6 +201,13 @@ const LoginPage = () => {
           />
           {formErrors.username && (
             <p className="mt-2 text-sm text-error-text">{formErrors.username}</p>
+          )}
+
+          {selectedUser && (selectedUser.information || selectedUser.phone_number) && (
+            <div className="mt-2 text-xs text-neutral-500 space-x-1">
+              {selectedUser.information && <span>{selectedUser.information}</span>}
+              {selectedUser.phone_number && <span>· {selectedUser.phone_number.slice(-4)}</span>}
+            </div>
           )}
 
           {showUsernameDropdown && usernameSearchResults.length > 0 && (

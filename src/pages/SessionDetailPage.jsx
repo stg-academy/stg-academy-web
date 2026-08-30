@@ -17,7 +17,7 @@ import AttendanceCodeCard from "../components/AttendanceCodeCard.jsx";
 import PageContainer from "../components/ui/PageContainer.jsx";
 import TabNav from "../components/ui/TabNav.jsx";
 import ErrorBanner from "../components/ui/ErrorBanner.jsx";
-import LoadingState from "../components/ui/LoadingState.jsx";
+import Spinner from "../components/ui/Spinner.jsx";
 import Button from "../components/ui/Button.jsx";
 import {useToast} from "../components/ui/ToastProvider.jsx";
 import Icon from "../components/ui/Icon.jsx";
@@ -165,11 +165,20 @@ const SessionDetailPage = () => {
 
 
     if (loading) {
-        return <LoadingState variant="fullscreen" label="로딩 중..." />
+        return (
+            <div className="min-h-screen flex items-center justify-center gap-3 text-neutral-500">
+                <Spinner size="lg" />
+                <span>로딩 중...</span>
+            </div>
+        )
     }
 
     if (!session) {
-        return <LoadingState variant="fullscreen" label="강좌을 찾을 수 없습니다." />
+        return (
+            <div className="min-h-screen flex items-center justify-center text-neutral-500">
+                강좌을 찾을 수 없습니다.
+            </div>
+        )
     }
 
     const tabs = [

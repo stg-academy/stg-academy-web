@@ -6,6 +6,7 @@ import Button from '../components/ui/Button.jsx';
 import Progress from '../components/ui/Progress.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import Icon from '../components/ui/Icon.jsx';
+import LoginSignupUpdateNotice from '../components/LoginSignupUpdateNotice.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyEnrolls } from '../services/enrollService';
 import { getSessions } from '../services/sessionService';
@@ -155,15 +156,20 @@ export default function Home() {
 
   if (authLoading || loading) {
     return (
-      <MobileLayout>
-        <div className="p-5 flex justify-center items-center h-64">
-          <div className="text-neutral-500">로딩 중...</div>
-        </div>
-      </MobileLayout>
+      <>
+        <LoginSignupUpdateNotice />
+        <MobileLayout>
+          <div className="p-5 flex justify-center items-center h-64">
+            <div className="text-neutral-500">로딩 중...</div>
+          </div>
+        </MobileLayout>
+      </>
     );
   }
 
   return (
+    <>
+    <LoginSignupUpdateNotice />
     <MobileLayout>
       <div className="p-5 space-y-8">
 
@@ -276,5 +282,6 @@ export default function Home() {
 
       </div>
     </MobileLayout>
+    </>
   );
 }

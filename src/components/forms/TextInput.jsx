@@ -4,6 +4,7 @@ const TextInput = ({
     label,
     value,
     onChange,
+    onBlur,
     placeholder = '',
     required = false,
     disabled = false,
@@ -22,6 +23,7 @@ const TextInput = ({
                 name={name}
                 value={value}
                 onChange={onChange}
+                onBlur={onBlur}
                 placeholder={placeholder}
                 disabled={disabled}
                 className={`w-full h-10 px-3 rounded-md border text-sm outline-none transition-colors ${

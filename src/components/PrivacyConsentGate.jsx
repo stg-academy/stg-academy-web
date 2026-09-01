@@ -42,11 +42,11 @@ const PrivacyConsentGate = () => {
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 text-sm text-neutral-700">
             <section>
               <h3 className="font-semibold text-neutral-900 mb-1">1. 수집하는 개인정보 항목</h3>
-              <p>이름, 소속 정보, 전화번호, 출석 및 수강 이력</p>
+              <p>이름, 전화번호, 출석 및 수강 이력</p>
             </section>
             <section>
               <h3 className="font-semibold text-neutral-900 mb-1">2. 수집 및 이용 목적</h3>
-              <p>강의 수강신청 관리, 출석 확인 및 수료증 발급, 학습 이력 관리, 공지사항 등 안내 전달</p>
+              <p>강의 수강신청 관리, 출석 확인 및 수료증 발급, 학습 이력 관리</p>
             </section>
             <section>
               <h3 className="font-semibold text-neutral-900 mb-1">3. 보유 및 이용 기간</h3>
@@ -54,7 +54,7 @@ const PrivacyConsentGate = () => {
             </section>
             <section>
               <h3 className="font-semibold text-neutral-900 mb-1">4. 동의를 거부할 권리 및 불이익</h3>
-              <p>개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으며, 동의하지 않을 경우 강의 신청 및 출석 관리 등 서비스 이용에 제한이 있을 수 있습니다.</p>
+              <p>개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으며, 동의하지 않을 경우 강의 조회 및 출석 관리 등 서비스 이용에 제한이 있을 수 있습니다.</p>
             </section>
           </div>
 

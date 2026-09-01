@@ -1,525 +1,512 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/mobile/ui/button';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { getSession } from '../services/sessionService';
-import { getEnrollsBySession } from '../services/enrollService';
-import { createOrUpdateAttendance, getAttendancesByLecture } from '../services/attendanceService';
-import { getLecturesBySession } from '../services/lectureService';
-import { getUsersInfo } from '../services/userService';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import Button from '../components/ui/Button.jsx';
+import Card from '../components/ui/Card.jsx';
+import {useToast} from '../components/ui/ToastProvider.jsx';
+import {getSession} from '../services/sessionService';
+import {getEnrollsBySession} from '../services/enrollService';
+import {createOrUpdateAttendance, getAttendancesByLecture} from '../services/attendanceService';
+import {getLecturesBySession} from '../services/lectureService';
+import {getUsersInfo} from '../services/userService';
 import UserRegistrationModal from '../components/modals/UserRegistrationModal';
+import Icon from '../components/ui/Icon.jsx';
 
-const XIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-const BackspaceIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2H10.828a2 2 0 00-1.414.586L3 12z" />
-  </svg>
-);
-
-const CheckIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const ChevronLeftIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
+const BackspaceIcon = ({className}) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2H10.828a2 2 0 00-1.414.586L3 12z"/>
+    </svg>
 );
 
 const KioskAttendance = () => {
-  const { session_id } = useParams();
-  const navigate = useNavigate();
-  const [sessionInfo, setSessionInfo] = useState(null);
-  const [todaysLecture, setTodaysLecture] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [attendanceStatus, setAttendanceStatus] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
+    const {session_id} = useParams();
+    const navigate = useNavigate();
+    const toast = useToast();
+    const [sessionInfo, setSessionInfo] = useState(null);
+    const [todaysLecture, setTodaysLecture] = useState(null);
+    const [allUsers, setAllUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [attendanceStatus, setAttendanceStatus] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
 
-  // 회원 등록 모달 열기
-  const handleOpenRegistrationModal = useCallback(() => {
-    setIsRegistrationModalOpen(true);
-  }, []);
+    // 회원 등록 모달 열기
+    const handleOpenRegistrationModal = useCallback(() => {
+        setIsRegistrationModalOpen(true);
+    }, []);
 
-  // 회원 등록 모달 닫기
-  const handleCloseRegistrationModal = useCallback(() => {
-    setIsRegistrationModalOpen(false);
-  }, []);
+    // 회원 등록 모달 닫기
+    const handleCloseRegistrationModal = useCallback(() => {
+        setIsRegistrationModalOpen(false);
+    }, []);
 
-  // 사용자 등록 완료 처리
-  const handleUserRegistered = useCallback(async () => {
-    // 사용자 목록 새로고침
-    try {
-      const enrollments = await getEnrollsBySession(session_id);
-      const activeEnrollments = enrollments.filter(e =>
-        e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE'
-      );
+    // 사용자 등록 완료 처리
+    const handleUserRegistered = useCallback(async () => {
+        // 사용자 목록 새로고침
+        try {
+            const enrollments = await getEnrollsBySession(session_id);
+            const activeEnrollments = enrollments.filter(e =>
+                e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE'
+            );
 
-      const usersInfo = await getUsersInfo(0, 1000);
-      const enrolledUsers = usersInfo.filter(user =>
-        activeEnrollments.some(enrollment => enrollment.user_id === user.id)
-      );
+            const usersInfo = await getUsersInfo(0, 1000);
+            const enrolledUsers = usersInfo.filter(user =>
+                activeEnrollments.some(enrollment => enrollment.user_id === user.id)
+            );
 
-      if (todaysLecture) {
-        const attendances = await getAttendancesByLecture(todaysLecture.id);
-        const usersWithAttendance = enrolledUsers.map(user => ({
-          ...user,
-          attendance: attendances.find(att => att.user_id === user.id)
-        }));
+            if (todaysLecture) {
+                const attendances = await getAttendancesByLecture(todaysLecture.id);
+                const usersWithAttendance = enrolledUsers.map(user => ({
+                    ...user,
+                    attendance: attendances.find(att => att.user_id === user.id)
+                }));
 
-        setAllUsers(usersWithAttendance);
-        setFilteredUsers(usersWithAttendance);
-      }
-    } catch (err) {
-      console.error('사용자 목록 새로고침 실패:', err);
-      setError('사용자 목록 새로고침에 실패했습니다.');
-    }
-  }, [session_id, todaysLecture]);
+                setAllUsers(usersWithAttendance);
+                setFilteredUsers(usersWithAttendance);
+            }
+        } catch (err) {
+            console.error('사용자 목록 새로고침 실패:', err);
+            setError('사용자 목록 새로고침에 실패했습니다.');
+        }
+    }, [session_id, todaysLecture]);
 
-  // 한글 자음 키패드
-  const KOREAN_CONSONANTS = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    // 한글 자음 키패드
+    const KOREAN_CONSONANTS = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 
-  // 초성 추출 함수
-  const getInitialConsonant = useCallback((char) => {
-    const code = char.charCodeAt(0);
-    if (code >= 0xAC00 && code <= 0xD7A3) { // 한글 범위
-      const index = Math.floor((code - 0xAC00) / 588);
-      const consonants = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-      return consonants[index];
-    }
-    return '';
-  }, []);
+    // 초성 추출 함수
+    const getInitialConsonant = useCallback((char) => {
+        const code = char.charCodeAt(0);
+        if (code >= 0xAC00 && code <= 0xD7A3) { // 한글 범위
+            const index = Math.floor((code - 0xAC00) / 588);
+            const consonants = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+            return consonants[index];
+        }
+        return '';
+    }, []);
 
-  // 초성 검색 함수
-  const searchByInitials = useCallback((text, query) => {
-    if (!query.trim()) return true;
+    // 초성 검색 함수
+    const searchByInitials = useCallback((text, query) => {
+        if (!query.trim()) return true;
 
-    const queryLower = query.toLowerCase();
-    const textLower = text.toLowerCase();
+        const queryLower = query.toLowerCase();
+        const textLower = text.toLowerCase();
 
-    // 일반 텍스트 검색
-    if (textLower.includes(queryLower)) return true;
+        // 일반 텍스트 검색
+        if (textLower.includes(queryLower)) return true;
 
-    // 초성 검색
-    const initials = text.split('').map(char => getInitialConsonant(char)).join('');
-    return initials.includes(query);
-  }, [getInitialConsonant]);
+        // 초성 검색
+        const initials = text.split('').map(char => getInitialConsonant(char)).join('');
+        return initials.includes(query);
+    }, [getInitialConsonant]);
 
-  // 데이터 로드
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
+    // 데이터 로드
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true);
 
-        // 세션 정보 로드
-        const session = await getSession(session_id);
-        setSessionInfo(session);
+                // 세션 정보 로드
+                const session = await getSession(session_id);
+                setSessionInfo(session);
 
-        // 오늘 강의 찾기
-        const lectures = await getLecturesBySession(session_id);
-        const today = new Date().toISOString().split('T')[0];
-        const todayLecture = lectures.find(lecture => {
-          if (lecture.lecture_date) {
-            const lectureDate = new Date(lecture.lecture_date).toISOString().split('T')[0];
-            return lectureDate === today;
-          }
-          return false;
-        });
+                // 오늘 강의 찾기
+                const lectures = await getLecturesBySession(session_id);
+                const today = new Date().toISOString().split('T')[0];
+                const todayLecture = lectures.find(lecture => {
+                    if (lecture.lecture_date) {
+                        const lectureDate = new Date(lecture.lecture_date).toISOString().split('T')[0];
+                        return lectureDate === today;
+                    }
+                    return false;
+                });
 
-        if (!todayLecture) {
-          setError('오늘 예정된 강의가 없습니다.');
-          return;
+                if (!todayLecture) {
+                    setError('오늘 예정된 강의가 없습니다.');
+                    return;
+                }
+
+                setTodaysLecture(todayLecture);
+
+                // 수강신청자 목록 로드
+                const enrollments = await getEnrollsBySession(session_id);
+                const activeEnrollments = enrollments.filter(e =>
+                    e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE'
+                );
+
+                // 사용자 정보 로드
+                const usersInfo = await getUsersInfo(0, 1000);
+                const enrolledUsers = usersInfo.filter(user =>
+                    activeEnrollments.some(enrollment => enrollment.user_id === user.id)
+                );
+
+                // 출석 기록 확인
+                const attendances = await getAttendancesByLecture(todayLecture.id);
+                const usersWithAttendance = enrolledUsers.map(user => ({
+                    ...user,
+                    attendance: attendances.find(att => att.user_id === user.id)
+                }));
+
+                setAllUsers(usersWithAttendance);
+                setFilteredUsers(usersWithAttendance);
+
+            } catch (err) {
+                console.error('데이터 로드 실패:', err);
+                setError('데이터를 불러오는 중 오류가 발생했습니다.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (session_id) {
+            loadData();
+        }
+    }, [session_id]);
+
+    // 검색 필터링
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredUsers(allUsers);
+            return;
         }
 
-        setTodaysLecture(todayLecture);
-
-        // 수강신청자 목록 로드
-        const enrollments = await getEnrollsBySession(session_id);
-        const activeEnrollments = enrollments.filter(e =>
-          e.enroll_status === 'ENROLLED' || e.enroll_status === 'ACTIVE'
+        const filtered = allUsers.filter(user =>
+            searchByInitials(user.username || '', searchQuery) ||
+            searchByInitials(user.information || '', searchQuery)
         );
 
-        // 사용자 정보 로드
-        const usersInfo = await getUsersInfo(0, 1000);
-        const enrolledUsers = usersInfo.filter(user =>
-          activeEnrollments.some(enrollment => enrollment.user_id === user.id)
-        );
+        setFilteredUsers(filtered);
+    }, [searchQuery, allUsers, searchByInitials]);
 
-        // 출석 기록 확인
-        const attendances = await getAttendancesByLecture(todayLecture.id);
-        const usersWithAttendance = enrolledUsers.map(user => ({
-          ...user,
-          attendance: attendances.find(att => att.user_id === user.id)
-        }));
+    // 키패드 입력 처리
+    const handleKeypadInput = useCallback((consonant) => {
+        setSearchQuery(prev => prev + consonant);
+    }, []);
 
-        setAllUsers(usersWithAttendance);
-        setFilteredUsers(usersWithAttendance);
+    // 백스페이스 처리
+    const handleBackspace = useCallback(() => {
+        setSearchQuery(prev => prev.slice(0, -1));
+    }, []);
 
-      } catch (err) {
-        console.error('데이터 로드 실패:', err);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
-      }
+    // 검색어 초기화
+    const handleClearSearch = useCallback(() => {
+        setSearchQuery('');
+    }, []);
+
+    // 사용자 선택 처리
+    const handleUserSelect = useCallback((user) => {
+        if (user.attendance) {
+            toast.warning('이미 출석 처리된 사용자입니다.');
+            return;
+        }
+        setSelectedUser(user);
+    }, []);
+
+    // 출석 처리
+    const handleAttendanceConfirm = useCallback(async () => {
+        if (!selectedUser || !todaysLecture) return;
+
+        setIsProcessing(true);
+        try {
+            await createOrUpdateAttendance(
+                todaysLecture.id,
+                selectedUser.id,
+                'PRESENT'
+            );
+
+            setAttendanceStatus('success');
+
+            // 사용자 목록 업데이트
+            setAllUsers(prev => prev.map(user =>
+                user.id === selectedUser.id
+                    ? {...user, attendance: {status: 'PRESENT', created_at: new Date().toISOString()}}
+                    : user
+            ));
+
+            // 3초 후 초기 화면으로 돌아가기
+            setTimeout(() => {
+                setAttendanceStatus(null);
+                setSelectedUser(null);
+                setSearchQuery('');
+            }, 1500);
+
+        } catch (err) {
+            console.error('출석 처리 실패:', err);
+            setAttendanceStatus('error');
+        } finally {
+            setIsProcessing(false);
+        }
+    }, [selectedUser, todaysLecture]);
+
+    // 초기화 처리
+    const handleReset = useCallback(() => {
+        setSelectedUser(null);
+        setAttendanceStatus(null);
+        setSearchQuery('');
+    }, []);
+
+    // 뒤로가기 처리
+    const handleGoBack = useCallback(() => {
+        if (selectedUser) {
+            setSelectedUser(null);
+        } else {
+            navigate(-1);
+        }
+    }, [selectedUser, navigate]);
+
+    // 날짜 포맷팅
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ko-KR', {
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
     };
 
-    if (session_id) {
-      loadData();
-    }
-  }, [session_id]);
-
-  // 검색 필터링
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredUsers(allUsers);
-      return;
-    }
-
-    const filtered = allUsers.filter(user =>
-      searchByInitials(user.username || '', searchQuery) ||
-      searchByInitials(user.information || '', searchQuery)
-    );
-
-    setFilteredUsers(filtered);
-  }, [searchQuery, allUsers, searchByInitials]);
-
-  // 키패드 입력 처리
-  const handleKeypadInput = useCallback((consonant) => {
-    setSearchQuery(prev => prev + consonant);
-  }, []);
-
-  // 백스페이스 처리
-  const handleBackspace = useCallback(() => {
-    setSearchQuery(prev => prev.slice(0, -1));
-  }, []);
-
-  // 검색어 초기화
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-  }, []);
-
-  // 사용자 선택 처리
-  const handleUserSelect = useCallback((user) => {
-    if (user.attendance) {
-      alert('이미 출석 처리된 사용자입니다.');
-      return;
-    }
-    setSelectedUser(user);
-  }, []);
-
-  // 출석 처리
-  const handleAttendanceConfirm = useCallback(async () => {
-    if (!selectedUser || !todaysLecture) return;
-
-    setIsProcessing(true);
-    try {
-      await createOrUpdateAttendance(
-        todaysLecture.id,
-        selectedUser.id,
-        'PRESENT'
-      );
-
-      setAttendanceStatus('success');
-
-      // 사용자 목록 업데이트
-      setAllUsers(prev => prev.map(user =>
-        user.id === selectedUser.id
-          ? { ...user, attendance: { status: 'PRESENT', created_at: new Date().toISOString() } }
-          : user
-      ));
-
-      // 3초 후 초기 화면으로 돌아가기
-      setTimeout(() => {
-        setAttendanceStatus(null);
-        setSelectedUser(null);
-        setSearchQuery('');
-      }, 1500);
-
-    } catch (err) {
-      console.error('출석 처리 실패:', err);
-      setAttendanceStatus('error');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [selectedUser, todaysLecture]);
-
-  // 초기화 처리
-  const handleReset = useCallback(() => {
-    setSelectedUser(null);
-    setAttendanceStatus(null);
-    setSearchQuery('');
-  }, []);
-
-  // 뒤로가기 처리
-  const handleGoBack = useCallback(() => {
-    if (selectedUser) {
-      setSelectedUser(null);
-    } else {
-      navigate(-1);
-    }
-  }, [selectedUser, navigate]);
-
-  // 날짜 포맷팅
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
-        <div className="text-xl text-slate-600">로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-screen -mt-17 bg-slate-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
-          <div className="text-red-600 text-xl mb-4">{error}</div>
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 출석 완료 화면
-  if (attendanceStatus === 'success' && selectedUser) {
-    return (
-      <div className="h-screen -mt-17 bg-green-50 flex flex-col items-center justify-center p-8 overflow-hidden">
-        <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-md w-full">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckIcon className="h-12 w-12 text-green-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">출석 완료!</h1>
-          <p className="text-lg text-slate-600 mb-2">{selectedUser.username}님</p>
-          <p className="text-sm text-slate-500">출석이 성공적으로 처리되었습니다.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 사용자 확인 화면
-  if (selectedUser) {
-    return (
-      <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
-            <div className="flex items-center justify-between mb-8">
-              <button
-                  onClick={handleGoBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4 text-lg sm:text-base"
-              >
-                <svg className="w-6 h-6 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-                </svg>
-                돌아가기
-              </button>
-
-              <div className="w-12"></div>
+    if (loading) {
+        return (
+            <div className="h-screen bg-neutral-50 flex items-center justify-center">
+                <div className="text-xl text-neutral-600">로딩 중...</div>
             </div>
+        );
+    }
 
-            <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
-              <span className="text-4xl font-bold text-blue-600">
+    if (error) {
+        return (
+            <div className="h-screen bg-neutral-50 flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
+                    <div className="text-error-text text-xl mb-4">{error}</div>
+                    <Button
+                        onClick={() => navigate(-1)}
+                        className="!bg-accent !text-white hover:!bg-accent-hover"
+                    >
+                        돌아가기
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // 출석 완료 화면
+    if (attendanceStatus === 'success' && selectedUser) {
+        return (
+            <div
+                className="h-screen bg-success-soft flex flex-col items-center justify-center p-8 overflow-hidden">
+                <div className="bg-white rounded-lg p-12 shadow-lg text-center max-w-md w-full">
+                    <div
+                        className="w-24 h-24 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-8">
+                        <Icon name="check" size={48} className="text-success-text"/>
+                    </div>
+                    <h1 className="text-3xl font-bold text-neutral-900 mb-4">출석 완료!</h1>
+                    <p className="text-lg text-neutral-600 mb-2">{selectedUser.username}님</p>
+                    <p className="text-sm text-neutral-500">출석이 성공적으로 처리되었습니다.</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 사용자 확인 화면
+    if (selectedUser) {
+        return (
+            <div className="h-screen bg-neutral-50 flex flex-col overflow-hidden">
+                <div className="flex-1 flex items-center justify-center p-8">
+                    <div className="bg-white rounded-lg p-12 shadow-lg text-center max-w-lg w-full">
+                        <div className="flex items-center justify-between mb-8">
+                            <Button
+                                variant="ghost"
+                                onClick={handleGoBack}
+                                className="text-neutral-600 hover:text-neutral-900 mb-4"
+                            >
+                                <Icon name="chevron-left" size={20} className="mr-1"/>
+                                돌아가기
+                            </Button>
+
+                            <div className="w-12"></div>
+                        </div>
+
+                        <div
+                            className="w-32 h-32 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-8">
+              <span className="text-4xl font-bold text-accent">
                 {selectedUser.username?.charAt(0) || '?'}
               </span>
+                        </div>
+
+                        <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+                            {selectedUser.username || '이름 없음'}님
+                        </h2>
+
+                        {selectedUser.information && (
+                            <div className="text-lg text-neutral-600 mb-8">{selectedUser.information}</div>
+                        )}
+
+                        <Button
+                            onClick={handleAttendanceConfirm}
+                            disabled={isProcessing || !todaysLecture}
+                            className="w-full h-16 text-xl font-bold !bg-accent !text-white hover:!bg-accent-hover disabled:!bg-neutral-400"
+                        >
+                            {isProcessing ? '처리 중...' : '출석 체크'}
+                        </Button>
+
+                        {!todaysLecture && (
+                            <p className="text-error text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 메인 검색 화면
+    return (
+        <div className="h-screen bg-neutral-50 flex flex-col overflow-hidden">
+            {/* 상단 헤더 - 강의정보 영역 */}
+            <div className="bg-white shadow-sm p-3 flex items-center justify-between flex-shrink-0">
+                <Button
+                    variant="ghost"
+                    onClick={handleGoBack}
+                    className="p-3 rounded-full"
+                >
+                    <Icon name="x" size={24} className="text-neutral-600"/>
+                </Button>
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-neutral-900">{sessionInfo?.title} 출석체크</h1>
+                    {todaysLecture ? (
+                        <p className=" text-neutral-500 mt-1">
+                            {formatDate(todaysLecture.lecture_date)} {todaysLecture.title}
+                        </p>
+                    ) : (
+                        <p className="text-lg text-error text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
+                    )}
+                </div>
+                <div className="w-12"></div>
             </div>
 
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
-              {selectedUser.username || '이름 없음'}님
-            </h2>
+            {/* 검색창 */}
+            <div className="bg-white p-3 border-b border-neutral-100 flex-shrink-0">
+                <div className="relative max-w-2xl mx-auto">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
+                        className="w-full h-12 px-6 pr-16 text-lg border border-neutral-300 rounded-lg focus:outline-none focus:border-accent transition-colors"
+                    />
+                    {searchQuery && (
+                        <Button
+                            variant="ghost"
+                            onClick={handleClearSearch}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full"
+                        >
+                            <Icon name="x" size={24} className="text-neutral-400"/>
+                        </Button>
+                    )}
+                </div>
+            </div>
 
-            {selectedUser.information && (
-                <div className="text-lg text-gray-600 mb-8">{selectedUser.information}</div>
-            )}
+            {/* 도움말 및 신규 회원 등록 */}
+            <div className="bg-neutral-100 px-4 py-2 flex-shrink-0">
+                <div className="max-w-6xl px-6  mx-auto flex items-center justify-between">
+                    <div className="flex items-center text-sm text-neutral-600">
+                        <Icon name="alert-circle" size={16} className="mr-2 text-warning"/>
+                        <span>이름이 조회되지 않으시나요?</span>
+                    </div>
+                    <Button
+                        onClick={handleOpenRegistrationModal}
+                        className="!bg-neutral-900 !text-white hover:!bg-neutral-800"
+                    >
+                        <Icon name="plus" size={16} className="mr-1"/>
+                        신규 회원 등록하기
+                    </Button>
+                </div>
+            </div>
 
-            <Button
-              onClick={handleAttendanceConfirm}
-              disabled={isProcessing || !todaysLecture}
-              className="w-full h-16 text-xl font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {isProcessing ? '처리 중...' : '출석 체크'}
-            </Button>
-
-            {!todaysLecture && (
-              <p className="text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 메인 검색 화면
-  return (
-    <div className="h-screen -mt-17 bg-slate-50 flex flex-col overflow-hidden">
-      {/* 상단 헤더 - 강의정보 영역 */}
-      <div className="bg-white shadow-sm p-3 flex items-center justify-between flex-shrink-0">
-        <button
-          onClick={handleGoBack}
-          className="p-3 hover:bg-slate-100 rounded-full transition-colors"
-        >
-          <XIcon className="h-6 w-6 text-slate-600" />
-        </button>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">{sessionInfo?.title} 출석체크</h1>
-          {todaysLecture ? (
-            <p className=" text-slate-500 mt-1">
-              {formatDate(todaysLecture.lecture_date)} {todaysLecture.title}
-            </p>
-          ) : (
-            <p className="text-lg text-red-500 text-sm mt-4">오늘 예정된 강의가 없습니다.</p>
-          )}
-        </div>
-        <div className="w-12"></div>
-      </div>
-
-      {/* 검색창 */}
-      <div className="bg-white p-3 border-b border-slate-100 flex-shrink-0">
-        <div className="relative max-w-2xl mx-auto">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
-            className="w-full h-12 px-6 pr-16 text-lg border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={handleClearSearch}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <XIcon className="h-6 w-6 text-slate-400" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 도움말 및 신규 회원 등록 */}
-      <div className="bg-slate-100 px-4 py-2 flex-shrink-0">
-        <div className="max-w-6xl px-6  mx-auto flex items-center justify-between">
-          <div className="flex items-center text-sm text-slate-600">
-            <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span>이름이 조회되지 않으시나요?</span>
-          </div>
-          <button
-            onClick={handleOpenRegistrationModal}
-            className="bg-gray-700 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            신규 회원 등록하기
-          </button>
-        </div>
-      </div>
-
-      {/* 검색 결과 */}
-      <div className="flex-1 p-3 overflow-hidden">
-        <div className="max-w-6xl mx-auto h-full">
-          <div className="bg-white rounded-lg shadow-sm border-slate-50 p-6 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4 flex-shrink-0">
-              <h2 className="font-bold text-gray-900">수강생 목록</h2>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            {/* 검색 결과 */}
+            <div className="flex-1 p-3 overflow-hidden">
+                <div className="max-w-6xl mx-auto h-full">
+                    <Card className="h-full flex flex-col p-6">
+                        <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                            <h2 className="font-bold text-neutral-900">수강생 목록</h2>
+                            <span
+                                className="px-3 py-1 bg-accent-soft text-accent-hover rounded-full text-sm font-medium">
                 {filteredUsers.length}명
               </span>
-            </div>
+                        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto flex-1">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    onClick={() => handleUserSelect(user)}
-                    className={`p-4 border-slate-50 rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
-                      user.attendance
-                        ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                    }`}
-                  >
-                    <div className="text-lg font-bold text-gray-900 mb-1">{user.username}</div>
-                    {user.information && (
-                      <div className="text-sm text-gray-600 mb-2">{user.information}</div>
-                    )}
-                    <div className={`text-sm font-medium ${
-                      user.attendance ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {user.attendance ? '출석완료' : '출석 대기'}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full flex items-center justify-center h-full text-gray-500">
-                  검색 결과가 없습니다
+                        <div
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto flex-1">
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map((user) => (
+                                    <div
+                                        key={user.id}
+                                        onClick={() => handleUserSelect(user)}
+                                        className={`p-4 border rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
+                                            user.attendance
+                                                ? 'border-success/30 bg-success-soft opacity-60 cursor-not-allowed'
+                                                : 'border-neutral-200 hover:border-accent/40 hover:bg-accent-soft'
+                                        }`}
+                                    >
+                                        <div className="text-lg font-bold text-neutral-900 mb-1">{user.username}</div>
+                                        {user.information && (
+                                            <div className="text-sm text-neutral-600 mb-2">{user.information}</div>
+                                        )}
+                                        <div className={`text-sm font-medium ${
+                                            user.attendance ? 'text-success-text' : 'text-neutral-500'
+                                        }`}>
+                                            {user.attendance ? '출석완료' : '출석 대기'}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full flex items-center justify-center h-full text-neutral-500">
+                                    검색 결과가 없습니다
+                                </div>
+                            )}
+                        </div>
+                    </Card>
                 </div>
-              )}
             </div>
-          </div>
+
+            {/* 하단 키패드 영역 */}
+            <div className="bg-white border-t border-neutral-100 p-3 flex-shrink-0">
+                <div className="max-w-4xl mx-auto">
+                    <div className="grid grid-cols-5 gap-3 mb-4">
+                        {KOREAN_CONSONANTS.map((consonant) => (
+                            <Button
+                                key={consonant}
+                                onClick={() => handleKeypadInput(consonant)}
+                                variant="secondary"
+                                className="h-14 text-xl font-bold border border-neutral-300 hover:bg-accent-soft hover:border-accent/40 active:scale-95 transition-all shadow-sm"
+                            >
+                                {consonant}
+                            </Button>
+                        ))}
+
+                        {/* 백스페이스 버튼 */}
+                        <Button
+                            onClick={handleBackspace}
+                            variant="secondary"
+                            className="h-16 px-8 hover:bg-error-soft hover:border-error/40 active:scale-95 transition-all"
+                        >
+                            <BackspaceIcon className="h-6 w-6"/>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* 회원 등록 모달 */}
+            <UserRegistrationModal
+                isOpen={isRegistrationModalOpen}
+                onClose={handleCloseRegistrationModal}
+                sessionId={session_id}
+                onUserRegistered={handleUserRegistered}
+                onError={setError}
+            />
         </div>
-      </div>
-
-      {/* 하단 키패드 영역 */}
-      <div className="bg-white border-t border-slate-100 p-3 flex-shrink-0">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-5 gap-3 mb-4">
-            {KOREAN_CONSONANTS.map((consonant) => (
-              <Button
-                key={consonant}
-                onClick={() => handleKeypadInput(consonant)}
-                variant="outline"
-                className="h-14 text-xl font-bold border-none hover:bg-blue-50 hover:border-blue-300 active:scale-95 transition-all shadow-sm"
-              >
-                {consonant}
-              </Button>
-            ))}
-
-            {/* 백스페이스 버튼 */}
-            <Button
-              onClick={handleBackspace}
-              variant="outline"
-              className="h-16 px-8 hover:bg-red-50 hover:border-red-300 active:scale-95 transition-all"
-            >
-              <BackspaceIcon className="h-6 w-6" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* 회원 등록 모달 */}
-      <UserRegistrationModal
-        isOpen={isRegistrationModalOpen}
-        onClose={handleCloseRegistrationModal}
-        sessionId={session_id}
-        onUserRegistered={handleUserRegistered}
-        onError={setError}
-      />
-    </div>
-  );
+    );
 };
 
 export default KioskAttendance;

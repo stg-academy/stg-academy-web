@@ -35,3 +35,38 @@ export const renderWithLinks = (text) => {
     )
   );
 };
+
+/**
+ * 텍스트를 maxLength자로 자르고 말줄임표(...) 추가
+ * @param {string} text
+ * @param {number} maxLength
+ * @returns {string}
+ */
+export const truncateText = (text, maxLength = 30) => {
+  if (!text) return text;
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+};
+
+/**
+ * 표/카드처럼 공간이 좁은 곳 전용 — 값 전체가 URL이면 새 탭 링크(잘린 라벨 + title에 전체 URL),
+ * 아니면 maxLength자로 자른 텍스트(title에 전체 텍스트)를 렌더링.
+ * 문단 중간에 섞인 URL을 부분적으로 링크화하는 renderWithLinks와 달리, 값 전체가 URL인 경우만 링크로 처리한다.
+ * @param {string} text
+ * @param {number} maxLength
+ * @returns {React.ReactNode}
+ */
+export const renderTruncatedCell = (text, maxLength = 30) => {
+  if (!text) return '-';
+  const trimmed = text.trim();
+  const isUrl = /^https?:\/\/\S+$/.test(trimmed);
+  const label = truncateText(trimmed, maxLength);
+  if (isUrl) {
+    return (
+      <a href={trimmed} target="_blank" rel="noopener noreferrer"
+         className="text-blue-600 underline" title={trimmed}>
+        {label}
+      </a>
+    );
+  }
+  return <span title={trimmed}>{label}</span>;
+};

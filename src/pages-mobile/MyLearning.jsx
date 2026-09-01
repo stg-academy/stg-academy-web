@@ -1,44 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileLayout } from '../components/mobile/MobileLayout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/mobile/ui/tabs';
-import { Card, CardContent } from '../components/mobile/ui/card';
-import { Button } from '../components/mobile/ui/button';
-import { Progress } from '../components/mobile/ui/progress';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs.jsx';
+import Card from '../components/ui/Card.jsx';
+import Button from '../components/ui/Button.jsx';
+import Progress from '../components/ui/Progress.jsx';
 import { useAuth } from '../contexts/AuthContext';
-import { getEnrollsByUser } from '../services/enrollService';
+import { getMyEnrolls } from '../services/enrollService';
 import { getMyAttendancesBySession } from '../services/attendanceService';
 import { getLecturesBySession } from '../services/lectureService';
 import { getSessions } from '../services/sessionService';
-
-const ChevronRightIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-const BookOpenIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-);
+import { getMyCertifications } from '../services/certificationService';
+import Icon from '../components/ui/Icon.jsx';
 
 export default function MyLearning() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [enrollments, setEnrollments] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [lectureData, setLectureData] = useState({});
   const [sessionStatusMap, setSessionStatusMap] = useState({});
+  const [certifiedSessionIds, setCertifiedSessionIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 인증 확인이 끝나기 전에 user?.id로 분기하면 아직 확정 안 된 null 상태를
+  // "로그인 안 함"으로 잘못 판단해버리므로, authLoading이 끝난 뒤에만 분기한다.
   useEffect(() => {
+    if (authLoading) return;
     if (user?.id) {
       fetchMyLearningData();
     } else {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [authLoading, user?.id]);
 
   const fetchMyLearningData = async () => {
     try {
@@ -46,7 +40,7 @@ export default function MyLearning() {
       setError(null);
 
       // 사용자의 수강 신청 목록 조회
-      const enrollmentsData = await getEnrollsByUser(user.id);
+      const enrollmentsData = await getMyEnrolls();
       setEnrollments(enrollmentsData || []);
 
       // 수강신청된 session_id 목록
@@ -99,6 +93,16 @@ export default function MyLearning() {
 
       setAttendanceData(attendanceMap);
       setLectureData(lectureMap);
+
+      // 수료증 발급 여부 조회 (배지 표시용, 실패해도 나머지 페이지 로드는 막지 않음)
+      try {
+        const certificationsData = await getMyCertifications();
+        setCertifiedSessionIds(new Set(
+          (Array.isArray(certificationsData) ? certificationsData : []).map(cert => cert.session_id)
+        ));
+      } catch (certErr) {
+        console.error('수료증 목록 조회 실패:', certErr);
+      }
 
     } catch (err) {
       console.error('내 강의 데이터 조회 실패:', err);
@@ -158,48 +162,54 @@ export default function MyLearning() {
     const pastLectures = getPastLectureCount(enrollment.session_id);
     const attendanceRate = calculateAttendanceRate(enrollment.session_id);
     const progress = calculateProgress(enrollment.session_id);
+    const isCertified = certifiedSessionIds.has(enrollment.session_id);
 
     return (
-      <Card className="border-slate-100 shadow-sm">
-        <CardContent className="p-5 space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-slate-900 text-lg truncate">
-                {enrollment.session_title || '강의명 없음'}
-              </h3>
-            </div>
+      <Card className="relative space-y-4">
+        {isCertified && (
+          <img
+            src="/certification_badge.png"
+            alt="수료증 발급됨"
+            className="absolute top-2 right-2 w-10 h-auto drop-shadow"
+          />
+        )}
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-neutral-900 text-lg truncate">
+              {enrollment.session_title || '강의명 없음'}
+            </h3>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
-                <span className="text-blue-600 font-bold">{progress}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500 truncate">진행도 ({pastLectures}/{totalLectures}회차)</span>
+              <span className="text-accent font-bold">{progress}%</span>
             </div>
-            <div className="flex justify-between text-sm pt-1">
-              <span className="text-slate-500">출석률</span>
-              <span className="text-slate-900 font-semibold">{attendanceRate}%</span>
-            </div>
+            <Progress value={progress} className="h-2" />
           </div>
+          <div className="flex justify-between text-sm pt-1">
+            <span className="text-neutral-500">출석률</span>
+            <span className="text-neutral-900 font-semibold">{attendanceRate}%</span>
+          </div>
+        </div>
 
-          <Link to={`/mobile/session/${enrollment.session_id}`}>
-            <Button className="w-full mt-2" variant="outline">
-              강의실 입장
-              <ChevronRightIcon className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
-        </CardContent>
+        <Link to={`/mobile/session/${enrollment.session_id}`}>
+          <Button className="w-full mt-2">
+            강의실 입장
+            <Icon name="chevron-right" className="h-4 w-4 ml-2" />
+          </Button>
+        </Link>
       </Card>
     );
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <MobileLayout headerTitle="내 강의">
         <div className="p-4 flex justify-center items-center h-64">
-          <div className="text-slate-500">로딩 중...</div>
+          <div className="text-neutral-500">로딩 중...</div>
         </div>
       </MobileLayout>
     );
@@ -211,8 +221,8 @@ export default function MyLearning() {
         <div className="p-5 space-y-8">
           <section className="space-y-4">
             <div className="text-center py-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">내 강의를 확인하세요</h2>
-              <p className="text-sm text-slate-500 mb-6">로그인하여 수강 중인 강의와 진도를 확인해보세요</p>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">내 강의를 확인하세요</h2>
+              <p className="text-sm text-neutral-500 mb-6">로그인하여 수강 중인 강의와 진도를 확인해보세요</p>
               <Link to="/login">
                 <Button className="w-full max-w-xs">
                   로그인하여 시작하기
@@ -228,11 +238,10 @@ export default function MyLearning() {
   if (error) {
     return (
       <MobileLayout headerTitle="내 강의">
-        <div className="p-4 flex flex-col items-center justify-center h-64 text-slate-500">
+        <div className="p-4 flex flex-col items-center justify-center h-64 text-neutral-500">
           <p>{error}</p>
           <Button
             onClick={fetchMyLearningData}
-            variant="outline"
             className="mt-4"
           >
             다시 시도
@@ -264,16 +273,16 @@ export default function MyLearning() {
                 />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-slate-300" />
+              <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                  <Icon name="book-open" size={32} className="text-neutral-300" />
                 </div>
                 <p>현재 수강 중인 강의가 없습니다.</p>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="completed">
+          <TabsContent value="completed" className="space-y-4">
             {completedEnrollments.length > 0 ? (
               completedEnrollments.map((enrollment) => (
                 <CourseCard
@@ -283,9 +292,9 @@ export default function MyLearning() {
                 />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-8 w-8 text-slate-300" />
+              <div className="flex flex-col items-center justify-center py-12 text-neutral-400 space-y-3">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                  <Icon name="book-open" size={32} className="text-neutral-300" />
                 </div>
                 <p>아직 완료한 강의가 없습니다.</p>
               </div>

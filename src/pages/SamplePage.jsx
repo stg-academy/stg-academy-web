@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import DataTable from '../components/ui/DataTable.jsx'
 import StatCard from '../components/widgets/StatCard'
 import IconCollection from '../components/widgets/IconCollection'
+import Icon from '../components/ui/Icon.jsx'
 
 const SamplePage = () => {
   const { user } = useAuth()
@@ -261,22 +262,14 @@ const SamplePage = () => {
       value: usersData.length.toString(),
       change: '+2명',
       changeType: 'positive',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-        </svg>
-      )
+      icon: <Icon name="users" size={24} />
     },
     {
       title: '진행중 프로젝트',
       value: projectsData.filter(p => p.status === '진행중').length.toString(),
       change: '+1개',
       changeType: 'positive',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 7a2 2 0 012-2h4a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V7z" />
-        </svg>
-      )
+      icon: <Icon name="briefcase" size={24} />
     }
   ]
 

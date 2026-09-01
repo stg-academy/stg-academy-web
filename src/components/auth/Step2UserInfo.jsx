@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import {useCallback, useEffect, useState} from 'react'
+import Icon from '../ui/Icon.jsx'
 
 const Step2UserInfo = ({
-    username,
-    selectedUser = null,
-    initialData = {},
-    onSubmit,
-    onBack,
-    isLoading = false,
-    showPassword = true,
-    submitButtonText = '회원가입 완료'
-}) => {
+                           username,
+                           phoneNumber = '',
+                           selectedUser = null,
+                           initialData = {},
+                           onSubmit,
+                           onBack,
+                           isLoading = false,
+                           showPassword = true,
+                           submitButtonText = '회원가입 완료'
+                       }) => {
     const [formData, setFormData] = useState({
         information: '',
         password: '',
@@ -31,7 +33,7 @@ const Step2UserInfo = ({
     // 오류 제거 헬퍼 함수
     const clearFieldErrors = useCallback((fieldsToClear) => {
         setErrors(prev => {
-            const newErrors = { ...prev }
+            const newErrors = {...prev}
             fieldsToClear.forEach(field => delete newErrors[field])
             return newErrors
         })
@@ -39,11 +41,11 @@ const Step2UserInfo = ({
 
     // 입력 변경 핸들러
     const handleInputChange = useCallback((field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }))
+        setFormData(prev => ({...prev, [field]: value}))
 
         // 실시간 유효성 검사 (비밀번호 필드만)
         if (showPassword && (field === 'password' || field === 'confirmPassword')) {
-            const newErrors = { ...errors }
+            const newErrors = {...errors}
 
             if (field === 'password') {
                 // 비밀번호 유효성 검사
@@ -115,6 +117,7 @@ const Step2UserInfo = ({
 
         const submitData = {
             username,
+            phone_number: phoneNumber,
             information: formData.information.trim(),
         }
 
@@ -127,7 +130,7 @@ const Step2UserInfo = ({
         }
 
         onSubmit(submitData)
-    }, [username, formData.information, formData.password, showPassword, selectedUser, onSubmit, validateForm])
+    }, [username, phoneNumber, formData.information, formData.password, showPassword, selectedUser, onSubmit, validateForm])
 
     // // 공통 입력 필드 스타일
     // const getInputClassName = useCallback((fieldName) => {
@@ -148,15 +151,14 @@ const Step2UserInfo = ({
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4 text-sm sm:text-base"
                     disabled={isLoading}
                 >
-                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <Icon name="chevron-left" size={16} className="mr-1 flex-shrink-0"/>
                     이전 단계
                 </button>
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900">사용자 정보 입력</h2>
                 <div className="mt-3 p-3  border border-gray-200 rounded-lg">
                     <p className="text-xs sm:text-sm">
                         이름: <span className="font-semibold">{username}</span>
+                        {phoneNumber && <span className="text-gray-500"> ({phoneNumber})</span>}
                     </p>
                     {selectedUser && (
                         <p className="text-xs sm:text-sm text-green-700 mt-1">
@@ -194,7 +196,8 @@ const Step2UserInfo = ({
                 {showPassword && (
                     <>
                         <div>
-                            <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password"
+                                   className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                                 비밀번호
                                 <span className="text-red-500 ml-1">*</span>
                             </label>
@@ -215,7 +218,8 @@ const Step2UserInfo = ({
                         </div>
 
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="confirmPassword"
+                                   className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                                 비밀번호 확인
                                 <span className="text-red-500 ml-1">*</span>
                             </label>

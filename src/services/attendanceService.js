@@ -75,7 +75,7 @@ export const getAttendance = async (attendanceId) => {
  */
 export const createAttendance = async (lectureId, attendanceData) => {
     try {
-        return await apiClient.post(`/api/attendances/lectures/${lectureId}/attendances`, attendanceData)
+        return await apiClient.post(`/api/admin/attendances/lectures/${lectureId}/attendances`, attendanceData)
     } catch (error) {
         console.error('출석 생성 실패:', error)
         throw error
@@ -90,7 +90,7 @@ export const createAttendance = async (lectureId, attendanceData) => {
  */
 export const updateAttendance = async (attendanceId, attendanceData) => {
     try {
-        return await apiClient.put(`/api/attendances/${attendanceId}`, attendanceData)
+        return await apiClient.put(`/api/admin/attendances/${attendanceId}`, attendanceData)
     } catch (error) {
         console.error('출석 수정 실패:', error)
         throw error
@@ -98,7 +98,7 @@ export const updateAttendance = async (attendanceId, attendanceData) => {
 }
 
 /**
- * 출석 생성 또는 수정 (존재하지 않으면 생성, 존재하면 수정)
+ * 출석 생성 또는 수정 ((lecture_id, user_id) 키 기반 upsert — 존재 여부 확인용 GET 없이 한 번에 처리)
  * @param {string} lectureId - 강의 ID (UUID)
  * @param {string} userId - 사용자 ID (UUID)
  * @param {string} attendanceType - 출석 타입 (ATTENDANCE_CONFIG의 키)
@@ -113,29 +113,29 @@ export const createOrUpdateAttendance = async (lectureId, userId, attendanceType
             throw new Error(`유효하지 않은 출석 타입: ${attendanceType}`);
         }
 
-        // 출석 데이터 구성
         const attendanceData = {
-            user_id: userId,
             status: config.status || attendanceType,
             detail_type: config.detail_type || attendanceType,
             note: note || ''
         }
 
-        const existingAttendances = await getAttendancesByLecture(lectureId)
-        const existingAttendance = existingAttendances.find(
-            att => (att.user_id === userId || att.student_id === userId)
-        )
-
-        if (existingAttendance) {
-            // 기존 출석이 있으면 수정
-            return await updateAttendance(existingAttendance.id, attendanceData)
-        } else {
-            // 기존 출석이 없으면 새로 생성
-            return await createAttendance(lectureId, attendanceData)
-        }
-
+        return await apiClient.put(`/api/admin/attendances/lectures/${lectureId}/attendances/${userId}`, attendanceData)
     } catch (error) {
         console.error('출석 생성/수정 실패:', error)
+        throw error
+    }
+}
+
+/**
+ * 출석 일괄 생성/수정 (bulk upsert) — 항목별 성공/실패를 담은 결과 배열 반환
+ * @param {Array<{lecture_id: string, user_id: string, status: string, detail_type: string, note?: string}>} items
+ * @returns {Promise<Array>} 항목별 처리 결과
+ */
+export const bulkUpsertAttendance = async (items) => {
+    try {
+        return await apiClient.put('/api/admin/attendances/bulk', { items })
+    } catch (error) {
+        console.error('출석 일괄 처리 실패:', error)
         throw error
     }
 }
@@ -212,6 +212,7 @@ export default {
     createAttendance,
     updateAttendance,
     createOrUpdateAttendance,
+    bulkUpsertAttendance,
     createAttendanceWithCode,
     getMyAttendancesBySession,
     getMyAttendanceByLecture,

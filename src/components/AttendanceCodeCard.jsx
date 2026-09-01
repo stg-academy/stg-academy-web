@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useToast } from './ui/ToastProvider.jsx';
+import Icon from './ui/Icon.jsx';
 
 const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
     const [copySuccess, setCopySuccess] = useState(false);
+    const toast = useToast();
 
     // 출석 코드 복사
     const handleCopyCode = async (code) => {
@@ -23,7 +26,7 @@ const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
                 setTimeout(() => setCopySuccess(false), 2000);
             } catch (fallbackErr) {
                 console.error('Fallback 복사도 실패:', fallbackErr);
-                alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+                toast.error('복사에 실패했습니다. 수동으로 복사해주세요.');
             }
             document.body.removeChild(textArea);
         }
@@ -61,13 +64,9 @@ const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
                             title="코드 복사"
                         >
                             {copySuccess ? (
-                                <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                                <Icon name="check" size={16} className="text-slate-600" />
                             ) : (
-                                <svg className="w-4 h-4 text-slate-600 group-hover:text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
+                                <Icon name="copy" size={16} className="text-slate-600 group-hover:text-slate-800" />
                             )}
                         </button>
                         {/* 새로고침 버튼 */}
@@ -77,9 +76,7 @@ const AttendanceCodeCard = ({ attendanceCode, onRefreshCode }) => {
                             title="코드 새로고침"
                             disabled={!onRefreshCode}
                         >
-                            <svg className={`w-4 h-4 ${onRefreshCode ? 'text-slate-600 group-hover:text-slate-800' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                            <Icon name="refresh-cw" size={16} className={onRefreshCode ? 'text-slate-600 group-hover:text-slate-800' : 'text-slate-400'} />
                         </button>
                     </div>
                 </div>

@@ -10,64 +10,71 @@
 }
 
 @theme inline {
-    /* Tailwind 컬러예시 */
-    /* 기본 Tailwind 컬러는 그대로 유지되며, 여기에 커스텀 추가 */
+    /* STG Academy design system v2 — see design-audit.md + .design-sync/NOTES.md */
+    --color-neutral-0: #ffffff;
+    --color-neutral-50: #f9fafb;
+    --color-neutral-100: #f3f4f6;
+    --color-neutral-200: #e5e7eb;
+    --color-neutral-300: #d1d5db;
+    --color-neutral-400: #9ca3af;
+    --color-neutral-500: #6b7280;
+    --color-neutral-600: #4b5563;
+    --color-neutral-700: #374151;
+    --color-neutral-800: #1f2937;
+    --color-neutral-900: #111827;
 
-    /*--color-primary: var(--color-blue-500);*/
-    /*--color-primary-500: var(--color-blue-500);*/
-    /*--color-primary-600: var(--color-blue-600);*/
-    --color-aa : var(--color-blue-500);
-    --color-ba : var(--color-blue-600);
+    --color-accent: #2563eb;
+    --color-accent-hover: #1d4ed8;
+    --color-accent-soft: #eff6ff;
 
-    /* 커스텀 폰트 */
-    --font-stg-title: 'SEBANG Gothic', sans-serif;
-    /* Brand Colors (주요 포인트 컬러) */
-    --color-primary-500: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */
-    --color-primary-600: #1A7E4C;        /* 진한 그린: 메인 버튼, 카드 배경, 강조 요소 */
-    --color-secondary-500: #A0C9B3;      /* 연한 그린: 차트 보조색, 연한 강조 배경 */
-    --color-secondary-600: #A0C9B3;      /* 연한 그린: 차트 보조색, 연한 강조 배경 */
-    --color-accent: #2ECC71;         /* 활성 상태: 상승 지표(+17.8%), 활성화 아이콘 */
+    --border-default: var(--color-neutral-200);
+    --text-on-accent: #ffffff;
 
-    /* Neutrals (무채색 및 배경) */
-    --color-ui-background: #F4F5F7;        /* 전체 배경: 부드러운 그레이톤 화이트 */
-    --color-ui-surface: #FFFFFF;        /* 카드 배경: 순백색 */
-    --color-ui-border: #E8EBEF;         /* 구분선: 카드 테두리 및 리스트 구분선 */
+    --color-success: #22c55e;
+    --color-success-soft: #f0fdf4;
+    --color-success-text: #166534;
+    --color-error: #f43f5e;
+    --color-error-soft: #fff1f2;
+    --color-error-text: #be123c;
+    --color-warning: #f59e0b;
+    --color-warning-soft: #fff7ed;
+    --color-warning-text: #9a3412;
+    --color-info: #3b82f6;
+    --color-info-soft: #eff6ff;
+    --color-info-text: #1d4ed8;
 
-    /* Text (텍스트 및 아이콘) */
-    --color-text-primary: #1E2124;   /* 타이틀: "Welcome Back" 등 주요 제목 */
-    --color-text-secondary: #5F676D; /* 본문: 일반 텍스트 및 메뉴 이름 */
-    --color-text-muted: #9BA3A9;     /* 설명: 날짜, 단위, 비활성화된 텍스트 */
-    --color-text-success: var(--color-blue-700);
-    --color-text-info: var(--color-green-600);
-    --color-text-danger: var(--color-red-700);
-    --color-text-warn: #9BA3A9;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 999px;
 
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, .08);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, .12);
 
-    /* Functional (기능성 컬러) */
-    --color-status-disabled: #17C671;
-    --color-status-disabled: #17C671;
-    --color-status-progress: #17C671;
-    --color-status-progress: #17C671;
-    --color-status-finish-100: #17C671;  /* var(--color-green-100)*/
-    --color-status-finish-800: #1A7E4C;  /* var(--color-green-800)*/
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --font-stg-title: 'SEBANG Gothic', var(--font-sans);
 
-
-    /* 시광교회 브랜드 컬러 */
-    --color-church-primary: #2C5F8D;
-    --color-church-secondary: #8B4513;
-    --color-church-accent: #DAA520;
-
-    /* 출석 상태별 컬러 */
-    --color-attendance-present: #10B981;
-    --color-attendance-absent: #EF4444;
-    --color-attendance-late: #F59E0B;
-    --color-attendance-essay: #8B5CF6;
-    --color-attendance-early: #EC4899;
-
-    /*!* UI 컬러 *!*/
-    /*--color-ui-background: #F9FAFB;*/
-    /*--color-ui-surface: #FFFFFF;*/
-    /*--color-ui-border: #E5E7EB;*/
-    /*--color-ui-text-primary: #111827;*/
-    /*--color-ui-text-secondary: #6B7280;*/
+    /* 7단계 타입 스케일 (Display → Micro) */
+    --text-display: 28px;
+    --text-display--line-height: 36px;
+    --text-display--font-weight: 700;
+    --text-page-title: 24px;
+    --text-page-title--line-height: 32px;
+    --text-page-title--font-weight: 700;
+    --text-section-title: 18px;
+    --text-section-title--line-height: 28px;
+    --text-section-title--font-weight: 600;
+    --text-body-lg: 16px;
+    --text-body-lg--line-height: 24px;
+    --text-body-lg--font-weight: 400;
+    --text-body: 14px;
+    --text-body--line-height: 20px;
+    --text-body--font-weight: 400;
+    --text-label: 13px;
+    --text-label--line-height: 18px;
+    --text-label--font-weight: 500;
+    --text-micro: 12px;
+    --text-micro--line-height: 16px;
+    --text-micro--font-weight: 500;
 }

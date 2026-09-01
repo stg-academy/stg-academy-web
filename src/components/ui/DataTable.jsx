@@ -1,4 +1,10 @@
-import {useState, useMemo} from 'react'
+import {useMemo, useState} from 'react'
+import Pagination from './Pagination.jsx'
+import Select from './Select.jsx'
+import BottomSheet from './BottomSheet.jsx'
+import Button from './Button.jsx'
+import Icon from './Icon.jsx'
+import Spinner from './Spinner.jsx'
 
 const DataTable = ({
                        title = "데이터 테이블",
@@ -9,6 +15,12 @@ const DataTable = ({
                        itemsPerPage = null,
                        showPagination = true,
                        showSearch = true,
+                       // 검색창을 부모가 제어(서버사이드 검색 등)하고 싶을 때 사용 — 지정하면
+                       // 검색어 입력값을 이 값으로 표시하고, 내부 클라이언트 필터링은 건너뛴다
+                       // (data prop을 이미 검색 결과로 간주). 지정하지 않으면 기존처럼 내부에서
+                       // searchableColumns 기준으로 클라이언트 필터링한다.
+                       searchValue = undefined,
+                       onSearchChange = null,
                        emptyMessage = "데이터가 없습니다.",
                        className = "",
                        // 인라인 편집 관련 props
@@ -21,15 +33,28 @@ const DataTable = ({
                        // 유효성 검사 관련 props
                        validationErrors = {},
                        // 푸터 관련 props
-                       footer = null
+                       footer = null,
+                       // 모바일(lg 미만) 카드 리스트 — 제공 시 lg:hidden 카드 리스트가 함께 렌더링된다
+                       renderMobileItem = null,
+                       // 모바일 편집 시트 하단(정보 영역 아래)에 추가로 넣을 커스텀 영역 — (row) => ReactNode
+                       renderMobileEditExtra = null,
+                       // 서버사이드 페이지네이션 (옵트인) — 전달되면 내부 페이지 state/클라이언트 슬라이싱 대신
+                       // 부모가 넘긴 값을 그대로 쓴다. 이 모드에서는 data가 "이번 페이지 분량"이라고 간주한다.
+                       serverPagination = false,
+                       totalCount = 0,
+                       currentPage: currentPageProp = 1,
+                       onPageChange = null
                    }) => {
-    const [searchTerm, setSearchTerm] = useState('')
-    const [currentPage, setCurrentPage] = useState(1)
+    const isControlledSearch = typeof onSearchChange === 'function'
+    const [internalSearchTerm, setInternalSearchTerm] = useState('')
+    const searchTerm = isControlledSearch ? (searchValue || '') : internalSearchTerm
+    const [internalCurrentPage, setInternalCurrentPage] = useState(1)
+    const currentPage = serverPagination ? currentPageProp : internalCurrentPage
     const [sortConfig, setSortConfig] = useState({key: null, direction: 'asc'})
 
-    // 검색 필터링
+    // 검색 필터링 (제어 모드에서는 data가 이미 검색 결과이므로 내부 필터링을 건너뜀)
     const filteredData = useMemo(() => {
-        if (!searchTerm || !searchableColumns.length) return data
+        if (isControlledSearch || !searchTerm || !searchableColumns.length) return data
 
         return data.filter(row =>
             searchableColumns.some(column => {
@@ -38,7 +63,7 @@ const DataTable = ({
                 return value.toString().toLowerCase().includes(searchTerm.toLowerCase())
             })
         )
-    }, [data, searchTerm, searchableColumns])
+    }, [data, searchTerm, searchableColumns, isControlledSearch])
 
     // 정렬 기능
     const sortedData = useMemo(() => {
@@ -66,9 +91,14 @@ const DataTable = ({
     }, [filteredData, sortConfig])
 
     // 페이지네이션 (itemsPerPage가 없으면 전체 데이터 표시)
-    const totalPages = itemsPerPage ? Math.ceil(sortedData.length / itemsPerPage) : 1
+    // 서버 모드에서는 data가 이미 "이번 페이지 분량"이므로 totalCount 기준으로 페이지 수만 계산하고,
+    // 화면에는 서버가 준 data를 그대로(추가 슬라이싱 없이) 보여준다.
+    const displayTotal = serverPagination ? totalCount : sortedData.length
+    const totalPages = itemsPerPage ? Math.max(1, Math.ceil(displayTotal / itemsPerPage)) : 1
     const startIndex = itemsPerPage ? (currentPage - 1) * itemsPerPage : 0
-    const paginatedData = itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData
+    const paginatedData = serverPagination
+        ? sortedData
+        : (itemsPerPage ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData)
 
     // 정렬 핸들러
     const handleSort = (key) => {
@@ -82,23 +112,33 @@ const DataTable = ({
 
     // 페이지 변경 핸들러
     const handlePageChange = (page) => {
-        setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+        const clamped = Math.max(1, Math.min(page, totalPages))
+        if (serverPagination) {
+            onPageChange && onPageChange(clamped)
+        } else {
+            setInternalCurrentPage(clamped)
+        }
     }
 
     // 검색어 변경 시 첫 페이지로 이동
     const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value)
-        setCurrentPage(1)
+        const value = e.target.value
+        if (isControlledSearch) {
+            onSearchChange(value)
+            return
+        }
+        setInternalSearchTerm(value)
+        if (!serverPagination) setInternalCurrentPage(1)
     }
 
     // 편집 가능한 셀 렌더링
     const renderEditableCell = (row, column) => {
         const value = editingData[column.key] !== undefined ? editingData[column.key] : row[column.key] || ''
         const hasError = validationErrors[column.key]
-        const inputClassName = `w-full -my-2 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-sm ${
+        const inputClassName = `w-full -my-2 px-3 py-2 border rounded-md focus:ring-2 focus:border-transparent text-sm ${
             hasError
-                ? 'border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-blue-500'
+                ? 'border-error focus:ring-error'
+                : 'border-neutral-300 focus:ring-accent'
         }`
 
         const renderInput = () => {
@@ -115,17 +155,13 @@ const DataTable = ({
                     )
                 case 'select':
                     return (
-                        <select
+                        <Select
                             value={value}
                             onChange={(e) => onEditChange && onEditChange(column.key, e.target.value)}
-                            className={inputClassName}
-                        >
-                            {column.options && column.options.map(option => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                            options={column.options || []}
+                            error={!!hasError}
+                            className="-my-2"
+                        />
                     )
                 case 'date':
                     return (
@@ -161,10 +197,43 @@ const DataTable = ({
             <div>
                 {renderInput()}
                 {hasError && (
-                    <div className="-mb-2 mt-2 text-xs text-red-600">
+                    <div className="-mb-2 mt-2 text-xs text-error-text">
                         {validationErrors[column.key]}
                     </div>
                 )}
+            </div>
+        )
+    }
+
+    // 모바일 편집 시트용 필드 렌더링 (라벨 + 인풋을 세로로 쌓는 폼 레이아웃)
+    const renderMobileEditField = (row, column) => {
+        const value = editingData[column.key] !== undefined ? editingData[column.key] : row[column.key] || ''
+        const hasError = validationErrors[column.key]
+        const inputClassName = `w-full px-3 py-2.5 border rounded-md text-sm ${
+            hasError ? 'border-error' : 'border-neutral-300'
+        }`
+        const onChange = (e) => onEditChange && onEditChange(column.key, e.target.value)
+
+        let input
+        switch (column.editType) {
+            case 'select':
+                input = <Select value={value} onChange={onChange} options={column.options || []} error={!!hasError}/>
+                break
+            case 'date':
+                input = <input type="date" value={value} onChange={onChange} className={inputClassName}/>
+                break
+            case 'number':
+                input = <input type="number" value={value} onChange={onChange} className={inputClassName}/>
+                break
+            default:
+                input = <input type="text" value={value} onChange={onChange} className={inputClassName}/>
+        }
+
+        return (
+            <div key={column.key} className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-neutral-700">{column.label}</label>
+                {input}
+                {hasError && <div className="text-xs text-error-text">{validationErrors[column.key]}</div>}
             </div>
         )
     }
@@ -185,95 +254,66 @@ const DataTable = ({
     // 정렬 아이콘 렌더링
     const renderSortIcon = (columnKey) => {
         if (sortConfig.key !== columnKey) {
-            return (
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                </svg>
-            )
+            return <Icon name="sort" size={16} className="text-neutral-400"/>
         }
 
-        return sortConfig.direction === 'asc' ? (
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
-            </svg>
-        ) : (
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
-            </svg>
-        )
+        return sortConfig.direction === 'asc'
+            ? <Icon name="sort-asc" size={16} className="text-accent"/>
+            : <Icon name="sort-desc" size={16} className="text-accent"/>
     }
 
-    if (loading) {
-        return (
-            <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                </div>
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            </div>
-        )
-    }
+    const editableColumns = columns.filter(c => c.editable)
+    const mobileInfoColumns = columns.filter(c => c.mobileInfo && !c.editable)
+    const editingRow = editingRowId != null ? data.find(r => r.id === editingRowId) : null
 
     return (
-        <div
-            className={`bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow ${className}`}>
+        <div className={`bg-white rounded-lg border border-neutral-200 overflow-hidden ${className}`}>
             {/* 헤더 */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-b border-neutral-200">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                        총 {data.length}개 항목 {filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
+                    <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
+                    <p className="text-sm text-neutral-600 mt-1">
+                        총 {displayTotal}개
+                        항목 {!serverPagination && filteredData.length !== data.length && `(${filteredData.length}개 검색됨)`}
                     </p>
                 </div>
 
                 {/* 검색창 */}
-                {showSearch && searchableColumns.length > 0 && (
+                {showSearch && (searchableColumns.length > 0 || isControlledSearch) && (
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
+                            <Icon name="search" size={16} className="text-neutral-400"/>
                         </div>
                         <input
                             type="text"
                             placeholder="검색..."
                             value={searchTerm}
                             onChange={handleSearchChange}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                            className="pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent w-full sm:w-64"
                         />
                         {searchTerm && (
                             <button
                                 onClick={() => handleSearchChange({target: {value: ''}})}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                             >
-                                <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none"
-                                     stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                                <Icon name="x" size={16} className="text-neutral-400 hover:text-neutral-600"/>
                             </button>
                         )}
                     </div>
                 )}
             </div>
 
-            {/* 테이블 */}
-            <div className="overflow-x-auto">
+            {/* 테이블 (데스크톱) */}
+            <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-neutral-50">
                     <tr>
                         {columns.map((column) => (
                             <th
                                 key={column.key}
-                                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                                    column.sortable ? 'cursor-pointer hover:bg-gray-100 select-none' : ''
+                                className={`px-5 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide ${
+                                    column.sortable ? 'cursor-pointer hover:bg-neutral-100 select-none' : ''
                                 }`}
                                 onClick={() => column.sortable && handleSort(column.key)}
                             >
@@ -285,8 +325,18 @@ const DataTable = ({
                         ))}
                     </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                    {paginatedData.length > 0 ? (
+                    <tbody className="bg-white divide-y divide-neutral-100">
+                    {loading ? (
+                        // 헤더(검색창 포함)는 그대로 두고 행 영역만 교체 — 통째로 갈아엎으면
+                        // 검색 input DOM 노드가 매번 재생성되어 포커스가 끊김
+                        <tr>
+                            <td colSpan={columns.length} className="py-12">
+                                <div className="flex justify-center items-center">
+                                    <Spinner size="lg" />
+                                </div>
+                            </td>
+                        </tr>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((row, index) => {
                             const isEditing = editingRowId === row.id
                             return (
@@ -294,14 +344,14 @@ const DataTable = ({
                                     key={row.id || index}
                                     className={`transition-colors ${
                                         isEditing
-                                            ? 'bg-blue-50 border border-blue-200'
-                                            : 'hover:bg-gray-50'
+                                            ? 'bg-accent-soft border border-accent/20'
+                                            : 'hover:bg-neutral-50'
                                     }`}
                                 >
                                     {columns.map((column) => (
                                         <td
                                             key={column.key}
-                                            className={`px-6 py-4 text-sm text-gray-900 ${
+                                            className={`px-5 py-3.5 text-sm text-neutral-900 ${
                                                 column.editable && isEditing
                                                     ? ''
                                                     : 'whitespace-nowrap'
@@ -315,7 +365,7 @@ const DataTable = ({
                         })
                     ) : (
                         <tr>
-                            <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
+                            <td colSpan={columns.length} className="px-6 py-12 text-center text-neutral-500">
                                 {searchTerm ? '검색 결과가 없습니다.' : emptyMessage}
                             </td>
                         </tr>
@@ -324,67 +374,86 @@ const DataTable = ({
                 </table>
             </div>
 
+            {/* 카드 리스트 (모바일) */}
+            {renderMobileItem && (
+                <div className="lg:hidden divide-y divide-neutral-100">
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Spinner size="lg" />
+                        </div>
+                    ) : paginatedData.length > 0 ? (
+                        paginatedData.map((row, index) => (
+                            <div key={row.id || index}>{renderMobileItem(row)}</div>
+                        ))
+                    ) : (
+                        <div className="px-5 py-12 text-center text-sm text-neutral-500">
+                            {searchTerm ? '검색 결과가 없습니다.' : emptyMessage}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 모바일 편집 시트 — editable 컬럼이 있는 테이블에서 행 편집 시 자동 활성화 */}
+            {editingRow && editableColumns.length > 0 && (
+                <div className="lg:hidden">
+                    <BottomSheet
+                        isOpen={!!editingRow}
+                        onClose={() => onCancelEdit && onCancelEdit()}
+                        title="편집"
+                        footer={
+                            <div className="flex gap-2">
+                                <Button variant="secondary" className="flex-1"
+                                        onClick={() => onCancelEdit && onCancelEdit()}>
+                                    취소
+                                </Button>
+                                <Button className="flex-1" onClick={() => onSaveEdit && onSaveEdit(editingRow.id)}>
+                                    저장
+                                </Button>
+                            </div>
+                        }
+                    >
+                        <div className="flex flex-col gap-4">
+                            {editableColumns.map((column) => renderMobileEditField(editingRow, column))}
+                            {mobileInfoColumns.length > 0 && (
+                                <div className="border-t border-neutral-100 pt-4 flex flex-col gap-2.5">
+                                    {mobileInfoColumns.map((column) => {
+                                        const value = column.render && typeof column.render === 'function'
+                                            ? column.render(editingRow[column.key], editingRow, false)
+                                            : (editingRow[column.key] || column.default)
+                                        return (
+                                            <div key={column.key} className="flex items-center justify-between text-sm">
+                                                <span className="text-neutral-500">{column.label}</span>
+                                                <span className="text-neutral-700">{value}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                            {renderMobileEditExtra && (
+                                <div className="pt-1">
+                                    {renderMobileEditExtra(editingRow)}
+                                </div>
+                            )}
+                        </div>
+                    </BottomSheet>
+                </div>
+            )}
+
             {/* 페이지네이션 */}
             {showPagination && itemsPerPage && totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-                    <div className="text-sm text-gray-700">
+                <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-200">
+                    <div className="text-sm text-neutral-700">
             <span>
-              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedData.length)} / {sortedData.length}개 항목
+              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayTotal)} / {displayTotal}개 항목
             </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 rounded-md text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            이전
-                        </button>
-
-                        {/* 페이지 번호 */}
-                        <div className="flex items-center space-x-1">
-                            {Array.from({length: Math.min(totalPages, 5)}, (_, i) => {
-                                let pageNumber
-                                if (totalPages <= 5) {
-                                    pageNumber = i + 1
-                                } else if (currentPage <= 3) {
-                                    pageNumber = i + 1
-                                } else if (currentPage >= totalPages - 2) {
-                                    pageNumber = totalPages - 4 + i
-                                } else {
-                                    pageNumber = currentPage - 2 + i
-                                }
-
-                                return (
-                                    <button
-                                        key={pageNumber}
-                                        onClick={() => handlePageChange(pageNumber)}
-                                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                            currentPage === pageNumber
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {pageNumber}
-                                    </button>
-                                )
-                            })}
-                        </div>
-
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 rounded-md text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            다음
-                        </button>
-                    </div>
+                    <Pagination current={currentPage} total={totalPages} onChange={handlePageChange}/>
                 </div>
             )}
 
             {/* 푸터 */}
             {footer &&
-                <div className="px-6 py-4 bg-gray-50 text-xs text-gray-500 space-y-1">
+                <div className="px-6 py-4 bg-neutral-50 text-xs text-neutral-500 space-y-1">
                     {footer}
                 </div>
             }

@@ -1,9 +1,18 @@
 import {useEffect, useState} from 'react'
 import {useAuth} from '../contexts/AuthContext'
-import {createOrUpdateAttendance, createAttendance, getAttendancesBySession} from '../services/attendanceService'
+import {createOrUpdateAttendance, bulkUpsertAttendance, getAttendancesBySession} from '../services/attendanceService'
+import {ATTENDANCE_CONFIG} from '../utils/attendanceStatus.js'
 import AttendanceTable from '../components/tables/AttendanceTable'
 import AttendanceEditModal from '../components/modals/AttendanceEditModal'
 import BulkAttendanceEditModal from '../components/modals/BulkAttendanceEditModal'
+import ConfirmModal from '../components/ui/ConfirmModal.jsx'
+import {useToast} from '../components/ui/ToastProvider.jsx'
+
+// 일괄 upsert 응답에서 실패 건수 집계 (항목별 성공/실패 배열 형태를 가정)
+const countBulkFailures = (results) => {
+    if (!Array.isArray(results)) return 0
+    return results.filter(r => r?.success === false || r?.error).length
+}
 
 const AttendanceTab = ({
                            session,
@@ -14,6 +23,7 @@ const AttendanceTab = ({
                            loading
                        }) => {
     const {user} = useAuth()
+    const toast = useToast()
 
     const [attendances, setAttendances] = useState([])
     const [attendancesLoading, setAttendancesLoading] = useState(false)
@@ -26,6 +36,7 @@ const AttendanceTab = ({
     const [bulkStatus, setBulkStatus] = useState('PRESENT')
     const [bulkNote, setBulkNote] = useState('')
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
+    const [showBulkAbsentConfirm, setShowBulkAbsentConfirm] = useState(false)
 
     // 수강생 목록에서 활성 상태인 수강생들만 필터링
     useEffect(() => {
@@ -107,9 +118,38 @@ const AttendanceTab = ({
         }
     }
 
+    // 모바일 빠른 상태 설정 (탭 즉시 저장, 노트 없음)
+    const handleQuickSetStatus = async (cellInfo, status) => {
+        const currentStatus = cellInfo.attendance?.detail_type || 'None'
+        if (cellInfo.attendance?.id && currentStatus === status) {
+            return
+        }
+
+        setCellUpdateLoading(true)
+        try {
+            await createOrUpdateAttendance(
+                cellInfo.lectureId,
+                cellInfo.userId,
+                status,
+                cellInfo.attendance?.description || cellInfo.attendance?.note || ''
+            )
+            await loadAttendances()
+        } catch (err) {
+            console.error('출석 정보 업데이트 실패:', err)
+            onError('출석 정보 업데이트에 실패했습니다')
+        } finally {
+            setCellUpdateLoading(false)
+        }
+    }
+
     // 일괄 결석처리 핸들러
-    const handleBulkAbsent = async () => {
-        if (!confirm('오늘보다 이전 강의들의 미입력자들의 출석을 전부 결석으로 변환합니다.\n진행하시겠습니까?')) return
+    const handleBulkAbsent = () => {
+        setShowBulkAbsentConfirm(true)
+    }
+
+    // 일괄 결석처리 확정 실행
+    const executeBulkAbsent = async () => {
+        setShowBulkAbsentConfirm(false)
 
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -131,22 +171,25 @@ const AttendanceTab = ({
         }
 
         if (targets.length === 0) {
-            alert('처리할 미입력 출석이 없습니다.')
+            toast.info('처리할 미입력 출석이 없습니다.')
             return
         }
 
         setCellUpdateLoading(true)
         try {
-            await Promise.all(
-                targets.map(({lectureId, userId}) =>
-                    createAttendance(lectureId, {
-                        user_id: userId,
-                        status: 'ABSENT',
-                        detail_type: 'ABSENT',
-                        note: ''
-                    })
-                )
+            const results = await bulkUpsertAttendance(
+                targets.map(({lectureId, userId}) => ({
+                    lecture_id: lectureId,
+                    user_id: userId,
+                    status: 'ABSENT',
+                    detail_type: 'ABSENT',
+                    note: ''
+                }))
             )
+            const failedCount = countBulkFailures(results)
+            if (failedCount > 0) {
+                onError(`${failedCount}건 처리에 실패했습니다.`)
+            }
             await loadAttendances()
         } catch (err) {
             console.error('일괄 결석 처리 실패:', err)
@@ -188,18 +231,22 @@ const AttendanceTab = ({
                 return
             }
 
-            // 변경이 필요한 셀들에 대해서만 업데이트
-            const updatePromises = cellsToUpdate.map(async (cellInfo) => {
-                return createOrUpdateAttendance(
-                    cellInfo.lectureId,
-                    cellInfo.userId,
-                    bulkStatus,
-                    bulkNote
-                )
-            })
-
-            await Promise.all(updatePromises)
-            console.log(`일괄 업데이트 완료: ${cellsToUpdate.length}/${selectedCells.length}개 셀 업데이트됨`)
+            // 변경이 필요한 셀들만 한 번의 요청으로 일괄 처리
+            const config = ATTENDANCE_CONFIG[bulkStatus]
+            const results = await bulkUpsertAttendance(
+                cellsToUpdate.map(cellInfo => ({
+                    lecture_id: cellInfo.lectureId,
+                    user_id: cellInfo.userId,
+                    status: config?.status || bulkStatus,
+                    detail_type: config?.detail_type || bulkStatus,
+                    note: bulkNote || ''
+                }))
+            )
+            const failedCount = countBulkFailures(results)
+            if (failedCount > 0) {
+                onError(`${failedCount}건 처리에 실패했습니다.`)
+            }
+            console.log(`일괄 업데이트 완료: ${cellsToUpdate.length - failedCount}/${selectedCells.length}개 셀 업데이트됨`)
             await loadAttendances()
             // 일괄 저장 후 다중 선택 모드 종료 및 선택 해제
             setIsMultiSelectMode(false)
@@ -211,7 +258,7 @@ const AttendanceTab = ({
         }
     }
 
-    return (<div className="bg-white rounded-lg shadow ">
+    return (<div className="bg-white rounded-lg border border-neutral-200">
 
             {/* 출석부 테이블 */}
             <AttendanceTable
@@ -219,6 +266,7 @@ const AttendanceTab = ({
                 lectures={lectures}
                 enrolls={activeEnrolls}
                 onCellClick={handleCellClick}
+                onQuickSetStatus={handleQuickSetStatus}
                 onBulkEdit={handleBulkEdit}
                 onBulkAbsent={handleBulkAbsent}
                 isMultiSelectMode={isMultiSelectMode}
@@ -252,6 +300,17 @@ const AttendanceTab = ({
                 bulkNote={bulkNote}
                 setBulkNote={setBulkNote}
                 loading={cellUpdateLoading}
+            />
+
+            {/* 일괄 결석처리 확인 모달 */}
+            <ConfirmModal
+                isOpen={showBulkAbsentConfirm}
+                onClose={() => setShowBulkAbsentConfirm(false)}
+                onConfirm={executeBulkAbsent}
+                title="일괄 결석 처리"
+                message={'오늘보다 이전 강의들의 미입력자들의 출석을 전부 결석으로 변환합니다.\n진행하시겠습니까?'}
+                confirmText="변환"
+                danger
             />
         </div>
     )

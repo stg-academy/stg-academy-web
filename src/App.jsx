@@ -1,20 +1,21 @@
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
+import {BrowserRouter as Router, Route, Routes, useLocation} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
+import {ToastProvider} from './components/ui/ToastProvider.jsx'
 import Header from './components/Header'
 import SampleDashboard from './pages/SampleDashboard'
 import SamplePage from './pages/SamplePage'
-import KakaoCallback from './components/KakaoCallback'
 import CourseManagementPage from "./pages/CourseManagementPage.jsx"
 import CourseListPage from './pages/CourseListPage'
 import SessionListPage from './pages/SessionListPage.jsx'
 import SessionDetailPage from "./pages/SessionDetailPage.jsx";
 import AttendanceTab from "./pages/AttendanceTab.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
+import AssistantSessionListPage from "./pages/AssistantSessionListPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import CompleteKakaoRegistration from "./pages/CompleteKakaoRegistration.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import PrivacyConsentGate from "./components/PrivacyConsentGate.jsx";
 import MyLearning from "./pages-mobile/MyLearning.jsx";
 import Home from "./pages-mobile/Home.jsx";
 import Attendance from "./pages-mobile/Attendance.jsx";
@@ -23,26 +24,21 @@ import Profile from "./pages/Profile.jsx";
 import Search from "./pages-mobile/Search.jsx";
 import CourseRecruitPage from "./pages-mobile/CourseRecruitPage.jsx";
 import SessionInfoPage from "./pages-mobile/SessionInfoPage.jsx";
+import Certificates from "./pages-mobile/Certificates.jsx";
 import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
-    // 현재 URL이 카카오 콜백인지 확인
-    const isKakaoCallback = window.location.pathname === '/auth/kakao/callback'
+    const location = useLocation()
+    const isKioskRoute = /^\/sessions\/[^/]+\/attendance\/kiosk$/.test(location.pathname)
 
-    // 카카오 콜백 페이지인 경우 헤더 없이 렌더링
-    if (isKakaoCallback) {
-        return <KakaoCallback/>
-    }
-
-    // 일반 앱 콘텐츠
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header/>
+            {!isKioskRoute && <Header/>}
+            {!isKioskRoute && <PrivacyConsentGate/>}
             <Routes>
                 // 인증 관련 라우트
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/register" element={<RegisterPage/>}/>
-                <Route path="/auth/complete-registration" element={<CompleteKakaoRegistration/>}/>
 
                 // 모든 사용자에게 공개된 라우트
                 <Route path="/" element={<Home/>}/>
@@ -58,6 +54,7 @@ function AppContent() {
                 <Route path="mobile/search" element={<Search />}/>
                 <Route path="mobile/recruit/:sessionId" element={<CourseRecruitPage />}/>
                 <Route path="mobile/info/:sessionId" element={<SessionInfoPage />}/>
+                <Route path="mobile/certificates" element={<Certificates />}/>
 
                 // 키오스크
                 <Route path="/sessions/:session_id/attendance/kiosk" element={<KioskAttendance />}/>
@@ -80,18 +77,25 @@ function AppContent() {
                     }/>
                 </Route>
                 <Route path="/sessions/:sessionId" element={
-                    <ProtectedRoute requiredRole="ADMIN">
+                    <ProtectedRoute requiredRole="ADMIN" allowAssistant>
                         <SessionDetailPage/>
                     </ProtectedRoute>
                 }/>
                 <Route path="/lectures/:lectureId/attendances" element={
-                    <ProtectedRoute requiredRole="ADMIN">
+                    <ProtectedRoute requiredRole="ADMIN" allowAssistant>
                         <AttendanceTab/>
                     </ProtectedRoute>
                 }/>
                 <Route path="/users" element={
                     <ProtectedRoute requiredRole="ADMIN">
                         <UserManagementPage/>
+                    </ProtectedRoute>
+                }/>
+
+                // 조교 전용 라우트
+                <Route path="/assistant/sessions" element={
+                    <ProtectedRoute requireAssistant>
+                        <AssistantSessionListPage/>
                     </ProtectedRoute>
                 }/>
             </Routes>
@@ -101,14 +105,13 @@ function AppContent() {
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    <Route path="/auth/kakao/callback" element={<KakaoCallback/>}/>
-                    <Route path="/*" element={<AppContent/>}/>
-                </Routes>
-            </Router>
-        </AuthProvider>
+        <ToastProvider>
+            <AuthProvider>
+                <Router>
+                    <AppContent/>
+                </Router>
+            </AuthProvider>
+        </ToastProvider>
     )
 }
 

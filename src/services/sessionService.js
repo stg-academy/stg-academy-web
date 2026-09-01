@@ -1,14 +1,24 @@
 import apiClient from "./apiClient.js";
 
 /**
- * 강좌 목록 조회
+ * 강좌 목록 조회 — 빈 페이지가 나올 때까지 반복 호출해 전체를 받아옴 (limit 초과로 인한 누락 방지)
  * @param {number} skip - 건너뛸 항목 수
  * @param {number} limit - 조회할 항목 수
  * @returns {Promise<Array>} 강좌 목록
  */
-export const getSessions = async (skip = 0, limit = 1000) => {
+export const getSessions = async (skip = 0, limit = 10000) => {
   try {
-    return await apiClient.get('/api/sessions', { skip, limit })
+    const pageSize = Math.min(limit, 1000)
+    const allData = []
+    let currentSkip = skip
+    while (true) {
+      const page = await apiClient.get('/api/sessions', { skip: currentSkip, limit: pageSize })
+      if (!Array.isArray(page) || page.length === 0) break
+      allData.push(...page)
+      if (page.length < pageSize) break
+      currentSkip += pageSize
+    }
+    return allData
   } catch (error) {
     console.error('강좌 목록 조회 실패:', error)
     throw error
@@ -36,7 +46,7 @@ export const getSession = async (sessionId) => {
  */
 export const createSession = async (sessionData) => {
   try {
-    return await apiClient.post('/api/sessions', sessionData)
+    return await apiClient.post('/api/admin/sessions', sessionData)
   } catch (error) {
     console.error('강좌 생성 실패:', error)
     throw error
@@ -51,7 +61,7 @@ export const createSession = async (sessionData) => {
  */
 export const updateSession = async (sessionId, sessionData) => {
   try {
-    return await apiClient.put(`/api/sessions/${sessionId}`, sessionData)
+    return await apiClient.put(`/api/admin/sessions/${sessionId}`, sessionData)
   } catch (error) {
     console.error('강좌 수정 실패:', error)
     throw error
@@ -65,7 +75,7 @@ export const updateSession = async (sessionId, sessionData) => {
  */
 export const deleteSession = async (sessionId) => {
   try {
-    return await apiClient.delete(`/api/sessions/${sessionId}`)
+    return await apiClient.delete(`/api/admin/sessions/${sessionId}`)
   } catch (error) {
     console.error('강좌 삭제 실패:', error)
     throw error
@@ -79,7 +89,7 @@ export const deleteSession = async (sessionId) => {
  */
 export const updateSessionCode = async (sessionId) => {
   try {
-    return await apiClient.put(`/api/sessions/${sessionId}/code`)
+    return await apiClient.put(`/api/admin/sessions/${sessionId}/code`)
   } catch (error) {
     console.error('출석 인증코드 새로고침 실패:', error)
     throw error

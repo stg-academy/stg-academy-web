@@ -12,6 +12,7 @@ const RegisterPage = () => {
   // 2단계 상태 관리
   const [currentStep, setCurrentStep] = useState(1)
   const [username, setUsername] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [selectedUser, setSelectedUser] = useState(null)
 
   // 회원가입 성공 시 홈으로 리다이렉트
@@ -29,14 +30,9 @@ const RegisterPage = () => {
   }, [currentStep, error, clearError])
 
   // 이벤트 핸들러들
-  const handleUsernameConfirm = useCallback((confirmedUsername, user) => {
+  const handleUsernameConfirm = useCallback((confirmedUsername, confirmedPhoneNumber, user) => {
     setUsername(confirmedUsername)
-    setSelectedUser(user)
-    setCurrentStep(2)
-  }, [])
-
-  const handleExistingUserSelect = useCallback((user, inputUsername) => {
-    setUsername(user.username)
+    setPhoneNumber(confirmedPhoneNumber)
     setSelectedUser(user)
     setCurrentStep(2)
   }, [])
@@ -49,7 +45,7 @@ const RegisterPage = () => {
   const handleRegisterSubmit = useCallback(async (userData) => {
     try {
       await registerUser(userData)
-    } catch (err) {
+    } catch {
       // 에러는 AuthContext에서 처리됨
     }
   }, [registerUser])
@@ -59,15 +55,16 @@ const RegisterPage = () => {
       title="새 계정을 만드세요"
       subtitle="회원가입"
       currentStep={currentStep}
-      stepNames={['이름 확인', '계정 설정']}
+      stepNames={['본인 확인', '계정 설정']}
       totalSteps={2}
       error={error}
       showLoginLink={true}
     >
       {currentStep === 1 && (
         <Step1UsernameCheck
+          initialUsername={username}
+          initialPhoneNumber={phoneNumber}
           onUsernameConfirm={handleUsernameConfirm}
-          onExistingUserSelect={handleExistingUserSelect}
           isLoading={isLoading}
         />
       )}
@@ -75,6 +72,7 @@ const RegisterPage = () => {
       {currentStep === 2 && (
         <Step2UserInfo
           username={username}
+          phoneNumber={phoneNumber}
           selectedUser={selectedUser}
           onSubmit={handleRegisterSubmit}
           onBack={handleBack}

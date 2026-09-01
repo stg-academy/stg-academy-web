@@ -136,13 +136,13 @@ const LectureTable = ({
                     <div className="flex items-center space-x-2">
                         <button
                             onClick={() => onStartEdit && onStartEdit(row)}
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                            className="text-neutral-600 hover:text-neutral-900 text-sm font-medium"
                         >
                             <Edit/>
                         </button>
                         <button
                             onClick={() => onDeleteLecture && onDeleteLecture(row.id)}
-                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                            className="text-neutral-600 hover:text-neutral-900 text-sm font-medium"
                         >
                             <Delete/>
                         </button>
@@ -153,15 +153,52 @@ const LectureTable = ({
     ]
 
 
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => (
+        <div
+            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-neutral-50 transition-colors cursor-pointer"
+            onClick={() => onStartEdit && onStartEdit(row)}
+        >
+            <div className="flex-none w-9 h-9 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-xs font-semibold">
+                {row.sequence || row.id}강
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-neutral-900 truncate">
+                        {row.title || `${row.sequence || row.id}강`}
+                    </span>
+                    <SessionStatusBadge status={row.status}/>
+                </div>
+                <div className="text-xs text-neutral-500">
+                    {row.lecture_date ? new Date(row.lecture_date).toLocaleDateString('ko-KR', {
+                        year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'
+                    }) : '날짜 미정'} · {row.attendance_type || '전자출결'}
+                </div>
+            </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation()
+                    onDeleteLecture && onDeleteLecture(row.id)
+                }}
+                className="flex-none text-neutral-400 hover:text-error p-1"
+                title="삭제"
+            >
+                <Delete/>
+            </button>
+        </div>
+    )
+
     return (
         <DataTable
             data={lectures}
             columns={lectureColumns}
             searchableColumns={['title', 'sequence', 'status']}
             loading={loading}
-            showPagination={false}
+            itemsPerPage={20}
+            showPagination={true}
             showSearch={true}
             emptyMessage="등록된 강의가 없습니다."
+            renderMobileItem={renderMobileItem}
             // 인라인 편집 관련 props
             editingRowId={editingLectureId}
             editingData={editingData}

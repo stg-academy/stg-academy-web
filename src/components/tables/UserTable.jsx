@@ -1,9 +1,20 @@
 import DataTable from '../ui/DataTable.jsx'
+import Badge from '../ui/Badge.jsx'
+import Button from '../ui/Button.jsx'
+import Icon from '../ui/Icon.jsx'
 import { ROLES, getRoleDisplayName } from '../../utils/roleUtils.js'
 
 const UserTable = ({
     users,
     loading,
+    // 서버사이드 페이지네이션 (검색 중에는 false로 전달되어 검색 결과 내에서 클라이언트 페이지네이션됨)
+    serverPagination = true,
+    totalCount,
+    currentPage,
+    onPageChange,
+    // 검색 (서버사이드, 전체 사용자 대상 — UserManagementPage에서 제어)
+    searchValue,
+    onSearchChange,
     // 인라인 편집 관련 props
     editingUserId,
     editingData,
@@ -12,82 +23,87 @@ const UserTable = ({
     onSaveEdit,
     onEditChange,
     // 유효성 검사 관련 props
-    validationErrors
+    validationErrors,
+    // 비밀번호 초기화 (일반 로그인 계정만 가능)
+    onResetPassword
 }) => {
     // 인증 유형 렌더링 함수
     const renderAuthType = (value) => {
         const authTypeConfig = {
-            'kakao': { label: '카카오', className: 'bg-yellow-100 text-yellow-800' },
-            'normal': { label: '일반', className: 'bg-gray-100 text-gray-800' },
-            'manual': { label: '관리자 수기 등록', className: 'bg-blue-100 text-blue-800' },
+            'kakao': { label: '카카오', tone: 'warning' },
+            'normal': { label: '일반', tone: 'neutral' },
+            'manual': { label: '관리자 수기 등록', tone: 'info' },
         }
-        const config = authTypeConfig[value] || { label: value || '-', className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = authTypeConfig[value] || { label: value || '-', tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 사용자 상태 렌더링 함수 (is_active 기반)
     const renderUserStatus = (value) => {
         const statusConfig = {
-            true: { label: '활성', className: 'bg-green-100 text-green-800' },
-            false: { label: '비활성', className: 'bg-gray-100 text-gray-800' }
+            true: { label: '활성', tone: 'success' },
+            false: { label: '비활성', tone: 'neutral' }
         }
-        const config = statusConfig[value] || { label: value ? '활성' : '비활성', className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = statusConfig[value] || { label: value ? '활성' : '비활성', tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 권한 렌더링 함수
     const renderRole = (value, row) => {
         const role = row.authorizations?.role || ROLES.USER
         const roleConfig = {
-            [ROLES.ADMIN]: { label: getRoleDisplayName(ROLES.ADMIN), className: 'bg-purple-100 text-purple-800' },
-            [ROLES.USER]: { label: getRoleDisplayName(ROLES.USER), className: 'bg-blue-100 text-blue-800' }
+            [ROLES.ADMIN]: { label: getRoleDisplayName(ROLES.ADMIN), tone: 'info' },
+            [ROLES.USER]: { label: getRoleDisplayName(ROLES.USER), tone: 'neutral' }
         }
-        const config = roleConfig[role] || { label: getRoleDisplayName(role), className: 'bg-gray-100 text-gray-800' }
-        return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
-                {config.label}
-            </span>
-        )
+        const config = roleConfig[role] || { label: getRoleDisplayName(role), tone: 'neutral' }
+        return <Badge tone={config.tone}>{config.label}</Badge>
     }
 
     // 액션 버튼 렌더링 함수
     const renderActions = (value, row, isEditing) => {
         if (isEditing) {
             return (
-                <div className="flex items-center space-x-2">
-                    <button
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="!px-2"
                         onClick={() => onCancelEdit && onCancelEdit()}
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium"
                         title="취소"
+                        aria-label="취소"
                     >
-                        취소
-                    </button>
-                    <button
+                        <Icon name="x" size={16} />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="!px-2"
                         onClick={() => onSaveEdit && onSaveEdit(row.id)}
-                        className="text-green-600 hover:text-green-700 text-sm font-medium"
                         title="저장"
+                        aria-label="저장"
                     >
-                        저장
-                    </button>
+                        <Icon name="check" size={16} />
+                    </Button>
                 </div>
             )
         }
         return (
-            <div className="flex items-center space-x-2">
-                <button
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="!px-2"
                     onClick={() => onStartEdit && onStartEdit(row)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    title="편집"
+                    aria-label="편집"
                 >
-                    편집
-                </button>
+                    <Icon name="edit" size={16} />
+                </Button>
+                {row.auth_type === 'normal' && (
+                    <Button variant="secondary" size="sm" onClick={() => onResetPassword && onResetPassword(row)}>
+                        비밀번호 초기화
+                    </Button>
+                )}
             </div>
         )
     }
@@ -112,10 +128,19 @@ const UserTable = ({
             default: '-'
         },
         {
+            key: 'phone_number',
+            label: '전화번호',
+            sortable: true,
+            editable: true,
+            editType: 'text',
+            default: '-'
+        },
+        {
             key: 'auth_type',
             label: '인증 유형',
             sortable: true,
-            render: renderAuthType
+            render: renderAuthType,
+            mobileInfo: true
         },
         {
             key: 'role',
@@ -154,7 +179,8 @@ const UserTable = ({
                     hour: '2-digit',
                     minute: '2-digit'
                 })
-            }
+            },
+            mobileInfo: true
         },
         {
             key: 'created_at',
@@ -167,7 +193,8 @@ const UserTable = ({
                     month: '2-digit',
                     day: '2-digit'
                 })
-            }
+            },
+            mobileInfo: true
         },
         {
             key: 'actions',
@@ -177,15 +204,66 @@ const UserTable = ({
         }
     ]
 
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => {
+        const role = row.authorizations?.role || ROLES.USER
+        const initial = (row.username || '?').charAt(0).toUpperCase()
+        return (
+            <button
+                type="button"
+                onClick={() => onStartEdit && onStartEdit(row)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-neutral-50 transition-colors"
+            >
+                <div className="flex-none w-9 h-9 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center text-sm font-semibold">
+                    {initial}
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-semibold text-neutral-900">{row.username}</span>
+                        {renderRole(role, row)}
+                        {renderUserStatus(row.is_active)}
+                    </div>
+                    <div className="text-xs text-neutral-500 truncate">
+                        {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'} · {row.phone_number || '-'}
+                    </div>
+                </div>
+                <Icon name="chevron-right" size={16} className="flex-none text-neutral-400" />
+            </button>
+        )
+    }
+
     return (
         <DataTable
             data={users}
             columns={userColumns}
-            searchableColumns={['username', 'information', 'auth_type']}
             loading={loading}
-            showPagination={false}
+            itemsPerPage={30}
+            showPagination={true}
             showSearch={true}
             emptyMessage="등록된 사용자가 없습니다."
+            // 검색창은 DataTable 내장 UI를 그대로 쓰되, searchValue/onSearchChange를 넘겨
+            // UserManagementPage의 서버 검색(전체 사용자 대상)으로 제어한다
+            searchValue={searchValue}
+            onSearchChange={onSearchChange}
+            // 서버사이드 페이지네이션 (검색 중에는 false — 검색 결과 내에서 클라이언트 페이지네이션)
+            serverPagination={serverPagination}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            onPageChange={onPageChange}
+            renderMobileItem={renderMobileItem}
+            // 모바일 편집 시트: 가입일 정보 아래에 비밀번호 초기화 버튼 (일반 로그인 계정만)
+            renderMobileEditExtra={(row) => row.auth_type === 'normal' ? (
+                <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                        onCancelEdit && onCancelEdit()
+                        onResetPassword && onResetPassword(row)
+                    }}
+                >
+                    비밀번호 초기화
+                </Button>
+            ) : null}
             // 인라인 편집 관련 props
             editingRowId={editingUserId}
             editingData={editingData}

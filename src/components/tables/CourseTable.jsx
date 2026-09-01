@@ -1,5 +1,7 @@
 import DataTable from '../ui/DataTable.jsx'
+import Icon from '../ui/Icon.jsx'
 import {useNavigate} from 'react-router-dom'
+import {renderTruncatedCell} from '../../utils/renderUtils.jsx'
 
 const CourseTable = ({
                          courses,
@@ -23,7 +25,10 @@ const CourseTable = ({
                 >{value}</div>
             )
         },
-        {key: 'description', label: '설명', sortable: true, default: '-'},
+        {
+            key: 'description', label: '설명', sortable: true, default: '-',
+            render: (value) => renderTruncatedCell(value)
+        },
         {
             key: 'author',
             label: '작성자', sortable: true, default: '-'
@@ -40,15 +45,38 @@ const CourseTable = ({
                         onClick={() => handleLectureCountClick(row)}
                         title="강좌 목록 보기"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
+                        <Icon name="edit" size={16} />
                     </button>
                 </div>
             )
         }
     ]
+
+    // 모바일 카드 리스트 렌더링 함수
+    const renderMobileItem = (row) => (
+        <div className="px-5 py-4 flex flex-col gap-2">
+            <div
+                className="text-sm font-semibold text-neutral-900 underline cursor-pointer"
+                onClick={() => onEditCourse(row)}
+            >
+                {row.title}
+            </div>
+            {row.description && (
+                <div className="text-xs text-neutral-500">{renderTruncatedCell(row.description)}</div>
+            )}
+            <div className="flex items-center justify-between text-xs text-neutral-500">
+                <span>작성자 {row.author || '-'}</span>
+                <button
+                    type="button"
+                    className="flex items-center gap-1 text-accent font-medium"
+                    onClick={() => handleLectureCountClick(row)}
+                >
+                    강좌 {row.lecture_count || 0}개
+                    <Icon name="chevron-right" size={14} />
+                </button>
+            </div>
+        </div>
+    )
 
     const courseFooter = (
         <>
@@ -63,10 +91,12 @@ const CourseTable = ({
             columns={courseColumns}
             searchableColumns={['name', 'description', 'author']}
             loading={loading}
-            showPagination={false}
+            itemsPerPage={10}
+            showPagination={true}
             showSearch={true}
             emptyMessage="등록된 코스가 없습니다."
             footer={courseFooter}
+            renderMobileItem={renderMobileItem}
         />
     )
 }

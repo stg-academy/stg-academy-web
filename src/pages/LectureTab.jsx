@@ -1,6 +1,8 @@
 import LectureTable from "../components/tables/LectureTable.jsx";
 import {createLecture, deleteLecture, updateLecture} from "../services/lectureService.js";
 import {useState} from "react";
+import ConfirmModal from "../components/ui/ConfirmModal.jsx";
+import Icon from "../components/ui/Icon.jsx";
 
 const LectureTab = ({
                         onError,
@@ -13,6 +15,7 @@ const LectureTab = ({
     const [editingLectureId, setEditingLectureId] = useState(null)
     const [editingData, setEditingData] = useState({})
     const [validationErrors, setValidationErrors] = useState({})
+    const [deleteTargetId, setDeleteTargetId] = useState(null)
 
 
     // 인라인 편집 시작
@@ -132,21 +135,29 @@ const LectureTab = ({
         }
     }
 
-    // 강의 삭제
-    const handleDeleteLecture = async (lectureId) => {
-        if (confirm('정말 이 강의를 삭제하시겠습니까?')) {
-            try {
-                await deleteLecture(lectureId)
-                await onRefresh() // 목록 새로고침
-            } catch (err) {
-                console.error('강의 삭제 실패:', err)
-                onError('강의 삭제에 실패했습니다')
-            }
+    // 강의 삭제 확인 요청
+    const handleDeleteLecture = (lectureId) => {
+        setDeleteTargetId(lectureId)
+    }
+
+    // 강의 삭제 확정 실행
+    const executeDeleteLecture = async () => {
+        const lectureId = deleteTargetId
+        setDeleteTargetId(null)
+        if (!lectureId) return
+
+        try {
+            await deleteLecture(lectureId)
+            await onRefresh() // 목록 새로고침
+        } catch (err) {
+            console.error('강의 삭제 실패:', err)
+            // 409: 출석 기록 등이 있어 삭제 불가 — 서버가 보내는 구체적 사유를 그대로 노출
+            onError(err.status === 409 ? err.message : '강의 삭제에 실패했습니다')
         }
     }
 
 
-    return <div className="bg-white rounded-lg shadow">
+    return <div className="bg-white rounded-lg border border-neutral-200">
         <LectureTable
             lectures={lectures}
             loading={loading}
@@ -163,24 +174,32 @@ const LectureTab = ({
         />
 
         {/* 새 강의 추가하기 */}
-        <div className="px-6 py-4 border-t border-gray-200">
+        <div className="px-6 py-4 border-t border-neutral-200">
             <button
                 onClick={handleAddLecture}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M12 4v16m8-8H4"/>
-                </svg>
+                <Icon name="plus" size={20} className="mr-2" />
                 <span className="text-sm font-medium">새 강의 추가하기</span>
             </button>
         </div>
 
         {/* 푸터 노트 */}
-        <div className="px-6 py-4 bg-gray-50 text-xs text-gray-500 space-y-1">
+        <div className="px-6 py-4 bg-neutral-50 text-xs text-neutral-500 space-y-1">
             <p>* 관리자를 위한 도움말이 들어갈 예정입니다. 각 강의의 출석률과 자료 관리는 이곳에서 진행하세요.</p>
             <p>* 강의 일시 변경 시 수강생들에게 자동으로 알림이 발송됩니다.</p>
         </div>
+
+        {/* 강의 삭제 확인 모달 */}
+        <ConfirmModal
+            isOpen={deleteTargetId !== null}
+            onClose={() => setDeleteTargetId(null)}
+            onConfirm={executeDeleteLecture}
+            title="강의 삭제"
+            message="정말 이 강의를 삭제하시겠습니까?"
+            confirmText="삭제"
+            danger
+        />
     </div>
 }
 

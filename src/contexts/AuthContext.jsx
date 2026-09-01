@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import { authAPI } from '../services/authService.js'
-import { isTemporaryToken, getUserFromToken } from '../utils/tokenUtils.js'
+import { getLoginMethodFromToken } from '../utils/tokenUtils.js'
+import { useToast } from '../components/ui/ToastProvider.jsx'
 
 // 인증 상태
 const AuthContext = createContext()
@@ -10,7 +11,7 @@ const initialState = {
   user: null,
   isLoading: true,
   isAuthenticated: false,
-  needsRegistration: false,
+  loginMethod: null,
   error: null,
 }
 
@@ -19,7 +20,6 @@ const AUTH_ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGIN_FAILURE: 'LOGIN_FAILURE',
-  NEEDS_REGISTRATION: 'NEEDS_REGISTRATION',
   LOGOUT: 'LOGOUT',
   CLEAR_ERROR: 'CLEAR_ERROR',
 }
@@ -38,17 +38,7 @@ function authReducer(state, action) {
         ...state,
         user: action.payload,
         isAuthenticated: true,
-        needsRegistration: false,
-        isLoading: false,
-        error: null,
-      }
-
-    case AUTH_ACTIONS.NEEDS_REGISTRATION:
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: false,
-        needsRegistration: true,
+        loginMethod: getLoginMethodFromToken(localStorage.getItem('auth_token')),
         isLoading: false,
         error: null,
       }
@@ -58,7 +48,7 @@ function authReducer(state, action) {
         ...state,
         user: null,
         isAuthenticated: false,
-        needsRegistration: false,
+        loginMethod: null,
         isLoading: false,
         error: action.payload,
       }
@@ -68,7 +58,7 @@ function authReducer(state, action) {
         ...state,
         user: null,
         isAuthenticated: false,
-        needsRegistration: false,
+        loginMethod: null,
         isLoading: false,
         error: null,
       }
@@ -87,6 +77,7 @@ function authReducer(state, action) {
 // AuthProvider 컴포넌트
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
+  const toast = useToast()
 
   // 인증 상태 확인 중복 실행 방지를 위한 ref
   const isCheckingAuthRef = useRef(false)
@@ -121,17 +112,7 @@ export function AuthProvider({ children }) {
         return
       }
 
-      // 임시 토큰인 경우 회원가입 필요 상태로 설정
-      if (isTemporaryToken(token)) {
-        const userFromToken = getUserFromToken(token)
-        dispatch({
-          type: AUTH_ACTIONS.NEEDS_REGISTRATION,
-          payload: userFromToken || { username: '카카오 사용자' },
-        })
-        return
-      }
-
-      // 정식 토큰인 경우 서버에서 토큰 유효성 검증 및 사용자 정보 조회
+      // 서버에서 토큰 유효성 검증 및 사용자 정보 조회
       const userInfo = await authAPI.validateToken()
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -183,42 +164,19 @@ export function AuthProvider({ children }) {
     checkAuth()
   }, [])
 
-  // 카카오 로그인
-  const loginWithKakao = async (authCode) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
-
-      const response = await authAPI.loginWithKakao(authCode)
-
-      if (response.requires_registration) {
-        dispatch({
-          type: AUTH_ACTIONS.NEEDS_REGISTRATION,
-          payload: response.user,
-        })
-      } else {
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: response.user,
-        })
-      }
-
-      return response
-    } catch (error) {
-      console.error('로그인 실패:', error)
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: error.message || '로그인에 실패했습니다.',
-      })
-      throw error
-    }
+  // 백엔드가 body.id 누락을 422로 거절하는 경우 — 검색 결과에서 사용자를 선택하지 않고
+  // 로그인을 시도한 상황이라 안내 메시지로 바꿔준다.
+  const isMissingIdError = (error) => {
+    return error.status === 422 && Array.isArray(error.detail) &&
+      error.detail.some((d) => Array.isArray(d.loc) && d.loc.includes('id'))
   }
 
   // 일반 로그인
-  const loginWithCredentials = async (username, password) => {
+  const loginWithCredentials = async (username, password, id) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
 
-      const response = await authAPI.loginWithCredentials(username, password)
+      const response = await authAPI.loginWithCredentials(username, password, id)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: response.user,
@@ -229,7 +187,29 @@ export function AuthProvider({ children }) {
       console.error('로그인 실패:', error)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: error.message || '로그인에 실패했습니다.',
+        payload: isMissingIdError(error) ? '사용자가 선택되지 않았습니다. 한번 더 클릭해주세요' : (error.message || '로그인에 실패했습니다.'),
+      })
+      throw error
+    }
+  }
+
+  // 전화번호 로그인 (비밀번호 없이 이름+전화번호)
+  const loginWithPhone = async (username, phoneNumber, id) => {
+    try {
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
+
+      const response = await authAPI.loginWithPhone(username, phoneNumber, id)
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: response.user,
+      })
+
+      return response
+    } catch (error) {
+      console.error('전화번호 로그인 실패:', error)
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_FAILURE,
+        payload: isMissingIdError(error) ? '사용자가 선택되지 않았습니다. 한번 더 클릭해주세요' : (error.message || '이름 또는 전화번호가 올바르지 않습니다.'),
       })
       throw error
     }
@@ -247,7 +227,7 @@ export function AuthProvider({ children }) {
       })
 
       // 회원가입 완료 알림
-      alert('회원가입이 완료되었습니다! 환영합니다.')
+      toast.success('회원가입이 완료되었습니다!', '환영합니다.')
 
       return response
     } catch (error) {
@@ -263,39 +243,6 @@ export function AuthProvider({ children }) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: error.message || '회원가입에 실패했습니다.',
-      })
-      throw error
-    }
-  }
-
-  // 카카오 회원가입 완료
-  const completeKakaoRegistration = async (userData) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
-
-      const response = await authAPI.completeKakaoRegistration(userData)
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: response.user,
-      })
-
-      // 카카오 회원가입 완료 알림
-      alert('카카오 회원가입이 완료되었습니다! 환영합니다.')
-
-      return response
-    } catch (error) {
-      console.error('회원가입 완료 실패:', error)
-
-      // 409 Conflict 에러인 경우 홈으로 리다이렉트
-      if (error.status === 409 || error.response?.status === 409) {
-        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false })
-        window.location.href = '/'
-        return
-      }
-
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: error.message || '회원가입 완료에 실패했습니다.',
       })
       throw error
     }
@@ -346,10 +293,9 @@ export function AuthProvider({ children }) {
 
   const value = {
     ...state,
-    loginWithKakao,
     loginWithCredentials,
+    loginWithPhone,
     registerUser,
-    completeKakaoRegistration,
     checkUsernameAvailable,
     logout,
     clearError,

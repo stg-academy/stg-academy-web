@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
+import Card from '../components/ui/Card.jsx';
 import {useToast} from '../components/ui/ToastProvider.jsx';
 import {getSession} from '../services/sessionService';
 import {getEnrollsBySession} from '../services/enrollService';
@@ -268,7 +269,7 @@ const KioskAttendance = () => {
 
     if (loading) {
         return (
-            <div className="h-screen -mt-17 bg-neutral-50 flex items-center justify-center">
+            <div className="h-screen bg-neutral-50 flex items-center justify-center">
                 <div className="text-xl text-neutral-600">로딩 중...</div>
             </div>
         );
@@ -276,15 +277,15 @@ const KioskAttendance = () => {
 
     if (error) {
         return (
-            <div className="h-screen -mt-17 bg-neutral-50 flex items-center justify-center">
+            <div className="h-screen bg-neutral-50 flex items-center justify-center">
                 <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md text-center">
                     <div className="text-error-text text-xl mb-4">{error}</div>
-                    <button
+                    <Button
                         onClick={() => navigate(-1)}
-                        className="inline-block px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                        className="!bg-accent !text-white hover:!bg-accent-hover"
                     >
                         돌아가기
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -294,8 +295,8 @@ const KioskAttendance = () => {
     if (attendanceStatus === 'success' && selectedUser) {
         return (
             <div
-                className="h-screen -mt-17 bg-success-soft flex flex-col items-center justify-center p-8 overflow-hidden">
-                <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-md w-full">
+                className="h-screen bg-success-soft flex flex-col items-center justify-center p-8 overflow-hidden">
+                <div className="bg-white rounded-lg p-12 shadow-lg text-center max-w-md w-full">
                     <div
                         className="w-24 h-24 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-8">
                         <Icon name="check" size={48} className="text-success-text"/>
@@ -311,21 +312,18 @@ const KioskAttendance = () => {
     // 사용자 확인 화면
     if (selectedUser) {
         return (
-            <div className="h-screen -mt-17 bg-neutral-50 flex flex-col overflow-hidden">
+            <div className="h-screen bg-neutral-50 flex flex-col overflow-hidden">
                 <div className="flex-1 flex items-center justify-center p-8">
-                    <div className="bg-white rounded-3xl p-12 shadow-2xl text-center max-w-lg w-full">
+                    <div className="bg-white rounded-lg p-12 shadow-lg text-center max-w-lg w-full">
                         <div className="flex items-center justify-between mb-8">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={handleGoBack}
-                                className="flex items-center text-neutral-600 hover:text-neutral-900 transition-colors mb-4 text-lg sm:text-base"
+                                className="text-neutral-600 hover:text-neutral-900 mb-4"
                             >
-                                <svg className="w-6 h-6 mr-1 flex-shrink-0" fill="none" stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M15 19l-7-7 7-7"/>
-                                </svg>
+                                <Icon name="chevron-left" size={20} className="mr-1"/>
                                 돌아가기
-                            </button>
+                            </Button>
 
                             <div className="w-12"></div>
                         </div>
@@ -348,7 +346,7 @@ const KioskAttendance = () => {
                         <Button
                             onClick={handleAttendanceConfirm}
                             disabled={isProcessing || !todaysLecture}
-                            className="w-full h-16 text-xl font-bold bg-accent text-white hover:bg-accent-hover disabled:bg-neutral-400"
+                            className="w-full h-16 text-xl font-bold !bg-accent !text-white hover:!bg-accent-hover disabled:!bg-neutral-400"
                         >
                             {isProcessing ? '처리 중...' : '출석 체크'}
                         </Button>
@@ -364,15 +362,16 @@ const KioskAttendance = () => {
 
     // 메인 검색 화면
     return (
-        <div className="h-screen -mt-17 bg-neutral-50 flex flex-col overflow-hidden">
+        <div className="h-screen bg-neutral-50 flex flex-col overflow-hidden">
             {/* 상단 헤더 - 강의정보 영역 */}
             <div className="bg-white shadow-sm p-3 flex items-center justify-between flex-shrink-0">
-                <button
+                <Button
+                    variant="ghost"
                     onClick={handleGoBack}
-                    className="p-3 hover:bg-neutral-100 rounded-full transition-colors"
+                    className="p-3 rounded-full"
                 >
                     <Icon name="x" size={24} className="text-neutral-600"/>
-                </button>
+                </Button>
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-neutral-900">{sessionInfo?.title} 출석체크</h1>
                     {todaysLecture ? (
@@ -394,15 +393,16 @@ const KioskAttendance = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="이름을 검색하거나 아래 키패드를 사용하세요"
-                        className="w-full h-12 px-6 pr-16 text-lg border border-neutral-300 rounded-2xl focus:outline-none focus:border-accent transition-colors"
+                        className="w-full h-12 px-6 pr-16 text-lg border border-neutral-300 rounded-lg focus:outline-none focus:border-accent transition-colors"
                     />
                     {searchQuery && (
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={handleClearSearch}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-neutral-100 rounded-full transition-colors"
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full"
                         >
                             <Icon name="x" size={24} className="text-neutral-400"/>
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
@@ -411,29 +411,23 @@ const KioskAttendance = () => {
             <div className="bg-neutral-100 px-4 py-2 flex-shrink-0">
                 <div className="max-w-6xl px-6  mx-auto flex items-center justify-between">
                     <div className="flex items-center text-sm text-neutral-600">
-                        <svg className="w-4 h-4 mr-2 text-warning" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd"
-                                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                  clipRule="evenodd"/>
-                        </svg>
+                        <Icon name="alert-circle" size={16} className="mr-2 text-warning"/>
                         <span>이름이 조회되지 않으시나요?</span>
                     </div>
-                    <button
+                    <Button
                         onClick={handleOpenRegistrationModal}
-                        className="bg-neutral-900 hover:bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+                        className="!bg-neutral-900 !text-white hover:!bg-neutral-800"
                     >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <Icon name="plus" size={16} className="mr-1"/>
                         신규 회원 등록하기
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* 검색 결과 */}
             <div className="flex-1 p-3 overflow-hidden">
                 <div className="max-w-6xl mx-auto h-full">
-                    <div className="bg-white rounded-lg shadow-sm border-neutral-100 p-6 h-full flex flex-col">
+                    <Card className="h-full flex flex-col p-6">
                         <div className="flex items-center justify-between mb-4 flex-shrink-0">
                             <h2 className="font-bold text-neutral-900">수강생 목록</h2>
                             <span
@@ -449,7 +443,7 @@ const KioskAttendance = () => {
                                     <div
                                         key={user.id}
                                         onClick={() => handleUserSelect(user)}
-                                        className={`p-4 border-neutral-100 rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
+                                        className={`p-4 border rounded-lg cursor-pointer transition-all shadow-sm h-fit ${
                                             user.attendance
                                                 ? 'border-success/30 bg-success-soft opacity-60 cursor-not-allowed'
                                                 : 'border-neutral-200 hover:border-accent/40 hover:bg-accent-soft'
@@ -472,7 +466,7 @@ const KioskAttendance = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
@@ -485,7 +479,7 @@ const KioskAttendance = () => {
                                 key={consonant}
                                 onClick={() => handleKeypadInput(consonant)}
                                 variant="secondary"
-                                className="h-14 text-xl font-bold border-none hover:bg-accent-soft hover:border-accent/40 active:scale-95 transition-all shadow-sm"
+                                className="h-14 text-xl font-bold border border-neutral-300 hover:bg-accent-soft hover:border-accent/40 active:scale-95 transition-all shadow-sm"
                             >
                                 {consonant}
                             </Button>

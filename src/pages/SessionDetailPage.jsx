@@ -141,11 +141,6 @@ const SessionDetailPage = () => {
         navigate(-1)
     }
 
-    // 엑셀 내보내기
-    const handleExportExcel = () => {
-        toast.info('출석인원 엑셀 내보내기 기능') // todo: handleExportExcel 구현 필요
-    }
-
     // 출석 코드 새로고침
     const handleRefreshCode = async () => {
         try {
@@ -222,10 +217,6 @@ const SessionDetailPage = () => {
                         attendanceCode={session.attendance_code}
                         onRefreshCode={handleRefreshCode}
                     />
-                    {/* todo: 구현   */}
-                    <Button onClick={handleExportExcel} size="sm" disabled>
-                        출석인원 내보내기(엑셀)
-                    </Button>
                     <Button onClick={() => setIsSessionModalOpen(true)} variant="secondary" size="sm">
                         강좌 설정
                     </Button>

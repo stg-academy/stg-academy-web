@@ -1,6 +1,7 @@
 import DataTable from '../ui/DataTable.jsx'
 import Icon from '../ui/Icon.jsx'
 import {useNavigate} from 'react-router-dom'
+import {renderTruncatedCell} from '../../utils/renderUtils.jsx'
 
 const CourseTable = ({
                          courses,
@@ -24,7 +25,10 @@ const CourseTable = ({
                 >{value}</div>
             )
         },
-        {key: 'description', label: '설명', sortable: true, default: '-'},
+        {
+            key: 'description', label: '설명', sortable: true, default: '-',
+            render: (value) => renderTruncatedCell(value)
+        },
         {
             key: 'author',
             label: '작성자', sortable: true, default: '-'
@@ -58,7 +62,7 @@ const CourseTable = ({
                 {row.title}
             </div>
             {row.description && (
-                <div className="text-xs text-neutral-500">{row.description}</div>
+                <div className="text-xs text-neutral-500">{renderTruncatedCell(row.description)}</div>
             )}
             <div className="flex items-center justify-between text-xs text-neutral-500">
                 <span>작성자 {row.author || '-'}</span>

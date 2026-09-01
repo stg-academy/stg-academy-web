@@ -95,7 +95,8 @@ export const authAPI = {
         return await apiClient.post('/api/admin/auth/manual/register', {
             username: userData.username,
             information: userData.information,
-            auth: userData.auth
+            auth: userData.auth,
+            phone_number: userData.phone_number
         })
     },
 }

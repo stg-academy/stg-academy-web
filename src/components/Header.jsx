@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react'
 import {Link, useLocation} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {isAdmin} from '../utils/roleUtils'
+import {isAdmin, isAssistant} from '../utils/roleUtils'
 import {useToast} from './ui/ToastProvider.jsx'
 import Icon from './ui/Icon.jsx'
 
@@ -23,12 +23,14 @@ const Header = () => {
         // { name: '샘플 페이지', href: '/sample', icon: 'page', adminOnly: false },
         // { name: '디자인 가이드', href: '/design-guide', icon: 'design', adminOnly: false },
         {name: '강의 관리', href: '/courses/sessions', icon: 'settings', adminOnly: true},
+        {name: '강의관리(조교용)', href: '/assistant/sessions', icon: 'settings', assistantOnly: true},
         {name: '사용자 관리', href: '/users', icon: 'users', adminOnly: true}
     ]
 
     const navigationItems = getAllNavigationItems().filter(item => {
-        if (!item.adminOnly) return true // 모든 사용자에게 허용
-        return isAdmin(user) // 관리자만 허용
+        if (item.assistantOnly) return isAssistant(user) // 조교만 허용
+        if (item.adminOnly) return isAdmin(user) // 관리자만 허용
+        return true // 모든 사용자에게 허용
     })
 
     // 현재 페이지 확인

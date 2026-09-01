@@ -1,4 +1,4 @@
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
+import {BrowserRouter as Router, Route, Routes, useLocation} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
 import {ToastProvider} from './components/ui/ToastProvider.jsx'
 import Header from './components/Header'
@@ -10,6 +10,7 @@ import SessionListPage from './pages/SessionListPage.jsx'
 import SessionDetailPage from "./pages/SessionDetailPage.jsx";
 import AttendanceTab from "./pages/AttendanceTab.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
+import AssistantSessionListPage from "./pages/AssistantSessionListPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import DesignGuidePage from "./pages/DesignGuidePage.jsx";
@@ -27,10 +28,13 @@ import Certificates from "./pages-mobile/Certificates.jsx";
 import KioskAttendance from "./pages/KioskAttendance.jsx";
 
 function AppContent() {
+    const location = useLocation()
+    const isKioskRoute = /^\/sessions\/[^/]+\/attendance\/kiosk$/.test(location.pathname)
+
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header/>
-            <PrivacyConsentGate/>
+            {!isKioskRoute && <Header/>}
+            {!isKioskRoute && <PrivacyConsentGate/>}
             <Routes>
                 // 인증 관련 라우트
                 <Route path="/login" element={<LoginPage/>}/>
@@ -73,18 +77,25 @@ function AppContent() {
                     }/>
                 </Route>
                 <Route path="/sessions/:sessionId" element={
-                    <ProtectedRoute requiredRole="ADMIN">
+                    <ProtectedRoute requiredRole="ADMIN" allowAssistant>
                         <SessionDetailPage/>
                     </ProtectedRoute>
                 }/>
                 <Route path="/lectures/:lectureId/attendances" element={
-                    <ProtectedRoute requiredRole="ADMIN">
+                    <ProtectedRoute requiredRole="ADMIN" allowAssistant>
                         <AttendanceTab/>
                     </ProtectedRoute>
                 }/>
                 <Route path="/users" element={
                     <ProtectedRoute requiredRole="ADMIN">
                         <UserManagementPage/>
+                    </ProtectedRoute>
+                }/>
+
+                // 조교 전용 라우트
+                <Route path="/assistant/sessions" element={
+                    <ProtectedRoute requireAssistant>
+                        <AssistantSessionListPage/>
                     </ProtectedRoute>
                 }/>
             </Routes>

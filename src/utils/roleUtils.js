@@ -93,6 +93,16 @@ export const isUser = (user) => {
 }
 
 /**
+ * 조교인지 확인 — DB에 저장되는 역할이 아니라, admin이 아니면서
+ * 로그인 응답의 assistant_session_ids(배정된 세션 목록)가 1개 이상 있는 경우를 조교로 간주한다.
+ * @param {Object} user - 사용자 객체
+ * @returns {boolean}
+ */
+export const isAssistant = (user) => {
+  return !isAdmin(user) && Array.isArray(user?.assistant_session_ids) && user.assistant_session_ids.length > 0
+}
+
+/**
  * 관리자 권한인지 확인 (코스 관리 등)
  * @param {Object} user - 사용자 객체
  * @returns {boolean}

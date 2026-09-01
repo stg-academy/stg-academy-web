@@ -164,6 +164,13 @@ export function AuthProvider({ children }) {
     checkAuth()
   }, [])
 
+  // 백엔드가 body.id 누락을 422로 거절하는 경우 — 검색 결과에서 사용자를 선택하지 않고
+  // 로그인을 시도한 상황이라 안내 메시지로 바꿔준다.
+  const isMissingIdError = (error) => {
+    return error.status === 422 && Array.isArray(error.detail) &&
+      error.detail.some((d) => Array.isArray(d.loc) && d.loc.includes('id'))
+  }
+
   // 일반 로그인
   const loginWithCredentials = async (username, password, id) => {
     try {
@@ -180,7 +187,7 @@ export function AuthProvider({ children }) {
       console.error('로그인 실패:', error)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: error.message || '로그인에 실패했습니다.',
+        payload: isMissingIdError(error) ? '사용자가 선택되지 않았습니다. 한번 더 클릭해주세요' : (error.message || '로그인에 실패했습니다.'),
       })
       throw error
     }
@@ -202,7 +209,7 @@ export function AuthProvider({ children }) {
       console.error('전화번호 로그인 실패:', error)
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: error.message || '이름 또는 전화번호가 올바르지 않습니다.',
+        payload: isMissingIdError(error) ? '사용자가 선택되지 않았습니다. 한번 더 클릭해주세요' : (error.message || '이름 또는 전화번호가 올바르지 않습니다.'),
       })
       throw error
     }

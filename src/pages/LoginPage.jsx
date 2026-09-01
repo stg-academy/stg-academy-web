@@ -144,11 +144,19 @@ const LoginPage = () => {
 
     if (!validateForm(submitData)) return
 
+    // Enter로 바로 제출하면 이름 입력창의 blur가 안 일어날 수 있으므로,
+    // 검색 결과가 1명뿐인데 아직 선택 안 한 경우 여기서도 자동 선택한다.
+    let effectiveUser = selectedUser
+    if (!effectiveUser && usernameSearchResults.length === 1) {
+      effectiveUser = usernameSearchResults[0]
+      setSelectedUser(effectiveUser)
+    }
+
     try {
       if (loginMode === 'password') {
-        await loginWithCredentials(submitData.username, submitData.password, selectedUser?.id)
+        await loginWithCredentials(submitData.username, submitData.password, effectiveUser?.id)
       } else {
-        await loginWithPhone(submitData.username, submitData.phone_number, selectedUser?.id)
+        await loginWithPhone(submitData.username, submitData.phone_number, effectiveUser?.id)
       }
       // AuthContext에서 성공 시 자동으로 홈으로 리다이렉트됨
     } catch {
@@ -192,7 +200,13 @@ const LoginPage = () => {
             value={formData.username}
             onChange={handleInputChange}
             onFocus={() => usernameSearchResults.length > 0 && setShowUsernameDropdown(true)}
-            onBlur={() => setTimeout(() => setShowUsernameDropdown(false), 150)}
+            onBlur={() => setTimeout(() => {
+              setShowUsernameDropdown(false)
+              // 검색 결과가 1명뿐인데 아직 클릭으로 선택하지 않고 포커스를 벗어난 경우 자동 선택
+              if (!selectedUser && usernameSearchResults.length === 1) {
+                handleSelectUsername(usernameSearchResults[0])
+              }
+            }, 150)}
             className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
               formErrors.username ? 'border-error' : 'border-neutral-300'
             }`}

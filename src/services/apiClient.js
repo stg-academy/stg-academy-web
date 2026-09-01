@@ -47,9 +47,15 @@ class ApiClient {
             }
 
             if (!response.ok) {
-                const errorMessage = data.message || data.detail || data.error || `HTTP ${response.status}`
+                // FastAPI 유효성 검사 오류는 detail이 배열([{type,loc,msg,...}])로 내려온다 —
+                // 그대로 Error 메시지로 쓰면 "[object Object]"가 되므로 msg만 이어붙인다.
+                const detailMessage = Array.isArray(data.detail)
+                    ? data.detail.map((d) => d.msg).filter(Boolean).join(', ')
+                    : data.detail
+                const errorMessage = data.message || detailMessage || data.error || `HTTP ${response.status}`
                 const error = new Error(errorMessage)
                 error.status = response.status
+                error.detail = data.detail
                 throw error
             }
 

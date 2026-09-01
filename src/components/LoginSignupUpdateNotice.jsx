@@ -6,17 +6,9 @@ import Badge from './ui/Badge.jsx'
 // 콘텐츠가 바뀌면 키를 올려서 이미 닫은 사용자에게도 새 안내를 다시 보여줄 수 있음
 const STORAGE_KEY = 'notice_login_signup_update_v1_dismissed'
 
-// 회원가입/로그인 이미지가 들어갈 자리 — 실제 이미지 준비되면 여기에 <img src="..." /> 로 교체
-const ImagePlaceholder = ({label}) => (
-    <div
-        className="w-full aspect-video rounded-md border-2 border-dashed border-neutral-300 bg-neutral-50 flex flex-col items-center justify-center gap-2 text-neutral-400">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <path d="M21 15l-5-5L5 21"/>
-        </svg>
-        <span className="text-xs">{label}</span>
-    </div>
+// 로그인/회원가입 안내 이미지
+const NoticeImage = ({src, label}) => (
+    <img src={src} alt={label} className="w-3/4 mx-auto block rounded-md border border-neutral-200"/>
 )
 
 // 홈 화면 진입 시 1회 노출되는 "회원가입/로그인 방식 변경 안내" 팝업.
@@ -59,7 +51,7 @@ const LoginSignupUpdateNotice = () => {
                             <p>기존에 카카오로 가입하셨던 분은 이름과 전화번호(또는 비밀번호)로 로그인해주세요.</p>
                         </section>
 
-                        <ImagePlaceholder label="로그인 화면 변경 전/후"/>
+                        <NoticeImage src="/notice_260901_1.png" label="로그인 화면 변경 전/후"/>
 
                         <section>
                             <h3 className="text-xl font-semibold text-neutral-900 mb-1">비밀번호를 몰라도 로그인할 수 있어요</h3>
@@ -79,10 +71,10 @@ const LoginSignupUpdateNotice = () => {
                                 1. 로그인 화면에서 <strong>이름</strong>을 입력하고, 내 정보를 클릭합니다. <br/>
                                 * 동명이인이 있을 시에는 옆에 표시되는 <strong>전화번호</strong>를 확인하고 선택해주세요.
                             </p>
-                            <ImagePlaceholder label="로그인 가이드 - 이름 입력"/>
+                            <NoticeImage src="/notice_260901_2.png" label="로그인 가이드 - 이름 입력"/>
                             <p className="mt-2">2. <strong>전화번호</strong>를 입력합니다.</p>
                             <p className="mt-2">3. <strong>로그인</strong> 버튼을 누릅니다.</p>
-                            <ImagePlaceholder label="로그인 가이드 - 전화번호 입력"/>
+                            <NoticeImage src="/notice_260901_3.png" label="로그인 가이드 - 전화번호 입력"/>
                         </section>
 
 

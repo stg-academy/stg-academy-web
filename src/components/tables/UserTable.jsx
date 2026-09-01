@@ -224,7 +224,7 @@ const UserTable = ({
                         {renderUserStatus(row.is_active)}
                     </div>
                     <div className="text-xs text-neutral-500 truncate">
-                        {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'}
+                        {row.information || '-'} · {row.auth_type === 'kakao' ? '카카오' : row.auth_type === 'manual' ? '관리자 수기 등록' : '일반'} · {row.phone_number || '-'}
                     </div>
                 </div>
                 <Icon name="chevron-right" size={16} className="flex-none text-neutral-400" />
